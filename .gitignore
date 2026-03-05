@@ -1,3 +1,66 @@
+# =============================================================================
+# macOS
+# =============================================================================
+.DS_Store
+**/.DS_Store
+
+# =============================================================================
+# IDEs
+# =============================================================================
+
+# JetBrains (PyCharm, IntelliJ, etc.)
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# =============================================================================
+# Model weights & large files
+# =============================================================================
+*.pt
+*.pth
+*.onnx
+*.bin
+*.safetensors
+*.h5
+*.hdf5
+*.tflite
+*.pb
+*.pkl
+*.pickle
+*.joblib
+
+# =============================================================================
+# Data & datasets
+# =============================================================================
+data/
+datasets/
+*.csv
+*.tsv
+*.parquet
+*.arrow
+
+# =============================================================================
+# Deep Learning caches
+# =============================================================================
+# PyTorch
+torch_hub/
+# HuggingFace
+.huggingface/
+# TensorFlow
+.tensorflow/
+
+# =============================================================================
+# ROS2
+# =============================================================================
+build/
+install/
+log/
+
+# =============================================================================
+# Python
+# =============================================================================
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -168,12 +231,6 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
 
 # Abstra
 # Abstra is an AI-powered process automation framework.
@@ -181,12 +238,6 @@ cython_debug/
 # Learn more at https://abstra.io/docs
 .abstra/
 
-# Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
-#  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
-#  you could uncomment the following to ignore the entire vscode folder
-# .vscode/
 
 # Ruff stuff:
 .ruff_cache/
