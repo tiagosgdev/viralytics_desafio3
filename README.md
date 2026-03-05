@@ -27,7 +27,8 @@ pip install -r requirements.txt
 ### Run
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 - API docs: http://localhost:8000/docs
