@@ -1,8 +1,10 @@
 # =============================================================================
-# macOS
+# OS
 # =============================================================================
 .DS_Store
 **/.DS_Store
+Thumbs.db
+desktop.ini
 
 # =============================================================================
 # IDEs
@@ -13,6 +15,10 @@
 
 # Visual Studio Code
 .vscode/
+
+# Vim swap files
+*.swp
+*.swo
 
 # =============================================================================
 # Model weights & large files
@@ -29,12 +35,23 @@
 *.pkl
 *.pickle
 *.joblib
+*.trt
+*.engine
+models/weights/*
+!models/weights/.gitkeep
 
 # =============================================================================
 # Data & datasets
 # =============================================================================
 data/
 datasets/
+data/raw/*
+!data/raw/.gitkeep
+data/sample_dataset/images/*
+!data/sample_dataset/images/.gitkeep
+data/sample_dataset/annos/*
+!data/sample_dataset/annos/.gitkeep
+data/sample_dataset/yolo/
 *.csv
 *.tsv
 *.parquet
@@ -49,6 +66,13 @@ torch_hub/
 .huggingface/
 # TensorFlow
 .tensorflow/
+
+# =============================================================================
+# Training artefacts & experiment tracking
+# =============================================================================
+runs/
+wandb/
+mlruns/
 
 # =============================================================================
 # ROS2
@@ -71,6 +95,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+pip-wheel-metadata/
 build/
 develop-eggs/
 dist/
@@ -199,6 +224,8 @@ celerybeat.pid
 
 # Environments
 .env
+*.env
+.env.local
 .envrc
 .venv
 env/

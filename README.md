@@ -1,37 +1,116 @@
-# viralytics_desafio3
+# 👗 FashionSense — Real-Time Clothing Detection System
+> Master's Project | Deep Learning & Neural Networks
 
-Sistema de Interação Multimodal para Promoções em Loja.
+A real-time clothing detection system using YOLOv8 fine-tuned on DeepFashion2,
+with a live camera feed, REST API, and store recommendation engine.
 
-## API
+---
 
-### Setup
+## Project Structure
+
+```
+fashion-detector/
+│
+├── data/
+│   ├── raw/                        # Original DeepFashion2 (17GB, not committed)
+│   └── sample_dataset/             # Stratified sample (~3-5GB)
+│       ├── images/
+│       └── annos/
+│
+├── models/
+│   └── weights/                    # Saved .pt model checkpoints
+│
+├── src/
+│   ├── detection/
+│   │   ├── __init__.py
+│   │   ├── detector.py             # YOLOv8 inference wrapper
+│   │   ├── camera.py               # Real-time camera pipeline
+│   │   └── converter.py            # DeepFashion2 → YOLO format
+│   ├── recommendations/
+│   │   ├── __init__.py
+│   │   ├── engine.py               # Rule-based + embedding recommendation engine
+│   │   └── catalogue.py            # Mock store catalogue
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── main.py                 # FastAPI application
+│   │   └── schemas.py              # Pydantic models
+│   └── utils/
+│       ├── __init__.py
+│       ├── visualizer.py           # Bounding box drawing utilities
+│       └── metrics.py              # Evaluation helpers
+│
+├── frontend/
+│   ├── index.html                  # Main dashboard UI
+│   └── static/
+│       ├── css/style.css
+│       └── js/app.js
+│
+├── scripts/
+│   ├── sample_dataset.py           # Stratified dataset sampler
+│   ├── train.py                    # Model training script
+│   └── evaluate.py                 # Evaluation script
+│
+├── notebooks/
+│   └── 01_EDA.ipynb                # Exploratory Data Analysis
+│
+├── tests/
+│   ├── test_detector.py
+│   └── test_recommendations.py
+│
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## Quick Start
 
 ```bash
-cd api
+# 1. Install dependencies
 pip install -r requirements.txt
+
+# 2. Sample the dataset (run once)
+python scripts/sample_dataset.py --data_dir data/raw --output_dir data/sample_dataset --n_per_class 500
+
+# 3. Convert annotations to YOLO format
+python -c "from src.detection.converter import DeepFashion2ToYOLO; DeepFashion2ToYOLO('data/sample_dataset').convert()"
+
+# 4. Train the model
+python scripts/train.py --epochs 50 --model yolov8s
+
+# 5. Launch the API + camera
+uvicorn src.api.main:app --reload
+
+# 6. Open the dashboard
+open frontend/index.html
 ```
 
-#### With Homebrew Python
+---
 
-If you get an `externally-managed-environment` error, use a virtual environment:
+## Categories Detected (13 classes)
 
-```bash
-cd api
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+| ID | Category | ID | Category |
+|----|----------|----|----------|
+| 1 | Short Sleeve Top | 8 | Trousers |
+| 2 | Long Sleeve Top | 9 | Skirt |
+| 3 | Short Sleeve Outwear | 10 | Short Sleeve Dress |
+| 4 | Long Sleeve Outwear | 11 | Long Sleeve Dress |
+| 5 | Vest | 12 | Vest Dress |
+| 6 | Sling | 13 | Sling Dress |
+| 7 | Shorts | | |
+
+---
+
+## Architecture
+
 ```
-
-> Activate the venv (`source .venv/bin/activate`) each time you open a new terminal before running the API.
-
-### Run
-
-```bash
-python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+Camera (OpenCV) → YOLOv8 Inference → Detection Results
+                                           ↓
+                              Recommendation Engine
+                                           ↓
+                              FastAPI REST Endpoint
+                                           ↓
+                              Browser Dashboard (Live Feed)
 ```
-
-- API docs: http://localhost:8000/docs
-- Test connection: http://localhost:8000/test_robot_connection
-
-> Use `0.0.0.0` to make the API accessible from other devices on the same network (e.g. the robot).

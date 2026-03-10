@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  fashionsense:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models       # persist trained weights
+      - ./data:/app/data           # persist dataset
+    environment:
+      - MODEL_WEIGHTS=models/weights/yolov8s_fashion/weights/best.pt
+    devices:
+      - /dev/video0:/dev/video0    # webcam passthrough (Linux)
+    restart: unless-stopped
