@@ -43,15 +43,10 @@ models/weights/*
 # =============================================================================
 # Data & datasets
 # =============================================================================
-data/
+data/**
+!data/**/
+!data/**/.gitkeep
 datasets/
-data/raw/*
-!data/raw/.gitkeep
-data/sample_dataset/images/*
-!data/sample_dataset/images/.gitkeep
-data/sample_dataset/annos/*
-!data/sample_dataset/annos/.gitkeep
-data/sample_dataset/yolo/
 *.csv
 *.tsv
 *.parquet
