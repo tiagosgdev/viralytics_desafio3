@@ -3,520 +3,369 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FashionSense — Live Detection</title>
+<title>FashionSense — Outfit Scanner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-  /* ── Reset & Variables ─────────────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#09090d; --surf:#111116; --surf2:#1a1a22; --border:#272733;
+  --accent:#e8ff47; --green:#6bffb8; --red:#ff6b6b;
+  --text:#eeeef5; --muted:#62637a;
+}
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+header { display:flex; align-items:center; justify-content:space-between; padding:14px 28px; border-bottom:1px solid var(--border); background:var(--surf); flex-shrink:0; }
+.logo { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:.06em; color:var(--accent); }
+.logo span { font-family:'DM Sans',sans-serif; font-size:.75rem; color:var(--muted); letter-spacing:.18em; margin-left:10px; font-weight:300; }
+.pill { display:flex; align-items:center; gap:8px; background:var(--surf2); border:1px solid var(--border); border-radius:100px; padding:5px 14px; font-family:'DM Mono',monospace; font-size:.72rem; color:var(--muted); }
+.dot { width:7px; height:7px; border-radius:50%; background:var(--border); transition:all .3s; }
+.dot.live     { background:var(--green); box-shadow:0 0 8px var(--green); animation:blink 2s infinite; }
+.dot.scanning { background:var(--accent); box-shadow:0 0 8px var(--accent); animation:blink .8s infinite; }
+.dot.error    { background:var(--red); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+main { flex:1; display:grid; grid-template-columns:1fr 360px; min-height:0; }
 
-  :root {
-    --bg:          #0a0b0f;
-    --surface:     #13141a;
-    --surface2:    #1c1d26;
-    --border:      #2a2b38;
-    --accent:      #e8ff47;
-    --accent2:     #ff6b6b;
-    --accent3:     #6bffb8;
-    --text:        #f0f0f5;
-    --text-muted:  #6b6c7e;
-    --tag-bg:      #1e2030;
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-body:    'DM Sans', sans-serif;
-    --font-mono:    'DM Mono', monospace;
-  }
+/* ── Camera ── */
+.cam { position:relative; background:#000; display:flex; align-items:center; justify-content:center; border-right:1px solid var(--border); overflow:hidden; }
+#feed { width:100%; height:100%; object-fit:contain; display:none; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow-x: hidden;
-  }
+/* Corner brackets */
+.brk { position:absolute; width:36px; height:36px; opacity:0; transition:opacity .4s; }
+.brk.tl{top:16px;left:16px;  border-top:2px solid var(--accent);border-left:2px solid var(--accent);}
+.brk.tr{top:16px;right:16px; border-top:2px solid var(--accent);border-right:2px solid var(--accent);}
+.brk.bl{bottom:16px;left:16px;  border-bottom:2px solid var(--accent);border-left:2px solid var(--accent);}
+.brk.br{bottom:16px;right:16px; border-bottom:2px solid var(--accent);border-right:2px solid var(--accent);}
+.cam.active .brk { opacity:.5; }
 
-  /* ── Header ─────────────────────────────────────────────────────── */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 36px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    position: sticky; top: 0; z-index: 100;
-  }
+/* Flash overlay — sits on top of everything in the camera area */
+#flash {
+  position:absolute; inset:0; background:#fff;
+  opacity:0; pointer-events:none; z-index:20;
+  border-radius:0;
+}
+#flash.go {
+  animation:flashAnim 0.55s ease-out forwards;
+}
+@keyframes flashAnim {
+  0%   { opacity: 0.95; }
+  30%  { opacity: 0.7;  }
+  100% { opacity: 0;    }
+}
 
-  .logo {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-  }
-  .logo span { color: var(--text-muted); font-size: 1rem; letter-spacing: 0.2em; margin-left: 12px; font-family: var(--font-body); font-weight: 300; }
+/* Frozen-frame label shown after flash */
+#frozen-label {
+  position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
+  background:rgba(9,9,13,.75); border:1px solid var(--accent);
+  color:var(--accent); font-family:'DM Mono',monospace; font-size:.7rem;
+  letter-spacing:.14em; padding:5px 14px; border-radius:100px;
+  opacity:0; pointer-events:none; z-index:15; transition:opacity .3s;
+  white-space:nowrap;
+}
+#frozen-label.show { opacity:1; }
 
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
+.idle { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:rgba(9,9,13,.92); transition:opacity .4s; z-index:10; }
+.idle.hidden { opacity:0; pointer-events:none; }
+.idle-icon  { font-size:3.5rem; opacity:.2; }
+.idle-title { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:.14em; color:var(--muted); }
+.idle-sub   { font-size:.8rem; color:var(--muted); opacity:.5; }
 
-  .status-pill {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 6px 16px;
-    font-size: 0.78rem;
-    font-family: var(--font-mono);
-    color: var(--text-muted);
-  }
+/* ── Panel ── */
+.panel { background:var(--surf); display:flex; flex-direction:column; overflow:hidden; }
+.psec { padding:20px 22px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.plbl { font-family:'DM Mono',monospace; font-size:.62rem; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; margin-bottom:14px; }
+.steps { display:flex; gap:6px; margin-bottom:14px; }
+.step { flex:1; height:3px; border-radius:2px; background:var(--border); transition:background .4s; }
+.step.done   { background:var(--green); }
+.step.active { background:var(--accent); animation:sa 1s infinite alternate; }
+@keyframes sa { from{opacity:.4} to{opacity:1} }
+.phase-lbl { font-family:'DM Mono',monospace; font-size:.7rem; color:var(--muted); margin-bottom:14px; }
+.phase-lbl em { color:var(--accent); font-style:normal; font-weight:500; }
+#btn-start { width:100%; padding:12px; background:var(--accent); color:#000; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:700; cursor:pointer; letter-spacing:.04em; transition:filter .2s,transform .1s; }
+#btn-start:hover  { filter:brightness(.9); }
+#btn-start:active { transform:scale(.98); }
+#btn-start:disabled { opacity:.35; cursor:not-allowed; filter:none; }
+.actions { display:none; gap:10px; margin-top:12px; }
+.actions.show { display:flex; }
+.abtn { flex:1; padding:11px 8px; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; cursor:pointer; transition:all .2s; }
+.abtn-retry { background:transparent; border:1px solid var(--accent); color:var(--accent); }
+.abtn-retry:hover { background:rgba(232,255,71,.08); }
+.abtn-more  { background:var(--surf2); border:1px solid var(--border); color:var(--text); }
+.abtn-more:hover  { border-color:var(--muted); }
+.tags { display:flex; flex-wrap:wrap; gap:7px; min-height:36px; }
+.tag { display:flex; align-items:center; gap:6px; background:var(--surf2); border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:.75rem; font-weight:500; animation:ti .2s ease; }
+@keyframes ti { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
+.tdot  { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.tconf { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); }
+.notag { color:var(--muted); font-size:.8rem; font-style:italic; }
+.recs-hdr  { padding:16px 22px 0; flex-shrink:0; }
+.recs-list { flex:1; overflow-y:auto; padding:12px 22px 20px; display:flex; flex-direction:column; gap:10px; }
+.recs-list::-webkit-scrollbar { width:4px; }
+.recs-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.card { background:var(--surf2); border:1px solid var(--border); border-radius:10px; padding:13px 14px; display:flex; align-items:flex-start; gap:12px; cursor:pointer; transition:border-color .2s,background .2s; animation:ci .25s ease; }
+@keyframes ci { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:none} }
+.card:hover { border-color:var(--accent); background:rgba(232,255,71,.03); }
+.cthumb { width:44px; height:56px; border-radius:7px; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+.cinfo  { flex:1; min-width:0; }
+.cname  { font-weight:600; font-size:.85rem; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ccat   { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); margin-bottom:5px; }
+.cwhy   { font-size:.7rem; color:var(--green); opacity:.85; margin-bottom:5px; }
+.cprice { font-family:'DM Mono',monospace; font-size:.82rem; color:var(--accent); font-weight:500; }
+.ph     { color:var(--muted); font-size:.8rem; font-style:italic; text-align:center; padding:28px 0; }
 
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #444;
-    transition: background 0.3s;
-  }
-  .status-dot.active  { background: var(--accent3); box-shadow: 0 0 8px var(--accent3); animation: pulse 2s infinite; }
-  .status-dot.error   { background: var(--accent2); }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
-  }
-
-  .fps-counter {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--accent);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 6px 16px;
-  }
-
-  /* ── Main Layout ─────────────────────────────────────────────────── */
-  main {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    grid-template-rows: auto 1fr;
-    gap: 0;
-    flex: 1;
-    min-height: 0;
-  }
-
-  /* ── Camera Feed ─────────────────────────────────────────────────── */
-  .camera-section {
-    grid-column: 1;
-    grid-row: 1 / 3;
-    position: relative;
-    background: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-right: 1px solid var(--border);
-    min-height: 520px;
-  }
-
-  #camera-feed {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
-
-  .camera-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    background: rgba(10,11,15,0.85);
-    transition: opacity 0.4s;
-  }
-  .camera-overlay.hidden { opacity: 0; pointer-events: none; }
-
-  .camera-placeholder-icon {
-    font-size: 4rem;
-    opacity: 0.2;
-  }
-
-  .camera-placeholder-text {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    letter-spacing: 0.15em;
-    color: var(--text-muted);
-  }
-
-  .camera-placeholder-sub {
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    opacity: 0.6;
-  }
-
-  .scan-line {
-    position: absolute;
-    left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    animation: scan 3s linear infinite;
-    opacity: 0;
-    transition: opacity 0.4s;
-  }
-  .scan-line.active { opacity: 0.6; }
-
-  @keyframes scan {
-    0%   { top: 0; }
-    100% { top: 100%; }
-  }
-
-  /* Corner brackets */
-  .bracket { position: absolute; width: 40px; height: 40px; opacity: 0.4; }
-  .bracket.tl { top: 20px; left: 20px; border-top: 2px solid var(--accent); border-left: 2px solid var(--accent); }
-  .bracket.tr { top: 20px; right: 20px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); }
-  .bracket.bl { bottom: 20px; left: 20px; border-bottom: 2px solid var(--accent); border-left: 2px solid var(--accent); }
-  .bracket.br { bottom: 20px; right: 20px; border-bottom: 2px solid var(--accent); border-right: 2px solid var(--accent); }
-
-  /* ── Right Panel ─────────────────────────────────────────────────── */
-  .panel {
-    grid-column: 2;
-    background: var(--surface);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .panel-section {
-    padding: 24px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .panel-title {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    letter-spacing: 0.2em;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  /* ── Controls ───────────────────────────────────────────────────── */
-  .controls { display: flex; gap: 10px; }
-
-  .btn {
-    flex: 1;
-    padding: 10px 0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface2);
-    color: var(--text);
-    font-family: var(--font-body);
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.03em;
-  }
-  .btn:hover { background: var(--border); }
-  .btn.primary {
-    background: var(--accent);
-    color: #000;
-    border-color: var(--accent);
-    font-weight: 600;
-  }
-  .btn.primary:hover { filter: brightness(0.9); }
-  .btn.danger {
-    border-color: var(--accent2);
-    color: var(--accent2);
-  }
-  .btn.danger:hover { background: rgba(255,107,107,0.1); }
-
-  .conf-control {
-    margin-top: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-  }
-  .conf-control input[type=range] {
-    flex: 1;
-    accent-color: var(--accent);
-  }
-  .conf-value {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--accent);
-    min-width: 36px;
-    text-align: right;
-  }
-
-  /* ── Detections list ─────────────────────────────────────────────── */
-  .detections-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-height: 48px;
-  }
-
-  .detection-tag {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--tag-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 5px 12px;
-    font-size: 0.78rem;
-    font-weight: 500;
-    animation: tagIn 0.25s ease;
-  }
-  @keyframes tagIn { from { opacity:0; transform: scale(0.85); } to { opacity:1; transform: scale(1); } }
-
-  .detection-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .detection-conf {
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    color: var(--text-muted);
-  }
-
-  .no-detection {
-    color: var(--text-muted);
-    font-size: 0.82rem;
-    font-style: italic;
-    align-self: center;
-  }
-
-  /* ── Recommendations ─────────────────────────────────────────────── */
-  .recs-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 24px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .recs-list::-webkit-scrollbar { width: 4px; }
-  .recs-list::-webkit-scrollbar-track { background: transparent; }
-  .recs-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .rec-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    animation: cardIn 0.3s ease;
-  }
-  @keyframes cardIn { from { opacity:0; transform: translateX(12px); } to { opacity:1; transform: none; } }
-  .rec-card:hover { border-color: var(--accent); background: rgba(232,255,71,0.04); }
-
-  .rec-thumb {
-    width: 48px; height: 60px;
-    border-radius: 6px;
-    background: var(--border);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.4rem;
-    overflow: hidden;
-  }
-  .rec-thumb img { width: 100%; height: 100%; object-fit: cover; }
-
-  .rec-info { flex: 1; min-width: 0; }
-
-  .rec-name {
-    font-weight: 600;
-    font-size: 0.88rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 3px;
-  }
-
-  .rec-cat {
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-    font-family: var(--font-mono);
-  }
-
-  .rec-reason {
-    font-size: 0.73rem;
-    color: var(--accent3);
-    opacity: 0.8;
-    margin-bottom: 6px;
-  }
-
-  .rec-price {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--accent);
-    font-weight: 500;
-  }
-
-  .empty-recs {
-    color: var(--text-muted);
-    font-size: 0.82rem;
-    font-style: italic;
-    text-align: center;
-    padding: 24px 0;
-  }
-
-  /* ── Upload mode ─────────────────────────────────────────────────── */
-  .drop-zone {
-    border: 2px dashed var(--border);
-    border-radius: 12px;
-    padding: 40px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    display: none;
-  }
-  .drop-zone.active { display: block; }
-  .drop-zone:hover { border-color: var(--accent); }
-
-  /* ── Misc ─────────────────────────────────────────────────────────── */
-  .inference-bar {
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-top: 6px;
-  }
-  .inference-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 2px;
-    transition: width 0.5s ease;
-    width: 0%;
-  }
-
-  .mode-tabs {
-    display: flex;
-    gap: 0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-  .mode-tab {
-    flex: 1;
-    padding: 8px;
-    background: var(--surface2);
-    color: var(--text-muted);
-    border: none;
-    cursor: pointer;
-    font-family: var(--font-body);
-    font-size: 0.8rem;
-    font-weight: 500;
-    transition: all 0.2s;
-  }
-  .mode-tab.active { background: var(--accent); color: #000; }
-
-  #upload-input { display: none; }
+/* Confidence slider */
+.conf-row {
+  display:flex; align-items:center; gap:10px; margin-top:14px;
+  padding-top:14px; border-top:1px solid var(--border);
+}
+.conf-row label { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); letter-spacing:.1em; white-space:nowrap; }
+.conf-row input[type=range] {
+  flex:1; accent-color:var(--accent); height:4px; cursor:pointer;
+}
+.conf-val {
+  font-family:'DM Mono',monospace; font-size:.78rem;
+  color:var(--accent); font-weight:500; min-width:36px; text-align:right;
+}
 </style>
 </head>
 <body>
-
 <header>
-  <div>
-    <span class="logo">FashionSense <span>LIVE DETECTION</span></span>
-  </div>
-  <div class="status-bar">
-    <div class="status-pill">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="status-text">Disconnected</span>
-    </div>
-    <div class="fps-counter" id="fps-counter">— FPS</div>
-  </div>
+  <span class="logo">FashionSense <span>OUTFIT SCANNER</span></span>
+  <div class="pill"><div class="dot" id="dot"></div><span id="status">Ready</span></div>
 </header>
-
 <main>
-  <!-- Camera / Feed Section -->
-  <section class="camera-section">
-    <div class="bracket tl"></div>
-    <div class="bracket tr"></div>
-    <div class="bracket bl"></div>
-    <div class="bracket br"></div>
-    <div class="scan-line" id="scan-line"></div>
-
-    <img id="camera-feed" alt="Camera feed" style="display:none;"/>
-
-    <div class="camera-overlay" id="camera-overlay">
-      <div class="camera-placeholder-icon">📷</div>
-      <div class="camera-placeholder-text">CAMERA READY</div>
-      <div class="camera-placeholder-sub">Click "Start Camera" to begin live detection</div>
+  <div class="cam" id="cam">
+    <div class="brk tl"></div><div class="brk tr"></div>
+    <div class="brk bl"></div><div class="brk br"></div>
+    <img id="feed" alt="Camera"/>
+    <!-- Flash overlay -->
+    <div id="flash"></div>
+    <!-- Frozen frame label -->
+    <div id="frozen-label">&#128247; OUTFIT CAPTURED</div>
+    <div class="idle" id="idle">
+      <div class="idle-icon">&#x1F457;</div>
+      <div class="idle-title">READY TO SCAN</div>
+      <div class="idle-sub">Press "Start Scan" to detect your outfit</div>
     </div>
-  </section>
-
-  <!-- Right Panel -->
+  </div>
   <aside class="panel">
-
-    <!-- Mode Tabs -->
-    <div class="panel-section">
-      <div class="mode-tabs">
-        <button class="mode-tab active" id="tab-live" onclick="setMode('live')">Live Camera</button>
-        <button class="mode-tab" id="tab-upload" onclick="setMode('upload')">Upload Image</button>
+    <div class="psec">
+      <div class="plbl">Scan Controls</div>
+      <div class="steps"><div class="step" id="s1"></div><div class="step" id="s2"></div><div class="step" id="s3"></div></div>
+      <div class="phase-lbl" id="plbl">Press start to begin</div>
+      <button id="btn-start" onclick="startScan()">&#9654; Start Scan</button>
+      <div class="actions" id="actions">
+        <button class="abtn abtn-retry" onclick="sendCmd('retry')">&#x1F504; Retry Scan</button>
+        <button class="abtn abtn-more"  onclick="sendCmd('more_recs')">&#x2728; More Suggestions</button>
       </div>
 
-      <!-- Live controls -->
-      <div id="live-controls">
-        <div class="controls">
-          <button class="btn primary" id="btn-start" onclick="startCamera()">▶ Start Camera</button>
-          <button class="btn danger" id="btn-stop" onclick="stopCamera()" disabled>■ Stop</button>
-        </div>
-        <div class="conf-control">
-          <span>Confidence</span>
-          <input type="range" min="10" max="90" value="40" id="conf-slider" oninput="updateConf(this.value)"/>
-          <span class="conf-value" id="conf-label">40%</span>
-        </div>
-        <div class="inference-bar"><div class="inference-fill" id="inf-bar"></div></div>
-      </div>
-
-      <!-- Upload controls -->
-      <div id="upload-controls" style="display:none">
-        <div class="drop-zone active" id="drop-zone" onclick="document.getElementById('upload-input').click()">
-          🖼️ &nbsp; Click or drag an image here
-        </div>
-        <input type="file" id="upload-input" accept="image/*" onchange="handleUpload(event)"/>
+      <!-- Confidence threshold slider -->
+      <div class="conf-row">
+        <label>MIN CONF</label>
+        <input type="range" id="conf-slider" min="10" max="95" value="60"
+               oninput="updateConf(this.value)"/>
+        <span class="conf-val" id="conf-val">60%</span>
       </div>
     </div>
-
-    <!-- Detected Items -->
-    <div class="panel-section">
-      <div class="panel-title">Detected Clothing</div>
-      <div class="detections-list" id="detections-list">
-        <span class="no-detection">Nothing detected yet</span>
-      </div>
+    <div class="psec">
+      <div class="plbl">Detected Clothing</div>
+      <div class="tags" id="tags"><span class="notag">Nothing detected yet</span></div>
     </div>
-
-    <!-- Recommendations -->
-    <div class="panel-section" style="padding-bottom:12px;">
-      <div class="panel-title">Store Recommendations</div>
-    </div>
-    <div class="recs-list" id="recs-list">
-      <div class="empty-recs">Recommendations will appear once clothing is detected</div>
-    </div>
-
+    <div class="recs-hdr"><div class="plbl">Store Recommendations</div></div>
+    <div class="recs-list" id="recs"><div class="ph">Recommendations appear after scanning</div></div>
   </aside>
 </main>
+<script>
+const WS_URL='ws://'+location.host+'/ws/camera';
+const COLORS={short_sleeve_top:'#ff6464',long_sleeve_top:'#ffa03c',short_sleeve_outwear:'#50c878',long_sleeve_outwear:'#28b4c8',vest:'#b450ff',sling:'#ff50b4',shorts:'#64b4ff',trousers:'#3c50c8',skirt:'#dcb428',short_sleeve_dress:'#ff7850',long_sleeve_dress:'#8c3cc8',vest_dress:'#c86496',sling_dress:'#64c8b4'};
+const EMOJI={short_sleeve_top:'👕',long_sleeve_top:'👔',short_sleeve_outwear:'🧥',long_sleeve_outwear:'🧥',vest:'🦺',sling:'👗',shorts:'🩳',trousers:'👖',skirt:'👗',short_sleeve_dress:'👗',long_sleeve_dress:'👗',vest_dress:'👗',sling_dress:'👗'};
 
-<script src="static/js/app.js"></script>
+let ws = null;
+let frozen = false;   // true while showing the captured still frame
+
+const feed       = document.getElementById('feed');
+const idle       = document.getElementById('idle');
+const cam        = document.getElementById('cam');
+const dot        = document.getElementById('dot');
+const statusEl   = document.getElementById('status');
+const s1         = document.getElementById('s1');
+const s2         = document.getElementById('s2');
+const s3         = document.getElementById('s3');
+const plbl       = document.getElementById('plbl');
+const btnStart   = document.getElementById('btn-start');
+const actions    = document.getElementById('actions');
+const tagsEl     = document.getElementById('tags');
+const recsEl     = document.getElementById('recs');
+const flashEl    = document.getElementById('flash');
+const frozenLbl  = document.getElementById('frozen-label');
+
+function triggerFlash() {
+  // Remove class first so re-triggering works (e.g. on retry)
+  flashEl.classList.remove('go');
+  // Force reflow so the animation restarts cleanly
+  void flashEl.offsetWidth;
+  flashEl.classList.add('go');
+  // Show frozen label alongside flash
+  frozenLbl.classList.add('show');
+}
+
+function hideFrozenLabel() {
+  frozenLbl.classList.remove('show');
+}
+
+function startScan() {
+  if (ws) { ws.close(); ws = null; }
+  frozen = false;
+  hideFrozenLabel();
+
+  setSt('scanning', 'Connecting...');
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    setSt('live', 'Connected');
+    feed.style.display = 'block';
+    idle.classList.add('hidden');
+    cam.classList.add('active');
+    btnStart.disabled = true;
+    actions.classList.remove('show');
+    setSteps('capturing');
+  };
+
+  ws.onmessage = (e) => {
+    const m = JSON.parse(e.data);
+
+    if (m.type === 'frame') {
+      if (m.phase === 'capturing') {
+        if (m.flash) {
+          // This is the LAST frame before analysing — freeze it and flash
+          feed.src = 'data:image/jpeg;base64,' + m.frame;
+          frozen = true;
+          triggerFlash();
+          setSt('scanning', 'Captured!');
+          setSteps('analysing');
+        } else if (!frozen) {
+          // Normal live frame — only update if not frozen
+          feed.src = 'data:image/jpeg;base64,' + m.frame;
+          setSt('scanning', 'Scanning... ' + m.countdown + 's');
+          setSteps('capturing');
+        }
+      } else if (m.phase === 'analysing') {
+        // Keep the frozen frame visible during analysing — don't update feed.src
+        setSt('scanning', 'Analysing...');
+        setSteps('analysing');
+      }
+
+    } else if (m.type === 'results') {
+      frozen = false;
+      hideFrozenLabel();
+      setSt('live', 'Done');
+      setSteps('results');
+      renderTags(m.detections || []);
+      renderRecs(m.recommendations || []);
+      actions.classList.add('show');
+      plbl.textContent = 'Choose an action below';
+
+    } else if (m.type === 'error') {
+      setSt('error', 'Error');
+      resetIdle();
+    }
+  };
+
+  ws.onerror = () => { setSt('error', 'Failed'); resetIdle(); };
+  ws.onclose = () => { if (!actions.classList.contains('show')) resetIdle(); };
+}
+
+function sendCmd(cmd) {
+  if (!ws || ws.readyState !== 1) { startScan(); return; }
+  ws.send(JSON.stringify({ cmd }));
+
+  if (cmd === 'retry') {
+    frozen = false;
+    hideFrozenLabel();
+    actions.classList.remove('show');
+    tagsEl.innerHTML = '<span class="notag">Scanning...</span>';
+    recsEl.innerHTML = '<div class="ph">Scanning your outfit...</div>';
+    setSteps('capturing');
+    setSt('scanning', 'Starting...');
+  } else {
+    recsEl.innerHTML = '<div class="ph">Finding new suggestions...</div>';
+    setSt('live', 'Loading...');
+  }
+}
+
+function renderTags(dets) {
+  if (!dets.length) { tagsEl.innerHTML = '<span class="notag">No clothing detected</span>'; return; }
+  const seen = {};
+  dets.forEach(d => {
+    if (!seen[d.class_name] || seen[d.class_name].confidence < d.confidence) seen[d.class_name] = d;
+  });
+  tagsEl.innerHTML = Object.values(seen).map(d => {
+    const col = COLORS[d.class_name] || '#888';
+    const lbl = d.class_name.replace(/_/g, ' ');
+    const conf = Math.round(d.confidence * 100);
+    return '<div class="tag"><div class="tdot" style="background:' + col + '"></div><span>' + lbl + '</span><span class="tconf">' + conf + '%</span></div>';
+  }).join('');
+}
+
+function renderRecs(recs) {
+  if (!recs.length) { recsEl.innerHTML = '<div class="ph">No matches - try retrying</div>'; return; }
+  recsEl.innerHTML = recs.map(r =>
+    '<div class="card"><div class="cthumb">' + (EMOJI[r.category] || '👔') + '</div>' +
+    '<div class="cinfo"><div class="cname">' + esc(r.name) + '</div>' +
+    '<div class="ccat">' + (r.category || '').replace(/_/g, ' ') + '</div>' +
+    '<div class="cwhy">' + esc(r.reason) + '</div>' +
+    '<div class="cprice">' + esc(r.price) + '</div></div></div>'
+  ).join('');
+}
+
+function setSteps(p) {
+  s1.className = s2.className = s3.className = 'step';
+  if (p === 'capturing') { s1.classList.add('active'); plbl.innerHTML = '<em>Scanning</em> your outfit...'; }
+  else if (p === 'analysing') { s1.classList.add('done'); s2.classList.add('active'); plbl.innerHTML = '<em>Analysing</em> detections...'; }
+  else if (p === 'results')   { s1.classList.add('done'); s2.classList.add('done'); s3.classList.add('done'); }
+}
+
+function setSt(state, text) {
+  dot.className = 'dot';
+  if (state === 'live')     dot.classList.add('live');
+  if (state === 'scanning') dot.classList.add('scanning');
+  if (state === 'error')    dot.classList.add('error');
+  statusEl.textContent = text;
+}
+
+function resetIdle() {
+  frozen = false;
+  hideFrozenLabel();
+  feed.style.display = 'none';
+  idle.classList.remove('hidden');
+  cam.classList.remove('active');
+  btnStart.disabled = false;
+  actions.classList.remove('show');
+  s1.className = s2.className = s3.className = 'step';
+  plbl.textContent = 'Press start to begin';
+  setSt('idle', 'Ready');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function updateConf(val) {
+  document.getElementById('conf-val').textContent = val + '%';
+  // Push new threshold to the backend immediately
+  fetch('/api/conf/' + (val / 100), { method: 'POST' })
+    .catch(() => {});  // silently ignore if server not ready
+}
+
+// On page load, sync slider to whatever the server currently has
+fetch('/api/conf')
+  .then(r => r.json())
+  .then(d => {
+    const pct = Math.round(d.conf_thres * 100);
+    document.getElementById('conf-slider').value = pct;
+    document.getElementById('conf-val').textContent = pct + '%';
+  })
+  .catch(() => {});
+
+</script>
 </body>
 </html>

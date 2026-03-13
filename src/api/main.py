@@ -55,7 +55,33 @@ if STATIC_DIR.exists():
 
 # ── Shared singletons (loaded once at startup) ─────────────────────────────
 
-WEIGHTS_PATH = os.getenv("MODEL_WEIGHTS", "models/weights/yolov8s_fashion/weights/best.pt")
+# Project root = three levels up from src/api/main.py
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
+# Priority order for weights:
+#   1. MODEL_WEIGHTS env var (set in .env or docker-compose)
+#   2. yolov8n_fashion  (nano — trained on this machine)
+#   3. yolov8s_fashion  (small — trained on Colab/GPU)
+#   4. Base yolov8n.pt  (fallback, no fashion fine-tuning)
+def _find_weights() -> str:
+    env = os.getenv("MODEL_WEIGHTS")
+    if env:
+        return env
+    candidates = [
+        "yolov8n_fashion/weights/best.pt",
+        "yolov8s_fashion/weights/best.pt",
+        "yolov8m_fashion/weights/best.pt",
+    ]
+    weights_dir = PROJECT_ROOT / "models" / "weights"
+    for c in candidates:
+        full = weights_dir / c
+        if full.exists():
+            print(f"Found trained weights: {full}")
+            return str(full)
+    print("⚠️  No fine-tuned weights found, using base yolov8n.pt")
+    return "yolov8n.pt"   # base fallback
+
+WEIGHTS_PATH = _find_weights()
 
 detector    : FashionDetector    = None
 recommender : RecommendationEngine = None
@@ -67,10 +93,10 @@ async def startup():
     global detector, recommender, camera
 
     # Fallback to base YOLOv8 if fine-tuned weights not found yet
-    weights = WEIGHTS_PATH if Path(WEIGHTS_PATH).exists() else "yolov8s.pt"
+    weights = WEIGHTS_PATH  # already resolved by _find_weights()
     print(f"\n🚀  Loading model from: {weights}")
 
-    detector    = FashionDetector(weights=weights, conf_thres=0.40)
+    detector    = FashionDetector(weights=weights, conf_thres=0.60)
     recommender = RecommendationEngine(top_k=5)
     camera      = CameraStream(detector, recommender, source=0)
 
@@ -130,21 +156,60 @@ async def detect_image(file: UploadFile = File(...)):
     )
 
 
+
+@app.get("/api/conf")
+async def get_conf():
+    """Return the current confidence threshold."""
+    return {"conf_thres": round(detector.conf_thres, 2)}
+
+
+@app.post("/api/conf/{value}")
+async def set_conf(value: float):
+    """
+    Update the detection confidence threshold live (0.01 – 0.99).
+    Affects both the live camera stream and result filtering.
+    """
+    from fastapi import HTTPException
+    if not (0.01 <= value <= 0.99):
+        raise HTTPException(status_code=400, detail="conf must be between 0.01 and 0.99")
+    detector.conf_thres = value
+    return {"conf_thres": round(detector.conf_thres, 2)}
+
+
 @app.websocket("/ws/camera")
 async def websocket_camera(ws: WebSocket):
     """
-    WebSocket endpoint — streams annotated frames + detections to the frontend.
-    Client receives JSON: { frame, detections, recommendations, fps }
+    WebSocket endpoint — runs the 3-phase session loop.
+
+    Server → Client message types:
+      { type: "frame",   phase: "capturing"|"analysing", frame: <b64>, countdown: int }
+      { type: "results", detections: [...], recommendations: [...] }
+      { type: "error",   message: str }
+
+    Client → Server commands:
+      { cmd: "retry" }      — retake the 3-second scan
+      { cmd: "more_recs" }  — keep outfit, get new recommendations
     """
     await ws.accept()
     print("🔌  WebSocket client connected")
 
+    async def send(text: str):
+        try:
+            await ws.send_text(text)
+        except Exception:
+            pass
+
+    async def receive():
+        try:
+            return await ws.receive_text()
+        except WebSocketDisconnect:
+            return None
+
     try:
-        async for payload in camera.frame_generator():
-            await ws.send_text(payload)
+        await camera.run_session(send, receive)
     except WebSocketDisconnect:
-        print("🔌  WebSocket client disconnected")
+        pass
     except Exception as e:
         print(f"⚠️  WebSocket error: {e}")
     finally:
-        camera.stop()
+        print("🔌  WebSocket client disconnected")

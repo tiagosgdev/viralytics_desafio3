@@ -87,7 +87,7 @@ class FashionDetector:
     def __init__(
         self,
         weights:    str   = "yolov8s.pt",   # swap for your best.pt after training
-        conf_thres: float = 0.40,
+        conf_thres: float = 0.60,
         iou_thres:  float = 0.45,
         device:     str   = "",             # "" = auto
         imgsz:      int   = 640,
