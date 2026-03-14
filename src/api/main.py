@@ -58,19 +58,22 @@ if STATIC_DIR.exists():
 # Project root = three levels up from src/api/main.py
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
-# Priority order for weights:
+# Priority order for weights (largest/best model first):
 #   1. MODEL_WEIGHTS env var (set in .env or docker-compose)
-#   2. yolov8n_fashion  (nano — trained on this machine)
-#   3. yolov8s_fashion  (small — trained on Colab/GPU)
-#   4. Base yolov8n.pt  (fallback, no fashion fine-tuning)
+#   2. yolov8l_fashion  (large — best accuracy)
+#   3. yolov8m_fashion  (medium)
+#   4. yolov8s_fashion  (small)
+#   5. yolov8n_fashion  (nano — fastest)
+#   6. Base yolov8n.pt  (fallback, no fashion fine-tuning)
 def _find_weights() -> str:
     env = os.getenv("MODEL_WEIGHTS")
     if env:
         return env
     candidates = [
-        "yolov8n_fashion/weights/best.pt",
-        "yolov8s_fashion/weights/best.pt",
+        "yolov8l_fashion/weights/best.pt",
         "yolov8m_fashion/weights/best.pt",
+        "yolov8s_fashion/weights/best.pt",
+        "yolov8n_fashion/weights/best.pt",
     ]
     weights_dir = PROJECT_ROOT / "models" / "weights"
     for c in candidates:

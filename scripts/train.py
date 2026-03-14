@@ -26,7 +26,7 @@ def parse_args():
     p.add_argument("--data",       default="data/sample_dataset/yolo/dataset.yaml")
     p.add_argument("--output_dir", default="models/weights")
     p.add_argument("--workers",    type=int,   default=2)
-    p.add_argument("--device",     default="mps", help="'mps' (Apple GPU), 'cpu', '0', '0,1'")
+    p.add_argument("--device",     default="0", help="'0' (CUDA GPU), 'cpu', 'mps' (Apple GPU), '0,1'")
     p.add_argument("--wandb",      action="store_true", help="Enable W&B logging")
     return p.parse_args()
 

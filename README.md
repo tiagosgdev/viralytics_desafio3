@@ -78,7 +78,7 @@ python scripts/sample_dataset.py --data_dir data/raw --output_dir data/sample_da
 python -c "from src.detection.converter import DeepFashion2ToYOLO; DeepFashion2ToYOLO('data/sample_dataset').convert()"
 
 # 4. Train the model
-python scripts/train.py --epochs 50 --model yolov8s
+python scripts/train.py --epochs 50 --model yolov8s --device 0
 
 # 5. Launch the API + camera
 uvicorn src.api.main:app --reload
@@ -86,6 +86,15 @@ uvicorn src.api.main:app --reload
 # 6. Open the dashboard
 open frontend/index.html
 ```
+
+### `--device` flag options
+
+| Value | Hardware | Example |
+|-------|----------|---------|
+| `0` | First NVIDIA GPU (CUDA) | `--device 0` |
+| `0,1` | Multiple NVIDIA GPUs | `--device 0,1` |
+| `mps` | Apple Silicon GPU (Mac M1/M2/M3) | `--device mps` |
+| `cpu` | CPU only (slowest) | `--device cpu` |
 
 ---
 
