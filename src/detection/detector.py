@@ -1,13 +1,14 @@
 """
 src/detection/detector.py
 ─────────────────────────
-YOLOv8 inference wrapper.
+Detection base class and YOLOv8 inference wrapper.
 Returns structured DetectionResult objects used throughout the app.
 """
 
 from __future__ import annotations
 
 import time
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
@@ -71,9 +72,61 @@ class DetectionResult:
     timestamp:      float
 
 
-# ── Detector ───────────────────────────────────────────────────────────────
+# ── Base detector ──────────────────────────────────────────────────────
 
-class FashionDetector:
+class BaseDetector(ABC):
+    """
+    Abstract base class for all detectors.
+    Subclasses must implement ``detect()``.
+    """
+
+    conf_thres: float
+    iou_thres:  float
+
+    @abstractmethod
+    def detect(self, frame: np.ndarray) -> DetectionResult:
+        """Run inference on a BGR frame. Returns DetectionResult."""
+
+    def draw(
+        self,
+        frame:  np.ndarray,
+        result: DetectionResult,
+        show_conf: bool = True,
+    ) -> np.ndarray:
+        """Returns a copy of frame with bounding boxes drawn."""
+        out = frame.copy()
+
+        for det in result.detections:
+            x1, y1, x2, y2 = det.bbox
+            color = det.color
+
+            # Box
+            cv2.rectangle(out, (x1, y1), (x2, y2), color, 2)
+
+            # Label background
+            label = f"{det.class_name}"
+            if show_conf:
+                label += f"  {det.confidence:.0%}"
+            (tw, th), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 1)
+            cv2.rectangle(out, (x1, y1 - th - baseline - 6), (x1 + tw + 4, y1), color, -1)
+
+            # Label text
+            cv2.putText(
+                out, label, (x1 + 2, y1 - baseline - 2),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 1, cv2.LINE_AA,
+            )
+
+        # FPS / inference time overlay
+        fps_text = f"{1000/result.inference_ms:.1f} FPS  ({result.inference_ms:.0f} ms)"
+        cv2.putText(out, fps_text, (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
+                    (255, 255, 255), 2, cv2.LINE_AA)
+
+        return out
+
+
+# ── YOLOv8 detector ───────────────────────────────────────────────────
+
+class FashionDetector(BaseDetector):
     """
     Wraps YOLOv8 for clothing detection.
 
@@ -125,42 +178,6 @@ class FashionDetector:
             inference_ms = inference_ms,
             timestamp    = time.time(),
         )
-
-    def draw(
-        self,
-        frame:  np.ndarray,
-        result: DetectionResult,
-        show_conf: bool = True,
-    ) -> np.ndarray:
-        """Returns a copy of frame with bounding boxes drawn."""
-        out = frame.copy()
-
-        for det in result.detections:
-            x1, y1, x2, y2 = det.bbox
-            color = det.color
-
-            # Box
-            cv2.rectangle(out, (x1, y1), (x2, y2), color, 2)
-
-            # Label background
-            label = f"{det.class_name}"
-            if show_conf:
-                label += f"  {det.confidence:.0%}"
-            (tw, th), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 1)
-            cv2.rectangle(out, (x1, y1 - th - baseline - 6), (x1 + tw + 4, y1), color, -1)
-
-            # Label text
-            cv2.putText(
-                out, label, (x1 + 2, y1 - baseline - 2),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 1, cv2.LINE_AA,
-            )
-
-        # FPS / inference time overlay
-        fps_text = f"{1000/result.inference_ms:.1f} FPS  ({result.inference_ms:.0f} ms)"
-        cv2.putText(out, fps_text, (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
-                    (255, 255, 255), 2, cv2.LINE_AA)
-
-        return out
 
     # ── Private ────────────────────────────────────────────────────────────
 

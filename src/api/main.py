@@ -28,7 +28,8 @@ from fastapi.staticfiles import StaticFiles
 
 from src.api.schemas import DetectionResponse, HealthResponse, RecommendationItem
 from src.detection.camera import CameraStream
-from src.detection.detector import FashionDetector
+from src.detection.detector import BaseDetector, FashionDetector
+from src.detection.yolo_world import YOLOWorldDetector
 from src.recommendations.engine import RecommendationEngine
 
 # ── App setup ─────────────────────────────────────────────────────────────
@@ -86,20 +87,26 @@ def _find_weights() -> str:
 
 WEIGHTS_PATH = _find_weights()
 
-detector    : FashionDetector    = None
+detector    : BaseDetector        = None
 recommender : RecommendationEngine = None
 camera      : CameraStream       = None
+
+
+DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "yolov8").lower()
 
 
 @app.on_event("startup")
 async def startup():
     global detector, recommender, camera
 
-    # Fallback to base YOLOv8 if fine-tuned weights not found yet
-    weights = WEIGHTS_PATH  # already resolved by _find_weights()
-    print(f"\n🚀  Loading model from: {weights}")
+    if DETECTOR_BACKEND == "yolo_world":
+        print("\n🚀  Starting with YOLO-World zero-shot detector")
+        detector = YOLOWorldDetector(conf_thres=0.15)
+    else:
+        weights = WEIGHTS_PATH
+        print(f"\n🚀  Loading model from: {weights}")
+        detector = FashionDetector(weights=weights, conf_thres=0.60)
 
-    detector    = FashionDetector(weights=weights, conf_thres=0.60)
     recommender = RecommendationEngine(top_k=5)
     camera      = CameraStream(detector, recommender, source=0)
 

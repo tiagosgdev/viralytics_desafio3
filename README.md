@@ -23,7 +23,8 @@ fashion-detector/
 ├── src/
 │   ├── detection/
 │   │   ├── __init__.py
-│   │   ├── detector.py             # YOLOv8 inference wrapper
+│   │   ├── detector.py             # Base detector ABC + YOLOv8 wrapper
+│   │   ├── yolo_world.py           # YOLO-World zero-shot detector
 │   │   ├── camera.py               # Real-time camera pipeline
 │   │   └── converter.py            # DeepFashion2 → YOLO format
 │   ├── recommendations/
@@ -48,7 +49,8 @@ fashion-detector/
 ├── scripts/
 │   ├── sample_dataset.py           # Stratified dataset sampler
 │   ├── train.py                    # Model training script
-│   └── evaluate.py                 # Evaluation script
+│   ├── evaluate.py                 # Evaluation script (fine-tuned model)
+│   └── evaluate_yolo_world.py      # Evaluation script (YOLO-World zero-shot)
 │
 ├── notebooks/
 │   └── 01_EDA.ipynb                # Exploratory Data Analysis
@@ -84,8 +86,14 @@ python scripts/train.py --epochs 16 --model yolov8s
 # 5. Launch the API + camera
 python -m uvicorn src.api.main:app --reload
 
+# 5b. Or launch with YOLO-World zero-shot (no fine-tuning needed)
+DETECTOR_BACKEND=yolo_world uvicorn src.api.main:app --reload
+
 # 6. Open the dashboard
 open frontend/index.html
+
+# 7. Evaluate YOLO-World zero-shot on the validation set
+python scripts/evaluate_yolo_world.py
 ```
 
 ### `--device` flag options
@@ -110,6 +118,25 @@ open frontend/index.html
 | 5 | Vest | 12 | Vest Dress |
 | 6 | Sling | 13 | Sling Dress |
 | 7 | Shorts | | |
+
+---
+
+## Detector Backends
+
+The API supports two detection backends, selected via the `DETECTOR_BACKEND` environment variable:
+
+| Backend | Env value | Model | Needs training? | mAP@50 |
+|---------|-----------|-------|-----------------|--------|
+| YOLOv8 (default) | `yolov8` | Fine-tuned `best.pt` | Yes | **0.767** |
+| YOLO-World | `yolo_world` | `yolov8s-worldv2.pt` | No (zero-shot) | 0.146 |
+
+```bash
+# Fine-tuned YOLOv8 (default)
+uvicorn src.api.main:app --reload
+
+# YOLO-World zero-shot
+DETECTOR_BACKEND=yolo_world uvicorn src.api.main:app --reload
+```
 
 ---
 

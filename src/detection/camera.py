@@ -29,7 +29,7 @@ from typing import Dict, List, Optional
 import cv2
 import numpy as np
 
-from src.detection.detector import FashionDetector, DetectionResult
+from src.detection.detector import BaseDetector, DetectionResult
 from src.recommendations.engine import RecommendationEngine
 
 
@@ -46,7 +46,7 @@ class CameraStream:
 
     def __init__(
         self,
-        detector:    FashionDetector,
+        detector:    BaseDetector,
         recommender: RecommendationEngine,
         source:      int | str = 0,
         width:       int = 1280,
