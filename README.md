@@ -79,9 +79,10 @@ python -c "from src.detection.converter import DeepFashion2ToYOLO; DeepFashion2T
 
 # 4. Train the model
 python scripts/train.py --epochs 50 --model yolov8s --device 0
+python scripts/train.py --epochs 16 --model yolov8s
 
 # 5. Launch the API + camera
-uvicorn src.api.main:app --reload
+python -m uvicorn src.api.main:app --reload
 
 # 6. Open the dashboard
 open frontend/index.html
