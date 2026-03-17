@@ -1,0 +1,235 @@
+{
+  "query": "I need a warm winter jacket with a hood, waterproof",
+  "expected_item_ids": [
+    221,
+    376,
+    545,
+    653,
+    682,
+    889,
+    897,
+    981
+  ],
+  "evaluation": {
+    "precision": 0.3,
+    "recall": 0.375,
+    "f1": 0.3333,
+    "avg_score": 0.6856,
+    "returned_count": 10,
+    "expected_count": 8,
+    "hit_count": 3,
+    "hit_ids": [
+      221,
+      545,
+      981
+    ],
+    "miss_ids": [
+      376,
+      653,
+      682,
+      889,
+      897
+    ],
+    "extra_ids": [
+      393,
+      505,
+      517,
+      666,
+      764,
+      803,
+      826
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 545,
+      "score": 0.6992,
+      "is_expected": true,
+      "payload": {
+        "item_id": 545,
+        "description": "This is a black (dark, noir) long sleeve jacket (coat, hoodie, outerwear). The style is elegant (sophisticated, refined, chic) with a camouflage (camo, military pattern) pattern. Made of velvet (plush, luxurious, soft) with a oversized (big, roomy, loose, baggy). Designed for unisex (gender-neutral, for everyone) — senior (elderly, mature, 60+ years). Suitable for winter (cold weather, warm clothing) and travel (comfortable, versatile, journey). Brand: AllSaints. Price: €196.99 (mid-range). Features: raglan sleeves (baseball-style, diagonal seam sleeves), open front (no closure, cardigan-style), faux fur trim hood (fur-lined hood, plush hood), down insulation (down-filled, goose down, ultra-warm), waterproof (fully waterproof, rain-proof, sealed), interior pockets (inside pockets, inner pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "black",
+        "style": "elegant",
+        "gender": "unisex",
+        "age_group": "senior",
+        "season": "winter",
+        "occasion": "travel",
+        "brand": "AllSaints",
+        "price": 196.99
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 764,
+      "score": 0.6909,
+      "is_expected": false,
+      "payload": {
+        "item_id": 764,
+        "description": "This is a brown (chocolate, tan) long sleeve jacket (coat, hoodie, outerwear). The style is bohemian (boho, free-spirited, artistic) with a geometric (shapes, abstract geometric) pattern. Made of nylon (synthetic, durable, lightweight) with a loose fit (flowy, relaxed, roomy). Designed for unisex (gender-neutral, for everyone) — senior (elderly, mature, 60+ years). Suitable for winter (cold weather, warm clothing) and wedding (formal event, ceremony). Brand: Superdry. Price: €206.00 (premium, high-end, luxury). Features: cuffed sleeves (turned-up cuff, banded sleeves), double breasted closure (overlapping front, formal), heavy insulation (thick, very warm, heavily padded), waterproof (fully waterproof, rain-proof, sealed), hand warmer pockets (fleece-lined, warm pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "brown",
+        "style": "bohemian",
+        "gender": "unisex",
+        "age_group": "senior",
+        "season": "winter",
+        "occasion": "wedding",
+        "brand": "Superdry",
+        "price": 206.0
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 826,
+      "score": 0.6885,
+      "is_expected": false,
+      "payload": {
+        "item_id": 826,
+        "description": "This is a gray (grey, neutral) long sleeve jacket (coat, hoodie, outerwear). The style is preppy (collegiate, classic American, polished) with a camouflage (camo, military pattern) pattern. Made of fleece (soft, warm, cozy) with a regular fit (standard, normal fit). Designed for women's (female, feminine) — young adult (young, 18-29 years), teenager (teen, adolescent, 13-17 years). Suitable for autumn (fall, cool weather) and date night (romantic, evening out). Brand: Mackage. Price: €878.99 (premium, high-end, luxury). Features: notched collar (lapel collar, blazer collar), bell sleeves (wide, flared sleeves), open front (no closure, cardigan-style), faux fur trim hood (fur-lined hood, plush hood), heavy insulation (thick, very warm, heavily padded), water resistant (light rain protection, splash-proof), zippered pockets (zip pockets, secure pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "gray",
+        "style": "preppy",
+        "gender": "female",
+        "age_group": "young adult, teenager",
+        "season": "autumn",
+        "occasion": "date night",
+        "brand": "Mackage",
+        "price": 878.99
+      }
+    },
+    {
+      "rank": 4,
+      "item_id": 803,
+      "score": 0.6878,
+      "is_expected": false,
+      "payload": {
+        "item_id": 803,
+        "description": "This is a multicolor (colorful, multi-colored, patterned) long sleeve jacket (coat, hoodie, outerwear). The style is preppy (collegiate, classic American, polished) with a polka dot (dotted, spotted) pattern. Made of suede (soft leather, velvety texture) with a athletic fit (sporty, performance fit). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years), baby (infant, newborn, 0-2 years). Suitable for autumn (fall, cool weather) and party (celebration, night out, festive). Brand: Superdry. Price: €150.00 (mid-range). Features: shawl collar (rolled, wrap-around collar), bishop sleeves (full, gathered-at-cuff sleeves), double breasted closure (overlapping front, formal), attached hood (fixed hood, built-in hood), light insulation (lightly lined, thin padding), interior pockets (inside pockets, inner pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "multicolor",
+        "style": "preppy",
+        "gender": "unisex",
+        "age_group": "child, baby",
+        "season": "autumn",
+        "occasion": "party",
+        "brand": "Superdry",
+        "price": 150.0
+      }
+    },
+    {
+      "rank": 5,
+      "item_id": 393,
+      "score": 0.6861,
+      "is_expected": false,
+      "payload": {
+        "item_id": 393,
+        "description": "This is a brown (chocolate, tan) long sleeve jacket (coat, hoodie, outerwear). The style is elegant (sophisticated, refined, chic) with a plain (solid color, no pattern, simple) pattern. Made of suede (soft leather, velvety texture) with a tailored fit (structured, precise fit). Designed for women's (female, feminine) — senior (elderly, mature, 60+ years). Suitable for autumn (fall, cool weather) and travel (comfortable, versatile, journey). Brand: Canada Goose. Price: €547.00 (premium, high-end, luxury). Features: notched collar (lapel collar, blazer collar), raglan sleeves (baseball-style, diagonal seam sleeves), open front (no closure, cardigan-style), attached hood (fixed hood, built-in hood), heavy insulation (thick, very warm, heavily padded), waterproof (fully waterproof, rain-proof, sealed), side pockets (hip pockets, hand pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "brown",
+        "style": "elegant",
+        "gender": "female",
+        "age_group": "senior",
+        "season": "autumn",
+        "occasion": "travel",
+        "brand": "Canada Goose",
+        "price": 547.0
+      }
+    },
+    {
+      "rank": 6,
+      "item_id": 517,
+      "score": 0.6843,
+      "is_expected": false,
+      "payload": {
+        "item_id": 517,
+        "description": "This is a navy blue (dark blue, maritime blue) long sleeve jacket (coat, hoodie, outerwear). The style is minimalist (simple, clean, understated) with a camouflage (camo, military pattern) pattern. Made of wool (warm, cozy, natural fiber) with a oversized (big, roomy, loose, baggy). Designed for men's (male, masculine) — adult (grown-up, 30-59 years). Suitable for autumn (fall, cool weather) and formal event (gala, ceremony, special occasion). Brand: Tommy Hilfiger. Price: €364.00 (premium, high-end, luxury). Features: peter pan collar (round, flat collar), raglan sleeves (baseball-style, diagonal seam sleeves), toggle closure (toggle buttons, duffle-coat closure), attached hood (fixed hood, built-in hood), medium insulation (moderately warm, padded), water resistant (light rain protection, splash-proof), side pockets (hip pockets, hand pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "navy",
+        "style": "minimalist",
+        "gender": "male",
+        "age_group": "adult",
+        "season": "autumn",
+        "occasion": "formal event",
+        "brand": "Tommy Hilfiger",
+        "price": 364.0
+      }
+    },
+    {
+      "rank": 7,
+      "item_id": 221,
+      "score": 0.6832,
+      "is_expected": true,
+      "payload": {
+        "item_id": 221,
+        "description": "This is a black (dark, noir) long sleeve jacket (coat, hoodie, outerwear). The style is casual (everyday, relaxed, informal) with a camouflage (camo, military pattern) pattern. Made of cashmere (luxury wool, ultra-soft) with a oversized (big, roomy, loose, baggy). Designed for men's (male, masculine) — senior (elderly, mature, 60+ years), adult (grown-up, 30-59 years), young adult (young, 18-29 years), teenager (teen, adolescent, 13-17 years). Suitable for winter (cold weather, warm clothing) and wedding (formal event, ceremony). Brand: The North Face. Price: €293.00 (premium, high-end, luxury). Features: shawl collar (rolled, wrap-around collar), bishop sleeves (full, gathered-at-cuff sleeves), double breasted closure (overlapping front, formal), faux fur trim hood (fur-lined hood, plush hood), heavy insulation (thick, very warm, heavily padded), waterproof (fully waterproof, rain-proof, sealed), multiple pockets (many pockets, utility pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "black",
+        "style": "casual",
+        "gender": "male",
+        "age_group": "senior, adult, young adult, teenager",
+        "season": "winter",
+        "occasion": "wedding",
+        "brand": "The North Face",
+        "price": 293.0
+      }
+    },
+    {
+      "rank": 8,
+      "item_id": 981,
+      "score": 0.68,
+      "is_expected": true,
+      "payload": {
+        "item_id": 981,
+        "description": "This is a navy blue (dark blue, maritime blue) long sleeve jacket (coat, hoodie, outerwear). The style is smart casual (business casual, polished casual) with a floral (flower pattern, botanical print) pattern. Made of linen (lightweight, breathable, natural) with a relaxed fit (comfortable, easy fit). Designed for men's (male, masculine) — adult (grown-up, 30-59 years). Suitable for winter (cold weather, warm clothing) and sport (exercise, gym, athletic activities). Brand: Boohoo. Price: €39.95 (affordable). Features: notched collar (lapel collar, blazer collar), lantern sleeves (rounded, voluminous mid-arm sleeves), button closure (button-up, button front), faux fur trim hood (fur-lined hood, plush hood), medium insulation (moderately warm, padded), waterproof (fully waterproof, rain-proof, sealed), hand warmer pockets (fleece-lined, warm pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "navy",
+        "style": "smart casual",
+        "gender": "male",
+        "age_group": "adult",
+        "season": "winter",
+        "occasion": "sport",
+        "brand": "Boohoo",
+        "price": 39.95
+      }
+    },
+    {
+      "rank": 9,
+      "item_id": 666,
+      "score": 0.6785,
+      "is_expected": false,
+      "payload": {
+        "item_id": 666,
+        "description": "This is a gray (grey, neutral) short sleeve jacket (light outerwear). The style is sporty (athletic, active, sport-inspired) with a geometric (shapes, abstract geometric) pattern. Made of polyester (durable, synthetic, easy-care) with a slim fit (fitted, body-hugging, narrow cut). Designed for men's (male, masculine) — teenager (teen, adolescent, 13-17 years). Suitable for winter (cold weather, warm clothing) and lounge (home, relaxation, comfort). Brand: ASOS. Price: €46.99 (affordable). Features: mandarin collar (band collar, nehru collar, stand-up), dolman sleeves (batwing, wide loose sleeves), zipper closure (zip-up, zip front), faux fur trim hood (fur-lined hood, plush hood), synthetic insulation (synthetic fill, polyester fill), waterproof (fully waterproof, rain-proof, sealed), multiple pockets (many pockets, utility pockets).",
+        "type": "short_sleeve_outwear",
+        "color": "gray",
+        "style": "sporty",
+        "gender": "male",
+        "age_group": "teenager",
+        "season": "winter",
+        "occasion": "lounge",
+        "brand": "ASOS",
+        "price": 46.99
+      }
+    },
+    {
+      "rank": 10,
+      "item_id": 505,
+      "score": 0.6774,
+      "is_expected": false,
+      "payload": {
+        "item_id": 505,
+        "description": "This is a red (crimson, scarlet) short sleeve jacket (light outerwear). The style is formal (dressy, elegant, professional) with a striped (stripes, lined) pattern. Made of linen (lightweight, breathable, natural) with a cropped (shortened, above natural length). Designed for unisex (gender-neutral, for everyone) — senior (elderly, mature, 60+ years). Suitable for summer (hot weather, warm season) and lounge (home, relaxation, comfort). Brand: AllSaints. Price: €105.00 (mid-range). Features: mandarin collar (band collar, nehru collar, stand-up), lantern sleeves (rounded, voluminous mid-arm sleeves), toggle closure (toggle buttons, duffle-coat closure), attached hood (fixed hood, built-in hood), light insulation (lightly lined, thin padding), waterproof (fully waterproof, rain-proof, sealed), zippered pockets (zip pockets, secure pockets).",
+        "type": "short_sleeve_outwear",
+        "color": "red",
+        "style": "formal",
+        "gender": "unisex",
+        "age_group": "senior",
+        "season": "summer",
+        "occasion": "lounge",
+        "brand": "AllSaints",
+        "price": 105.0
+      }
+    }
+  ]
+}

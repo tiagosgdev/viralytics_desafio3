@@ -1,0 +1,234 @@
+{
+  "query": "A simple minimalist white shirt for work",
+  "expected_item_ids": [
+    71,
+    115,
+    146,
+    208,
+    331,
+    397,
+    776
+  ],
+  "evaluation": {
+    "precision": 0.2,
+    "recall": 0.2857,
+    "f1": 0.2353,
+    "avg_score": 0.7226,
+    "returned_count": 10,
+    "expected_count": 7,
+    "hit_count": 2,
+    "hit_ids": [
+      115,
+      331
+    ],
+    "miss_ids": [
+      71,
+      146,
+      208,
+      397,
+      776
+    ],
+    "extra_ids": [
+      117,
+      158,
+      267,
+      295,
+      348,
+      560,
+      601,
+      730
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 730,
+      "score": 0.7384,
+      "is_expected": false,
+      "payload": {
+        "item_id": 730,
+        "description": "This is a olive (olive green, military green) short sleeve top (t-shirt, tee). The style is formal (dressy, elegant, professional) with a plain (solid color, no pattern, simple) pattern. Made of rayon (semi-synthetic, silky feel) with a regular fit (standard, normal fit). Designed for women's (female, feminine) — teenager (teen, adolescent, 13-17 years). Suitable for spring (mild weather, transitional) and work (office, professional, business). Brand: Hollister. Price: €19.99 (budget-friendly, cheap, inexpensive). Features: V-neck (V-shaped neckline), mandarin collar (band collar, nehru collar, stand-up), bishop sleeves (full, gathered-at-cuff sleeves), split hem (side-slit, vented hem).",
+        "type": "short_sleeve_top",
+        "color": "olive",
+        "style": "formal",
+        "gender": "female",
+        "age_group": "teenager",
+        "season": "spring",
+        "occasion": "work",
+        "brand": "Hollister",
+        "price": 19.99
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 115,
+      "score": 0.7348,
+      "is_expected": true,
+      "payload": {
+        "item_id": 115,
+        "description": "This is a white (bright, clean) short sleeve top (t-shirt, tee). The style is vintage (retro, classic, old-school) with a polka dot (dotted, spotted) pattern. Made of fleece (soft, warm, cozy) with a slim fit (fitted, body-hugging, narrow cut). Designed for unisex (gender-neutral, for everyone) — senior (elderly, mature, 60+ years), adult (grown-up, 30-59 years), young adult (young, 18-29 years). Suitable for spring (mild weather, transitional) and sport (exercise, gym, athletic activities). Brand: Primark. Price: €15.95 (budget-friendly, cheap, inexpensive). Features: square neck (angular, straight-across neckline), bell sleeves (wide, flared sleeves), raw edge hem (unfinished, frayed hem).",
+        "type": "short_sleeve_top",
+        "color": "white",
+        "style": "vintage",
+        "gender": "unisex",
+        "age_group": "senior, adult, young adult",
+        "season": "spring",
+        "occasion": "sport",
+        "brand": "Primark",
+        "price": 15.95
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 295,
+      "score": 0.7311,
+      "is_expected": false,
+      "payload": {
+        "item_id": 295,
+        "description": "This is a red (crimson, scarlet) short sleeve top (t-shirt, tee). The style is minimalist (simple, clean, understated) with a geometric (shapes, abstract geometric) pattern. Made of organic cotton (eco-friendly, sustainable, natural) with a fitted (form-fitting, close to body). Designed for unisex (gender-neutral, for everyone) — adult (grown-up, 30-59 years). Suitable for all-season (year-round, versatile) and lounge (home, relaxation, comfort). Brand: Uniqlo. Price: €22.00 (budget-friendly, cheap, inexpensive). Features: crew neck (round neck, classic neckline), button-down collar (casual, preppy collar), bishop sleeves (full, gathered-at-cuff sleeves), asymmetric hem (uneven, high-low hem).",
+        "type": "short_sleeve_top",
+        "color": "red",
+        "style": "minimalist",
+        "gender": "unisex",
+        "age_group": "adult",
+        "season": "all-season",
+        "occasion": "lounge",
+        "brand": "Uniqlo",
+        "price": 22.0
+      }
+    },
+    {
+      "rank": 4,
+      "item_id": 267,
+      "score": 0.7239,
+      "is_expected": false,
+      "payload": {
+        "item_id": 267,
+        "description": "This is a beige (cream, sand, off-white) short sleeve top (t-shirt, tee). The style is minimalist (simple, clean, understated) with a plaid (tartan, checked pattern) pattern. Made of linen (lightweight, breathable, natural) with a athletic fit (sporty, performance fit). Designed for unisex (gender-neutral, for everyone) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years), teenager (teen, adolescent, 13-17 years). Suitable for all-season (year-round, versatile) and travel (comfortable, versatile, journey). Brand: Hollister. Price: €9.95 (budget-friendly, cheap, inexpensive). Features: boat neck (bateau, wide horizontal neckline), peter pan collar (round, flat collar), cuffed sleeves (turned-up cuff, banded sleeves), split hem (side-slit, vented hem).",
+        "type": "short_sleeve_top",
+        "color": "beige",
+        "style": "minimalist",
+        "gender": "unisex",
+        "age_group": "baby, child, teenager",
+        "season": "all-season",
+        "occasion": "travel",
+        "brand": "Hollister",
+        "price": 9.95
+      }
+    },
+    {
+      "rank": 5,
+      "item_id": 560,
+      "score": 0.7218,
+      "is_expected": false,
+      "payload": {
+        "item_id": 560,
+        "description": "This is a white (bright, clean) sleeveless dress (vest dress). The style is minimalist (simple, clean, understated) with a geometric (shapes, abstract geometric) pattern. Made of polyester (durable, synthetic, easy-care) with a athletic fit (sporty, performance fit). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years), baby (infant, newborn, 0-2 years). Suitable for winter (cold weather, warm clothing) and party (celebration, night out, festive). Brand: Topshop. Price: €46.99 (affordable). Features: V-neck (V-shaped neckline), split hem (side-slit, vented hem), shirt dress (button-front, collared, casual dress), ankle length (ankle-grazing, just above ankle), paper bag waist (gathered, pleated high waist).",
+        "type": "vest_dress",
+        "color": "white",
+        "style": "minimalist",
+        "gender": "unisex",
+        "age_group": "child, baby",
+        "season": "winter",
+        "occasion": "party",
+        "brand": "Topshop",
+        "price": 46.99
+      }
+    },
+    {
+      "rank": 6,
+      "item_id": 158,
+      "score": 0.7182,
+      "is_expected": false,
+      "payload": {
+        "item_id": 158,
+        "description": "This is a beige (cream, sand, off-white) short sleeve top (t-shirt, tee). The style is casual (everyday, relaxed, informal) with a floral (flower pattern, botanical print) pattern. Made of fleece (soft, warm, cozy) with a oversized (big, roomy, loose, baggy). Designed for unisex (gender-neutral, for everyone) — adult (grown-up, 30-59 years), young adult (young, 18-29 years). Suitable for all-season (year-round, versatile) and work (office, professional, business). Brand: Massimo Dutti. Price: €42.99 (affordable). Features: mock neck (short turtleneck, stand-up collar), dolman sleeves (batwing, wide loose sleeves), longline hem (extended, long-cut hem).",
+        "type": "short_sleeve_top",
+        "color": "beige",
+        "style": "casual",
+        "gender": "unisex",
+        "age_group": "adult, young adult",
+        "season": "all-season",
+        "occasion": "work",
+        "brand": "Massimo Dutti",
+        "price": 42.99
+      }
+    },
+    {
+      "rank": 7,
+      "item_id": 348,
+      "score": 0.7157,
+      "is_expected": false,
+      "payload": {
+        "item_id": 348,
+        "description": "This is a white (bright, clean) shorts (short pants). The style is formal (dressy, elegant, professional) with a plain (solid color, no pattern, simple) pattern. Made of linen (lightweight, breathable, natural) with a athletic fit (sporty, performance fit). Designed for unisex (gender-neutral, for everyone) — adult (grown-up, 30-59 years), young adult (young, 18-29 years). Suitable for summer (hot weather, warm season) and work (office, professional, business). Brand: Nike. Price: €23.00 (budget-friendly, cheap, inexpensive). Features: mini length (very short, above mid-thigh), low-rise waist (low waist, hip-hugger), size small (S), high-rise (sits above waist, high waist), cargo leg (utility, multi-pocket, military-inspired), back pockets (rear pockets, seat pockets).",
+        "type": "shorts",
+        "color": "white",
+        "style": "formal",
+        "gender": "unisex",
+        "age_group": "adult, young adult",
+        "season": "summer",
+        "occasion": "work",
+        "brand": "Nike",
+        "price": 23.0
+      }
+    },
+    {
+      "rank": 8,
+      "item_id": 117,
+      "score": 0.7152,
+      "is_expected": false,
+      "payload": {
+        "item_id": 117,
+        "description": "This is a purple (violet, plum) short sleeve top (t-shirt, tee). The style is preppy (collegiate, classic American, polished) with a plain (solid color, no pattern, simple) pattern. Made of wool (warm, cozy, natural fiber) with a tailored fit (structured, precise fit). Designed for men's (male, masculine) — senior (elderly, mature, 60+ years). Suitable for summer (hot weather, warm season) and work (office, professional, business). Brand: H&M. Price: €9.95 (budget-friendly, cheap, inexpensive). Features: V-neck (V-shaped neckline), cap sleeves (short, minimal coverage sleeves), asymmetric hem (uneven, high-low hem).",
+        "type": "short_sleeve_top",
+        "color": "purple",
+        "style": "preppy",
+        "gender": "male",
+        "age_group": "senior",
+        "season": "summer",
+        "occasion": "work",
+        "brand": "H&M",
+        "price": 9.95
+      }
+    },
+    {
+      "rank": 9,
+      "item_id": 601,
+      "score": 0.7134,
+      "is_expected": false,
+      "payload": {
+        "item_id": 601,
+        "description": "This is a yellow (golden, sunny) short sleeve top (t-shirt, tee). The style is minimalist (simple, clean, understated) with a floral (flower pattern, botanical print) pattern. Made of rayon (semi-synthetic, silky feel) with a baggy (very loose, oversized, roomy). Designed for men's (male, masculine) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and sport (exercise, gym, athletic activities). Brand: Primark. Price: €14.00 (budget-friendly, cheap, inexpensive). Features: square neck (angular, straight-across neckline), peter pan collar (round, flat collar), dolman sleeves (batwing, wide loose sleeves), straight hem (even, clean-cut hem).",
+        "type": "short_sleeve_top",
+        "color": "yellow",
+        "style": "minimalist",
+        "gender": "male",
+        "age_group": "baby, child",
+        "season": "summer",
+        "occasion": "sport",
+        "brand": "Primark",
+        "price": 14.0
+      }
+    },
+    {
+      "rank": 10,
+      "item_id": 331,
+      "score": 0.7132,
+      "is_expected": true,
+      "payload": {
+        "item_id": 331,
+        "description": "This is a white (bright, clean) long sleeve top (shirt, sweater, long-sleeved shirt). The style is sporty (athletic, active, sport-inspired) with a camouflage (camo, military pattern) pattern. Made of polyester (durable, synthetic, easy-care) with a baggy (very loose, oversized, roomy). Designed for unisex (gender-neutral, for everyone) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years), teenager (teen, adolescent, 13-17 years). Suitable for autumn (fall, cool weather) and sport (exercise, gym, athletic activities). Brand: Gap. Price: €19.00 (budget-friendly, cheap, inexpensive). Features: crew neck (round neck, classic neckline), button-down collar (casual, preppy collar), cuffed sleeves (turned-up cuff, banded sleeves), cropped hem (short, above-waist hem).",
+        "type": "long_sleeve_top",
+        "color": "white",
+        "style": "sporty",
+        "gender": "unisex",
+        "age_group": "baby, child, teenager",
+        "season": "autumn",
+        "occasion": "sport",
+        "brand": "Gap",
+        "price": 19.0
+      }
+    }
+  ]
+}

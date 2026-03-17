@@ -1,0 +1,237 @@
+{
+  "query": "I want a casual summer t-shirt, plain and dark colors, oversized fit",
+  "expected_item_ids": [
+    141,
+    160,
+    426,
+    544,
+    581,
+    582,
+    643,
+    738
+  ],
+  "evaluation": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "avg_score": 0.7224,
+    "returned_count": 10,
+    "expected_count": 8,
+    "hit_count": 0,
+    "hit_ids": [],
+    "miss_ids": [
+      141,
+      160,
+      426,
+      544,
+      581,
+      582,
+      643,
+      738
+    ],
+    "extra_ids": [
+      71,
+      85,
+      256,
+      272,
+      419,
+      531,
+      574,
+      678,
+      730,
+      746
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 71,
+      "score": 0.7347,
+      "is_expected": false,
+      "payload": {
+        "item_id": 71,
+        "description": "This is a white (bright, clean) long sleeve top (shirt, sweater, long-sleeved shirt). The style is casual (everyday, relaxed, informal) with a embroidered (stitched design, decorative stitching) pattern. Made of cotton (soft, breathable, natural fiber) with a baggy (very loose, oversized, roomy). Designed for women's (female, feminine) — child (kids, children, 3-12 years), baby (infant, newborn, 0-2 years). Suitable for autumn (fall, cool weather) and party (celebration, night out, festive). Brand: Hollister. Price: €18.00 (budget-friendly, cheap, inexpensive). Features: boat neck (bateau, wide horizontal neckline), puff sleeves (puffy, voluminous, balloon sleeves), longline hem (extended, long-cut hem).",
+        "type": "long_sleeve_top",
+        "color": "white",
+        "style": "casual",
+        "gender": "female",
+        "age_group": "child, baby",
+        "season": "autumn",
+        "occasion": "party",
+        "brand": "Hollister",
+        "price": 18.0
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 746,
+      "score": 0.733,
+      "is_expected": false,
+      "payload": {
+        "item_id": 746,
+        "description": "This is a blue short sleeve top (t-shirt, tee). The style is casual (everyday, relaxed, informal) with a geometric (shapes, abstract geometric) pattern. Made of suede (soft leather, velvety texture) with a oversized (big, roomy, loose, baggy). Designed for unisex (gender-neutral, for everyone) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years), teenager (teen, adolescent, 13-17 years). Suitable for autumn (fall, cool weather) and everyday wear (daily, casual occasions). Brand: Hollister. Price: €15.99 (budget-friendly, cheap, inexpensive). Features: boat neck (bateau, wide horizontal neckline), notched collar (lapel collar, blazer collar), rolled sleeves (folded-up, casual cuff), asymmetric hem (uneven, high-low hem).",
+        "type": "short_sleeve_top",
+        "color": "blue",
+        "style": "casual",
+        "gender": "unisex",
+        "age_group": "baby, child, teenager",
+        "season": "autumn",
+        "occasion": "everyday",
+        "brand": "Hollister",
+        "price": 15.99
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 531,
+      "score": 0.7243,
+      "is_expected": false,
+      "payload": {
+        "item_id": 531,
+        "description": "This is a orange (tangerine) long sleeve top (shirt, sweater, long-sleeved shirt). The style is formal (dressy, elegant, professional) with a camouflage (camo, military pattern) pattern. Made of suede (soft leather, velvety texture) with a athletic fit (sporty, performance fit). Designed for women's (female, feminine) — teenager (teen, adolescent, 13-17 years), young adult (young, 18-29 years), child (kids, children, 3-12 years), baby (infant, newborn, 0-2 years). Suitable for autumn (fall, cool weather) and sport (exercise, gym, athletic activities). Brand: Hollister. Price: €13.99 (budget-friendly, cheap, inexpensive). Features: V-neck (V-shaped neckline), button-down collar (casual, preppy collar), bell sleeves (wide, flared sleeves), curved hem (rounded, scoop hem).",
+        "type": "long_sleeve_top",
+        "color": "orange",
+        "style": "formal",
+        "gender": "female",
+        "age_group": "teenager, young adult, child, baby",
+        "season": "autumn",
+        "occasion": "sport",
+        "brand": "Hollister",
+        "price": 13.99
+      }
+    },
+    {
+      "rank": 4,
+      "item_id": 85,
+      "score": 0.7232,
+      "is_expected": false,
+      "payload": {
+        "item_id": 85,
+        "description": "This is a black (dark, noir) short sleeve top (t-shirt, tee). The style is casual (everyday, relaxed, informal) with a animal print (leopard, zebra, snake print) pattern. Made of linen (lightweight, breathable, natural) with a cropped (shortened, above natural length). Designed for women's (female, feminine) — senior (elderly, mature, 60+ years). Suitable for summer (hot weather, warm season) and date night (romantic, evening out). Brand: Adidas. Price: €18.00 (budget-friendly, cheap, inexpensive). Features: turtleneck (high neck, roll neck, polo neck), spread collar (wide collar, cutaway), dolman sleeves (batwing, wide loose sleeves), longline hem (extended, long-cut hem).",
+        "type": "short_sleeve_top",
+        "color": "black",
+        "style": "casual",
+        "gender": "female",
+        "age_group": "senior",
+        "season": "summer",
+        "occasion": "date night",
+        "brand": "Adidas",
+        "price": 18.0
+      }
+    },
+    {
+      "rank": 5,
+      "item_id": 730,
+      "score": 0.7229,
+      "is_expected": false,
+      "payload": {
+        "item_id": 730,
+        "description": "This is a olive (olive green, military green) short sleeve top (t-shirt, tee). The style is formal (dressy, elegant, professional) with a plain (solid color, no pattern, simple) pattern. Made of rayon (semi-synthetic, silky feel) with a regular fit (standard, normal fit). Designed for women's (female, feminine) — teenager (teen, adolescent, 13-17 years). Suitable for spring (mild weather, transitional) and work (office, professional, business). Brand: Hollister. Price: €19.99 (budget-friendly, cheap, inexpensive). Features: V-neck (V-shaped neckline), mandarin collar (band collar, nehru collar, stand-up), bishop sleeves (full, gathered-at-cuff sleeves), split hem (side-slit, vented hem).",
+        "type": "short_sleeve_top",
+        "color": "olive",
+        "style": "formal",
+        "gender": "female",
+        "age_group": "teenager",
+        "season": "spring",
+        "occasion": "work",
+        "brand": "Hollister",
+        "price": 19.99
+      }
+    },
+    {
+      "rank": 6,
+      "item_id": 419,
+      "score": 0.7202,
+      "is_expected": false,
+      "payload": {
+        "item_id": 419,
+        "description": "This is a purple (violet, plum) long sleeve top (shirt, sweater, long-sleeved shirt). The style is formal (dressy, elegant, professional) with a plain (solid color, no pattern, simple) pattern. Made of chiffon (sheer, lightweight, flowy) with a oversized (big, roomy, loose, baggy). Designed for women's (female, feminine) — teenager (teen, adolescent, 13-17 years). Suitable for summer (hot weather, warm season) and sport (exercise, gym, athletic activities). Brand: H&M. Price: €20.95 (budget-friendly, cheap, inexpensive). Features: crew neck (round neck, classic neckline), notched collar (lapel collar, blazer collar), cuffed sleeves (turned-up cuff, banded sleeves), raw edge hem (unfinished, frayed hem).",
+        "type": "long_sleeve_top",
+        "color": "purple",
+        "style": "formal",
+        "gender": "female",
+        "age_group": "teenager",
+        "season": "summer",
+        "occasion": "sport",
+        "brand": "H&M",
+        "price": 20.95
+      }
+    },
+    {
+      "rank": 7,
+      "item_id": 678,
+      "score": 0.7182,
+      "is_expected": false,
+      "payload": {
+        "item_id": 678,
+        "description": "This is a red (crimson, scarlet) short sleeve top (t-shirt, tee). The style is vintage (retro, classic, old-school) with a striped (stripes, lined) pattern. Made of satin (smooth, shiny, silky) with a athletic fit (sporty, performance fit). Designed for women's (female, feminine) — teenager (teen, adolescent, 13-17 years), child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and work (office, professional, business). Brand: Uniqlo. Price: €46.95 (affordable). Features: mock neck (short turtleneck, stand-up collar), pointed collar (classic shirt collar), lantern sleeves (rounded, voluminous mid-arm sleeves), cropped hem (short, above-waist hem).",
+        "type": "short_sleeve_top",
+        "color": "red",
+        "style": "vintage",
+        "gender": "female",
+        "age_group": "teenager, child",
+        "season": "summer",
+        "occasion": "work",
+        "brand": "Uniqlo",
+        "price": 46.95
+      }
+    },
+    {
+      "rank": 8,
+      "item_id": 272,
+      "score": 0.7177,
+      "is_expected": false,
+      "payload": {
+        "item_id": 272,
+        "description": "This is a olive (olive green, military green) short sleeve top (t-shirt, tee). The style is vintage (retro, classic, old-school) with a plain (solid color, no pattern, simple) pattern. Made of silk (luxurious, smooth, elegant) with a athletic fit (sporty, performance fit). Designed for women's (female, feminine) — young adult (young, 18-29 years). Suitable for autumn (fall, cool weather) and work (office, professional, business). Brand: Ralph Lauren. Price: €70.95 (affordable). Features: turtleneck (high neck, roll neck, polo neck), notched collar (lapel collar, blazer collar), dolman sleeves (batwing, wide loose sleeves), cropped hem (short, above-waist hem).",
+        "type": "short_sleeve_top",
+        "color": "olive",
+        "style": "vintage",
+        "gender": "female",
+        "age_group": "young adult",
+        "season": "autumn",
+        "occasion": "work",
+        "brand": "Ralph Lauren",
+        "price": 70.95
+      }
+    },
+    {
+      "rank": 9,
+      "item_id": 256,
+      "score": 0.7155,
+      "is_expected": false,
+      "payload": {
+        "item_id": 256,
+        "description": "This is a navy blue (dark blue, maritime blue) short sleeve top (t-shirt, tee). The style is minimalist (simple, clean, understated) with a polka dot (dotted, spotted) pattern. Made of cotton (soft, breathable, natural fiber) with a regular fit (standard, normal fit). Designed for women's (female, feminine) — senior (elderly, mature, 60+ years), adult (grown-up, 30-59 years). Suitable for summer (hot weather, warm season) and beach (vacation, resort, seaside). Brand: Adidas. Price: €20.99 (budget-friendly, cheap, inexpensive). Features: mock neck (short turtleneck, stand-up collar), mandarin collar (band collar, nehru collar, stand-up), raglan sleeves (baseball-style, diagonal seam sleeves), knotted hem (tied-up, front-knot hem).",
+        "type": "short_sleeve_top",
+        "color": "navy",
+        "style": "minimalist",
+        "gender": "female",
+        "age_group": "senior, adult",
+        "season": "summer",
+        "occasion": "beach",
+        "brand": "Adidas",
+        "price": 20.99
+      }
+    },
+    {
+      "rank": 10,
+      "item_id": 574,
+      "score": 0.7146,
+      "is_expected": false,
+      "payload": {
+        "item_id": 574,
+        "description": "This is a blue short sleeve top (t-shirt, tee). The style is smart casual (business casual, polished casual) with a plaid (tartan, checked pattern) pattern. Made of spandex (stretchy, elastic, flexible) with a baggy (very loose, oversized, roomy). Designed for women's (female, feminine) — young adult (young, 18-29 years), teenager (teen, adolescent, 13-17 years). Suitable for spring (mild weather, transitional) and date night (romantic, evening out). Brand: Tommy Hilfiger. Price: €113.99 (mid-range). Features: collared neckline (shirt collar, classic collar), regular sleeves (standard, classic sleeves), longline hem (extended, long-cut hem).",
+        "type": "short_sleeve_top",
+        "color": "blue",
+        "style": "smart casual",
+        "gender": "female",
+        "age_group": "young adult, teenager",
+        "season": "spring",
+        "occasion": "date night",
+        "brand": "Tommy Hilfiger",
+        "price": 113.99
+      }
+    }
+  ]
+}

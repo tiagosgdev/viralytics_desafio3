@@ -1,0 +1,42 @@
+[
+  {
+    "query": "I want a casual summer t-shirt, plain and dark colors, oversized fit",
+    "expected_item_ids": [141, 160, 426, 544, 581, 582, 643, 738]
+  },
+  {
+    "query": "Looking for an elegant formal dress for a wedding, something long and fitted",
+    "expected_item_ids": [94, 125, 217, 250, 438, 440, 468, 495, 523, 720, 794, 898, 912, 925]
+  },
+  {
+    "query": "I need a warm winter jacket with a hood, waterproof",
+    "expected_item_ids": [221, 376, 545, 653, 682, 889, 897, 981]
+  },
+  {
+    "query": "Cheap sporty shorts for running, any color",
+    "expected_item_ids": [12, 22, 56, 144, 167, 210, 233, 243, 305, 328]
+  },
+  {
+    "query": "A simple minimalist white shirt for work",
+    "expected_item_ids": [71, 115, 146, 208, 331, 397, 776]
+  },
+  {
+    "query": "Kids clothes for the beach, something colorful and fun",
+    "expected_item_ids": [30, 96, 206, 251, 486, 551, 590, 745, 801, 907, 930]
+  },
+  {
+    "query": "Premium black leather jacket, streetwear style",
+    "expected_item_ids": [221, 308, 354, 545, 629, 888]
+  },
+  {
+    "query": "Comfortable loose trousers for everyday, budget friendly",
+    "expected_item_ids": [212, 349, 433, 521, 568, 576, 973]
+  },
+  {
+    "query": "A floral summer dress, feminine and bohemian",
+    "expected_item_ids": [282, 368, 662, 806, 943]
+  },
+  {
+    "query": "Warm cozy sweater for autumn, wool or fleece",
+    "expected_item_ids": [32, 181, 249, 508, 511]
+  }
+]

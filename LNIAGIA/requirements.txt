@@ -1,0 +1,27 @@
+# ════════════════════════════════════════════════════════════
+# requirements.txt
+# Install with: pip install -r requirements.txt
+#
+# For CPU-only PyTorch (lighter, no CUDA):
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+# For CUDA-enabled PyTorch:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+# ════════════════════════════════════════════════════════════
+
+# ── Embedding model ──────────────────────────────────────────
+sentence-transformers==3.4.1
+
+# ── Vector database ──────────────────────────────────────────
+qdrant-client==1.17.1
+
+# ── LLM query parser (requires Ollama running locally) ───────
+# Install Ollama: https://ollama.com/download
+# Pull a model:  ollama pull llama3.1:8b
+ollama==0.6.1
+
+# ── Numerical compute (pulled in by sentence-transformers) ───
+numpy==2.2.3
+
+# ── Deep learning backend (pulled in by sentence-transformers)
+# See header comment for CPU vs CUDA install instructions.
+torch==2.6.0
