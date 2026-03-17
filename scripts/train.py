@@ -6,6 +6,7 @@ Fine-tunes a YOLOv8 model on the converted DeepFashion2 sample.
 Usage:
     python scripts/train.py --model yolov8s --epochs 50 --batch 16
     python scripts/train.py --model yolov8n --epochs 30 --batch 32   # faster / lighter
+    python scripts/train.py --model yolov8s --epochs 50 --no-pretrained  # train from scratch
 """
 
 import argparse
@@ -27,6 +28,8 @@ def parse_args():
     p.add_argument("--output_dir", default="models/weights")
     p.add_argument("--workers",    type=int,   default=2)
     p.add_argument("--device",     default="0", help="'0' (CUDA GPU), 'cpu', 'mps' (Apple GPU), '0,1'")
+    p.add_argument("--no-pretrained", action="store_true",
+                   help="Train from scratch (random weights, no COCO pretraining)")
     p.add_argument("--wandb",      action="store_true", help="Enable W&B logging")
     return p.parse_args()
 
@@ -47,9 +50,16 @@ def main():
             "DeepFashion2ToYOLO('data/sample_dataset').convert()\""
         )
 
-    # ── Load pretrained COCO weights ──────────────────────────────────────
-    model = YOLO(f"{args.model}.pt")
-    print(f"\n🚀  Starting training: {args.model}  |  epochs={args.epochs}  |  batch={args.batch}\n")
+    # ── Load model ────────────────────────────────────────────────────────
+    if args.no_pretrained:
+        # Architecture only — random weights, no COCO pretraining
+        model = YOLO(f"{args.model}.yaml")
+        tag   = "from scratch"
+    else:
+        # COCO pretrained weights → fine-tune on fashion
+        model = YOLO(f"{args.model}.pt")
+        tag   = "pretrained"
+    print(f"\n🚀  Starting training ({tag}): {args.model}  |  epochs={args.epochs}  |  batch={args.batch}\n")
 
     # ── Train ─────────────────────────────────────────────────────────────
     results = model.train(
@@ -60,7 +70,7 @@ def main():
         workers     = args.workers,
         device      = args.device or None,
         project     = str(Path(args.output_dir).resolve()),
-        name        = f"{args.model}_fashion",
+        name        = f"{args.model}_fashion" if not args.no_pretrained else f"{args.model}_fashion_scratch",
         exist_ok    = True,
 
         # Augmentation settings (important for clothing variety)
@@ -83,7 +93,8 @@ def main():
         save_period = 10,
     )
 
-    best = Path(args.output_dir) / f"{args.model}_fashion" / "weights" / "best.pt"
+    run_name = f"{args.model}_fashion" if not args.no_pretrained else f"{args.model}_fashion_scratch"
+    best = Path(args.output_dir) / run_name / "weights" / "best.pt"
     print(f"\n✅  Training complete!")
     print(f"   Best weights → {best.resolve()}")
     print(f"\n   Quick test:")
