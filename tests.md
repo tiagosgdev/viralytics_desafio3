@@ -151,3 +151,62 @@ Zero-shot mAP@50 (0.1457) vs fine-tuned YOLOv8L (0.7673) — an expected ~5x gap
 | Worst class | short_sleeve_dress (0.5886) | sling (0.0027) |
 
 YOLO-World is useful as a no-training baseline or for rapid prototyping, but fine-tuning remains essential for production-grade fashion detection.
+
+---
+
+## Test 4 — 10k images | YOLOv8L | batch=16 | ~1.227 hours
+
+| Category | Images | Instances | Precision | Recall | mAP@50 | mAP@50:95 |
+|----------|--------|-----------|-----------|--------|--------|-----------|
+| **all** | **970** | **1614** | **0.723** | **0.730** | **0.767** | **0.664** |
+| short_sleeve_top | 228 | 231 | 0.820 | 0.805 | 0.860 | 0.758 |
+| long_sleeve_top | 138 | 138 | 0.721 | 0.739 | 0.751 | 0.658 |
+| short_sleeve_outwear | 78 | 79 | 0.665 | 0.734 | 0.758 | 0.658 |
+| long_sleeve_outwear | 105 | 105 | 0.688 | 0.672 | 0.743 | 0.650 |
+| vest | 93 | 94 | 0.707 | 0.744 | 0.822 | 0.684 |
+| sling | 75 | 75 | 0.816 | 0.769 | 0.826 | 0.711 |
+| shorts | 155 | 156 | 0.839 | 0.788 | 0.856 | 0.698 |
+| trousers | 247 | 249 | 0.919 | 0.835 | 0.915 | 0.742 |
+| skirt | 170 | 170 | 0.753 | 0.700 | 0.771 | 0.679 |
+| short_sleeve_dress | 75 | 77 | 0.521 | 0.662 | 0.589 | 0.521 |
+| long_sleeve_dress | 74 | 74 | 0.663 | 0.622 | 0.615 | 0.553 |
+| vest_dress | 90 | 90 | 0.600 | 0.644 | 0.679 | 0.603 |
+| sling_dress | 75 | 76 | 0.686 | 0.776 | 0.791 | 0.715 |
+
+**Speed:** 0.2ms preprocess, 6.6ms inference, 0.0ms loss, 0.2ms postprocess per image
+
+### Per-class mAP@50
+
+| Category | mAP@50 |
+|----------|--------|
+| trousers | 0.9149 |
+| short_sleeve_top | 0.8598 |
+| shorts | 0.8556 |
+| sling | 0.8263 |
+| vest | 0.8218 |
+| sling_dress | 0.7906 |
+| skirt | 0.7707 |
+| short_sleeve_outwear | 0.7578 |
+| long_sleeve_top | 0.7513 |
+| long_sleeve_outwear | 0.7434 |
+| vest_dress | 0.6786 |
+| long_sleeve_dress | 0.6152 |
+| short_sleeve_dress | 0.5886 |
+
+| Metric | Value |
+|--------|-------|
+| Overall mAP@50 | 0.7673 |
+| Overall mAP@50:95 | 0.6637 |
+| Precision | 0.7229 |
+| Recall | 0.7302 |
+
+### Comparison: Test 1 vs Test 4 (both batch=16)
+
+| Metric | Test 1 | Test 4 |
+|--------|--------|--------|
+| mAP@50 | 0.7673 | 0.7673 |
+| mAP@50:95 | 0.6637 | 0.6637 |
+| Precision | 0.7229 | 0.7229 |
+| Recall | 0.7302 | 0.7302 |
+
+Results are identical to Test 1 — confirms that batch=16 is a reproducible and stable configuration for YOLOv8L on this dataset. Training was slightly faster (1.227h vs 1.311h).
