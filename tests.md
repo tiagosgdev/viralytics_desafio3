@@ -210,3 +210,64 @@ YOLO-World is useful as a no-training baseline or for rapid prototyping, but fin
 | Recall | 0.7302 | 0.7302 |
 
 Results are identical to Test 1 — confirms that batch=16 is a reproducible and stable configuration for YOLOv8L on this dataset. Training was slightly faster (1.227h vs 1.311h).
+
+---
+
+## Test 5 — 10k images | YOLOv8L | batch=16 | no pretrained weights | ~1.203 hours
+
+Trained from scratch using `--no-pretrained` (random weights, no COCO pretraining).
+
+| Category | Images | Instances | Precision | Recall | mAP@50 | mAP@50:95 |
+|----------|--------|-----------|-----------|--------|--------|-----------|
+| **all** | **970** | **1614** | **0.641** | **0.668** | **0.697** | **0.587** |
+| short_sleeve_top | 228 | 231 | 0.741 | 0.758 | 0.804 | 0.680 |
+| long_sleeve_top | 138 | 138 | 0.633 | 0.681 | 0.689 | 0.567 |
+| short_sleeve_outwear | 78 | 79 | 0.629 | 0.684 | 0.717 | 0.632 |
+| long_sleeve_outwear | 105 | 105 | 0.616 | 0.638 | 0.719 | 0.618 |
+| vest | 93 | 94 | 0.575 | 0.747 | 0.737 | 0.611 |
+| sling | 75 | 75 | 0.796 | 0.667 | 0.779 | 0.644 |
+| shorts | 155 | 156 | 0.752 | 0.788 | 0.849 | 0.683 |
+| trousers | 247 | 249 | 0.907 | 0.803 | 0.901 | 0.716 |
+| skirt | 170 | 170 | 0.656 | 0.706 | 0.713 | 0.589 |
+| short_sleeve_dress | 75 | 77 | 0.507 | 0.494 | 0.503 | 0.430 |
+| long_sleeve_dress | 74 | 74 | 0.506 | 0.541 | 0.537 | 0.474 |
+| vest_dress | 90 | 90 | 0.522 | 0.594 | 0.559 | 0.493 |
+| sling_dress | 75 | 76 | 0.498 | 0.579 | 0.559 | 0.490 |
+
+**Speed:** 0.2ms preprocess, 6.4ms inference, 0.0ms loss, 0.2ms postprocess per image
+
+### Per-class mAP@50
+
+| Category | mAP@50 |
+|----------|--------|
+| trousers | 0.9015 |
+| shorts | 0.8493 |
+| short_sleeve_top | 0.8041 |
+| sling | 0.7792 |
+| vest | 0.7369 |
+| long_sleeve_outwear | 0.7189 |
+| short_sleeve_outwear | 0.7174 |
+| skirt | 0.7127 |
+| long_sleeve_top | 0.6888 |
+| sling_dress | 0.5592 |
+| vest_dress | 0.5591 |
+| long_sleeve_dress | 0.5366 |
+| short_sleeve_dress | 0.5030 |
+
+| Metric | Value |
+|--------|-------|
+| Overall mAP@50 | 0.6974 |
+| Overall mAP@50:95 | 0.5867 |
+| Precision | 0.6414 |
+| Recall | 0.6676 |
+
+### Comparison: Pretrained (Test 1) vs From Scratch (Test 5)
+
+| Metric | Test 1 (pretrained) | Test 5 (scratch) | Difference |
+|--------|---------------------|------------------|------------|
+| mAP@50 | 0.7673 | 0.6974 | -0.0699 |
+| mAP@50:95 | 0.6637 | 0.5867 | -0.0770 |
+| Precision | 0.7229 | 0.6414 | -0.0815 |
+| Recall | 0.7302 | 0.6676 | -0.0626 |
+
+COCO pretraining gives a clear advantage — ~7% higher mAP@50 and ~8% higher mAP@50:95. The gap is most pronounced on dress categories (short_sleeve_dress: 0.589 vs 0.503), where the limited training data makes transfer learning most valuable. Training time was nearly identical (~1.2h).
