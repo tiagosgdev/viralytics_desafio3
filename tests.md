@@ -152,6 +152,11 @@ Zero-shot mAP@50 (0.1457) vs fine-tuned YOLOv8L (0.7673) — an expected ~5x gap
 
 YOLO-World is useful as a no-training baseline or for rapid prototyping, but fine-tuning remains essential for production-grade fashion detection.
 
+### Justification:
+CLIP (Contrastive Language-Image Pre-training) é um modelo da OpenAI treinado em milhões de pares imagem-texto da internet. Aprendeu a mapear imagens e texto para o mesmo espaço vetorial (embedding space).
+**Porque é que algumas classes falham?**
+O CLIP foi treinado com linguagem genérica da internet. Palavras comuns como "trousers" têm embeddings ricos e bem definidos. Termos especializados como "sling" ou "long_sleeve_outwear" têm embeddings fracos ou ambíguos, porque aparecem raramente nos dados de treino do CLIP — daí o mAP perto de zero nessas categorias.
+
 ---
 
 ## Test 4 — 10k images | YOLOv8L | batch=16 | ~1.227 hours
@@ -270,4 +275,4 @@ Trained from scratch using `--no-pretrained` (random weights, no COCO pretrainin
 | Precision | 0.7229 | 0.6414 | -0.0815 |
 | Recall | 0.7302 | 0.6676 | -0.0626 |
 
-COCO pretraining gives a clear advantage — ~7% higher mAP@50 and ~8% higher mAP@50:95. The gap is most pronounced on dress categories (short_sleeve_dress: 0.589 vs 0.503), where the limited training data makes transfer learning most valuable. Training time was nearly identical (~1.2h).
+COCO pretraining gives a clear advantage ~7% higher mAP@50 and ~8% higher mAP@50:95. The gap is most pronounced on dress categories (short_sleeve_dress: 0.589 vs 0.503), where the limited training data makes transfer learning most valuable. Training time was nearly identical (\~1.2h).
