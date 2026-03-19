@@ -16,6 +16,7 @@ Run:
 import asyncio
 import base64
 import os
+import tempfile
 from pathlib import Path
 from typing import List
 
@@ -90,6 +91,7 @@ WEIGHTS_PATH = _find_weights()
 detector    : BaseDetector        = None
 recommender : RecommendationEngine = None
 camera      : CameraStream       = None
+whisper_model = None
 
 
 DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "yolov8").lower()
@@ -97,7 +99,7 @@ DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "yolov8").lower()
 
 @app.on_event("startup")
 async def startup():
-    global detector, recommender, camera
+    global detector, recommender, camera, whisper_model
 
     if DETECTOR_BACKEND == "yolo_world":
         print("\n🚀  Starting with YOLO-World zero-shot detector")
@@ -109,6 +111,14 @@ async def startup():
 
     recommender = RecommendationEngine(top_k=5)
     camera      = CameraStream(detector, recommender, source=0)
+
+    # Load Whisper for voice transcription
+    try:
+        from faster_whisper import WhisperModel
+        whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
+        print("🎙️  Whisper speech-to-text loaded")
+    except Exception as e:
+        print(f"⚠️  Whisper not available: {e}")
 
     print("✅  API ready\n")
 
@@ -184,6 +194,67 @@ async def set_conf(value: float):
         raise HTTPException(status_code=400, detail="conf must be between 0.01 and 0.99")
     detector.conf_thres = value
     return {"conf_thres": round(detector.conf_thres, 2)}
+
+
+# Common Whisper hallucinations on silence/noise
+_WHISPER_JUNK = {
+    "you", "thank you", "thanks", "thanks for watching",
+    "thank you for watching", "bye", "goodbye", "hello",
+    "the end", "subtitle", "subtitles", "music",
+    "applause", "laughter", "", "...",
+}
+
+
+@app.post("/api/transcribe")
+async def transcribe_audio(audio: UploadFile = File(...)):
+    """Accept an audio file (webm/opus from browser) and return transcribed text."""
+    from fastapi import HTTPException
+
+    if whisper_model is None:
+        raise HTTPException(status_code=503, detail="Whisper model not loaded")
+
+    data = await audio.read()
+    print(f"🎙️  Received audio: {len(data)} bytes, type: {audio.content_type}")
+
+    # Write browser webm to temp file, then convert to WAV for Whisper
+    with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
+        tmp.write(data)
+        webm_path = tmp.name
+
+    wav_path = webm_path.replace(".webm", ".wav")
+    import subprocess
+    result = subprocess.run(
+        ["ffmpeg", "-y", "-i", webm_path, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wav_path],
+        capture_output=True, text=True, timeout=10,
+    )
+    if result.returncode != 0:
+        print(f"🎙️  ffmpeg stderr: {result.stderr}")
+    wav_size = os.path.getsize(wav_path) if os.path.exists(wav_path) else 0
+    print(f"🎙️  Converted to WAV: {wav_size} bytes")
+    os.unlink(webm_path)
+
+    try:
+        segments, info = whisper_model.transcribe(wav_path, beam_size=5, language="en")
+        print(f"🎙️  Language: {info.language} ({info.language_probability:.0%}), duration: {info.duration:.1f}s")
+
+        parts = []
+        for seg in segments:
+            print(f"🎙️  Segment [{seg.start:.1f}s-{seg.end:.1f}s] "
+                  f"no_speech={seg.no_speech_prob:.2f}: {seg.text!r}")
+            parts.append(seg.text.strip())
+
+        text = " ".join(parts).strip()
+
+        # Filter known hallucinations
+        if text.lower().rstrip(".!?, ") in _WHISPER_JUNK:
+            print(f"🎙️  Filtered as hallucination: {text!r}")
+            text = ""
+
+        print(f"🎙️  Final text: {text!r}")
+    finally:
+        os.unlink(wav_path)
+
+    return {"text": text}
 
 
 @app.websocket("/ws/camera")
