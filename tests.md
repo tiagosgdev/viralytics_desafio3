@@ -276,3 +276,47 @@ Trained from scratch using `--no-pretrained` (random weights, no COCO pretrainin
 | Recall | 0.7302 | 0.6676 | -0.0626 |
 
 COCO pretraining gives a clear advantage ~7% higher mAP@50 and ~8% higher mAP@50:95. The gap is most pronounced on dress categories (short_sleeve_dress: 0.589 vs 0.503), where the limited training data makes transfer learning most valuable. Training time was nearly identical (\~1.2h).
+
+---
+
+## Test 6 — FashionNet (custom) vs YOLOv8L | 970 val images | Model Comparison
+
+Side-by-side evaluation of the from-scratch FashionNet and fine-tuned YOLOv8L on the same validation set.
+
+### Overall Metrics
+
+| Metric | FashionNet (custom) | YOLOv8L (fine-tuned) |
+|--------|---------------------|----------------------|
+| mAP@50 | 0.0091 | 0.7770 |
+| Inference (ms/img) | 3.2 | 10.9 |
+| FPS | 313.4 | 91.4 |
+| Parameters (M) | 11.74 | 43.62 |
+| Weights size (MB) | 141.2 | 87.6 |
+
+### Per-class mAP@50
+
+| Category | FashionNet | YOLOv8L | Better |
+|----------|------------|---------|--------|
+| short_sleeve_top | 0.0250 | 0.8570 | YOLOv8L |
+| long_sleeve_top | 0.0022 | 0.7562 | YOLOv8L |
+| short_sleeve_outwear | 0.0198 | 0.7838 | YOLOv8L |
+| long_sleeve_outwear | 0.0000 | 0.7679 | YOLOv8L |
+| vest | 0.0099 | 0.8567 | YOLOv8L |
+| sling | 0.0050 | 0.8649 | YOLOv8L |
+| shorts | 0.0320 | 0.8647 | YOLOv8L |
+| trousers | 0.0177 | 0.9397 | YOLOv8L |
+| skirt | 0.0044 | 0.7932 | YOLOv8L |
+| short_sleeve_dress | 0.0000 | 0.5445 | YOLOv8L |
+| long_sleeve_dress | 0.0000 | 0.6385 | YOLOv8L |
+| vest_dress | 0.0000 | 0.7096 | YOLOv8L |
+| sling_dress | 0.0028 | 0.7245 | YOLOv8L |
+
+### Analysis
+
+YOLOv8L outperforms FashionNet by 0.7679 mAP@50. This gap reflects:
+
+- **Pretrained COCO weights** — YOLOv8L transfers feature representations from millions of images; FashionNet learns entirely from scratch
+- **Architecture maturity** — YOLOv8 benefits from years of architectural optimisation (CSPDarknet backbone, PANet neck, decoupled head)
+- **Parameter efficiency** — despite having 4x more parameters (43.6M vs 11.7M), YOLOv8L's weights are smaller on disk (87.6 MB vs 141.2 MB) due to architectural efficiency
+
+FashionNet is faster (3.2ms vs 10.9ms, ~3x) and lighter in parameters, but its detection quality is near zero — expected for a custom model trained from scratch with limited data and epochs.

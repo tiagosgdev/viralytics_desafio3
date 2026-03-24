@@ -69,7 +69,7 @@ def decode_fashionnet_output(
         p = pred.permute(0, 2, 3, 1)   # (B, gs, gs, 5+NC)
 
         p_xy  = torch.sigmoid(p[..., :2])
-        p_wh  = p[..., 2:4] * stride
+        p_wh  = p[..., 2:4].abs() * stride
         p_obj = torch.sigmoid(p[..., 4])
         p_cls = torch.sigmoid(p[..., 5:])
 
@@ -173,6 +173,43 @@ def evaluate_fashionnet(weights_path, data_dir, device, img_size=640, batch=8):
                     gt_classes.append(int(cls))
                 all_gts.append({"boxes": gt_boxes, "classes": gt_classes})
 
+    # ── Diagnostics ───────────────────────────────────────────────────
+    total_dets = sum(len(p["boxes"]) for p in all_preds)
+    total_gts  = sum(len(g["boxes"]) for g in all_gts)
+    print(f"\n  [DEBUG] Total detections produced: {total_dets}")
+    print(f"  [DEBUG] Total ground-truth boxes:  {total_gts}")
+
+    if total_dets > 0:
+        all_scores = [s for p in all_preds for s in p["scores"]]
+        all_cls    = [c for p in all_preds for c in p["classes"]]
+        all_widths = [abs(b[2] - b[0]) for p in all_preds for b in p["boxes"]]
+        all_heights= [abs(b[3] - b[1]) for p in all_preds for b in p["boxes"]]
+        neg_w = sum(1 for p in all_preds for b in p["boxes"] if b[2] < b[0])
+        neg_h = sum(1 for p in all_preds for b in p["boxes"] if b[3] < b[1])
+
+        print(f"  [DEBUG] Score  range: [{min(all_scores):.4f}, {max(all_scores):.4f}]  "
+              f"mean={np.mean(all_scores):.4f}")
+        print(f"  [DEBUG] Width  range: [{min(all_widths):.1f}, {max(all_widths):.1f}]  "
+              f"mean={np.mean(all_widths):.1f}")
+        print(f"  [DEBUG] Height range: [{min(all_heights):.1f}, {max(all_heights):.1f}]  "
+              f"mean={np.mean(all_heights):.1f}")
+        print(f"  [DEBUG] Inverted boxes (x1>x2): {neg_w},  (y1>y2): {neg_h}")
+        print(f"  [DEBUG] Classes predicted: {sorted(set(all_cls))}")
+    else:
+        # Check raw objectness scores to understand why nothing passed
+        print("  [DEBUG] No detections! Checking raw objectness scores...")
+        model.eval()
+        with torch.no_grad():
+            sample_imgs = next(iter(val_dl))[0][:1].to(device)
+            raw_preds = model(sample_imgs)
+            for i, rp in enumerate(raw_preds):
+                p = rp.permute(0, 2, 3, 1)
+                obj = torch.sigmoid(p[..., 4])
+                print(f"    Scale {i} objectness: min={obj.min():.4f}  "
+                      f"max={obj.max():.4f}  mean={obj.mean():.4f}  "
+                      f">{0.25}: {(obj > 0.25).sum().item()} cells")
+    print()
+
     # Speed
     mean_ms, std_ms = benchmark_speed(
         lambda x: model(x), device, n_runs=50, img_size=img_size
@@ -225,12 +262,12 @@ def evaluate_yolo(weights_path, data_dir, device_str, img_size=640):
 # Report
 # ─────────────────────────────────────────────────────────────────────────────
 
-def print_comparison(custom: dict, yolo: dict):
+def print_comparison(custom: dict, yolo: dict, custom_name: str, yolo_name: str):
     print("\n" + "═"*70)
     print("  MODEL COMPARISON REPORT")
     print("═"*70)
 
-    print(f"\n{'Metric':<30} {'FashionNet (custom)':>22} {'YOLOv8n':>12}")
+    print(f"\n{'Metric':<30} {custom_name:>22} {yolo_name:>12}")
     print("─"*70)
 
     def row(label, c_val, y_val, fmt=".4f", higher_better=True):
@@ -249,7 +286,7 @@ def print_comparison(custom: dict, yolo: dict):
     row("Weights size (MB)",    custom["size_mb"],  yolo["size_mb"],   fmt=".1f", higher_better=False)
 
     print("\n── Per-class mAP@50 ──────────────────────────────────────────────")
-    print(f"  {'Category':<30} {'FashionNet':>12} {'YOLOv8n':>12}  {'Better':>8}")
+    print(f"  {'Category':<30} {custom_name:>12} {yolo_name:>12}  {'Better':>8}")
     print("  " + "─"*66)
 
     for i, name in enumerate(CATEGORY_NAMES):
@@ -259,18 +296,18 @@ def print_comparison(custom: dict, yolo: dict):
             continue
         c_str  = f"{c_ap:.4f}" if not np.isnan(c_ap) else "  N/A"
         y_str  = f"{y_ap:.4f}" if not np.isnan(y_ap) else "  N/A"
-        winner = "FashionNet" if (not np.isnan(c_ap) and not np.isnan(y_ap) and c_ap > y_ap) \
-                 else "YOLOv8n" if not np.isnan(y_ap) else ""
+        winner = custom_name if (not np.isnan(c_ap) and not np.isnan(y_ap) and c_ap > y_ap) \
+                 else yolo_name if not np.isnan(y_ap) else ""
         print(f"  {name:<30} {c_str:>12} {y_str:>12}  {winner:>8}")
 
     print("\n" + "═"*70)
     diff = custom["map50"] - yolo["map50"]
     if diff < 0:
-        print(f"  YOLOv8n outperforms FashionNet by {abs(diff):.4f} mAP@50")
+        print(f"  {yolo_name} outperforms {custom_name} by {abs(diff):.4f} mAP@50")
         print(f"  This gap reflects pretrained COCO weights, architectural")
         print(f"  optimisations, and years of engineering in Ultralytics.")
     else:
-        print(f"  FashionNet outperforms YOLOv8n by {diff:.4f} mAP@50 🎉")
+        print(f"  {custom_name} outperforms {yolo_name} by {diff:.4f} mAP@50")
     print("═"*70 + "\n")
 
 
@@ -288,23 +325,33 @@ def main():
     device = torch.device(args.device if args.device else "cpu")
     print(f"\nDevice: {device}")
 
-    print("\n[1/2] Evaluating FashionNet (custom)...")
+    # Derive display names from weight paths: pick first parent that isn't "weights"
+    def _model_name(p):
+        for part in reversed(Path(p).parts[:-1]):
+            if part.lower() != "weights":
+                return part
+        return Path(p).stem
+
+    custom_name = _model_name(args.custom_weights)
+    yolo_name   = _model_name(args.yolo_weights)
+
+    print(f"\n[1/2] Evaluating {custom_name}...")
     custom_results = evaluate_fashionnet(
         args.custom_weights, args.data, device, args.imgsz, args.batch
     )
 
-    print("\n[2/2] Evaluating YOLOv8n...")
+    print(f"\n[2/2] Evaluating {yolo_name}...")
     yolo_results = evaluate_yolo(
         args.yolo_weights, args.data, args.device, args.imgsz
     )
 
-    print_comparison(custom_results, yolo_results)
+    print_comparison(custom_results, yolo_results, custom_name, yolo_name)
 
     # Save JSON for notebook / thesis tables
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w") as f:
-        json.dump({"fashionnet": custom_results, "yolov8n": yolo_results}, f, indent=2)
+        json.dump({custom_name: custom_results, yolo_name: yolo_results}, f, indent=2)
     print(f"Results saved to: {out_path.resolve()}\n")
 
 
