@@ -81,7 +81,6 @@ python -c "from src.detection.converter import DeepFashion2ToYOLO; DeepFashion2T
 
 # 4. Train the model
 python scripts/train.py --epochs 50 --model yolov8s --device 0
-python scripts/train.py --epochs 16 --model yolov8s
 
 # 5. Launch the API + camera
 python -m uvicorn src.api.main:app --reload
@@ -96,7 +95,42 @@ open frontend/index.html
 python scripts/evaluate_yolo_world.py
 ```
 
-### `--device` flag options
+### `train.py` flags (YOLOv8 fine-tuning)
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--model` | str | `yolov8s` | YOLOv8 variant: `yolov8n` (nano), `yolov8s` (small), `yolov8m` (medium), `yolov8l` (large) |
+| `--epochs` | int | `50` | Number of training epochs |
+| `--batch` | int | `16` | Batch size |
+| `--imgsz` | int | `640` | Input image size (pixels) |
+| `--data` | str | `data/sample_dataset/yolo/dataset.yaml` | Path to dataset YAML |
+| `--output_dir` | str | `models/weights` | Parent directory for training runs |
+| `--workers` | int | `2` | Number of DataLoader workers |
+| `--device` | str | `0` | Hardware target (see table below) |
+| `--no-pretrained` | flag | off | Train from scratch (random weights, no COCO pretraining). Appends `_scratch` to run name |
+| `--wandb` | flag | off | Enable Weights & Biases logging |
+
+**Output:** Results are saved to `models/weights/{model}_fashion/` (or `{model}_fashion_scratch` with `--no-pretrained`). If the folder already exists, YOLO auto-increments the name (e.g. `yolov8s_fashion2`).
+
+### `train_custom.py` flags (FashionNet from scratch)
+
+| Flag | Type | Default | Description |
+|------|------|---------|-------------|
+| `--epochs` | int | `50` | Number of training epochs |
+| `--batch` | int | `8` | Batch size (use 4-8 on CPU, 16+ on GPU) |
+| `--imgsz` | int | `640` | Input image size (pixels) |
+| `--lr` | float | `1e-3` | Learning rate |
+| `--device` | str | auto | Hardware target: `cpu`, `cuda`, `mps`, or empty for auto-detect |
+| `--workers` | int | `0` | DataLoader workers (0 = main process, safest) |
+| `--data` | str | `data/sample_dataset/yolo` | Path to YOLO directory containing `images/` and `labels/` |
+| `--output` | str | `models/weights/fashionnet` | Output directory for checkpoints |
+| `--resume` | str | — | Path to a `.pt` checkpoint to resume training from |
+| `--fast` | flag | off | Use TinyFashionNet (fewer channels) for quick testing |
+| `--max_samples` | int | `0` | Cap dataset size for quick testing (0 = use all) |
+
+**Output:** Saves `best.pt`, `last.pt`, and `history.json` to the `--output` directory. **Warning:** re-running with the same `--output` path overwrites previous results — use a different path to preserve them.
+
+### `--device` values
 
 | Value | Hardware | Example |
 |-------|----------|---------|

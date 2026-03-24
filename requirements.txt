@@ -23,6 +23,9 @@ scikit-learn>=1.4.2
 # Experiment Tracking
 wandb>=0.16.6
 
+# Speech-to-text
+faster-whisper>=1.0.0
+
 # Utilities
 tqdm>=4.66.4
 PyYAML>=6.0.1
