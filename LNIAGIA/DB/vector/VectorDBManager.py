@@ -203,8 +203,7 @@ def _build_qdrant_filter(parsed_filters: dict, strict_exclude: bool = False, str
     parsed_filters example:
         {
             "include": {"type": ["shorts"], "style": ["sporty"]},
-            "exclude": {"pattern": ["floral"]},
-            "price_range": {"min": 10, "max": 50}
+            "exclude": {"pattern": ["floral"]}
         }
     """
     must = []
@@ -222,16 +221,6 @@ def _build_qdrant_filter(parsed_filters: dict, strict_exclude: bool = False, str
             if values:
                 must_not.append(FieldCondition(key=field, match=MatchAny(any=values)))
 
-    # Price range (always strict)
-    pr = parsed_filters.get("price_range", {})
-    pr_min = pr.get("min") if pr else None
-    pr_max = pr.get("max") if pr else None
-    if pr_min is not None or pr_max is not None:
-        must.append(FieldCondition(
-            key="price",
-            range=Range(gte=pr_min, lte=pr_max),
-        ))
-
     if not must and not must_not:
         return None
 
@@ -242,25 +231,14 @@ def filtered_search(
     query: str,
     parsed_filters: dict,
     model: SentenceTransformer,
+    strict: bool = False,
     max_results: int | None = None,
     score_threshold: float | None = None,
     penalty_weight: float | None = None,
     boost_weight: float | None = None,
 ):
     """
-    Semantic search with Qdrant metadata filters, applying soft boosting and penalizing.
-
-    Args:
-        query:           The user's free-text query.
-        parsed_filters:  Output of llm_query_parser.parse_query().
-        model:           Loaded SentenceTransformer.
-        max_results:     Override TOTAL_RESULTS for this call.
-        score_threshold: Override SIMILARITY_THRESHOLD for this call.
-        penalty_weight:  Amount to subtract from similarity score for each matched exclude filter.
-        boost_weight:    Amount to add to similarity score for each matched include filter.
-
-    Returns:
-        List of Qdrant ScoredPoint objects.
+    Semantic search with Qdrant metadata filters, applying strict or soft filtering.
     """
     query_emb = model.encode(
         [BGE_QUERY_PREFIX + query],
@@ -268,55 +246,85 @@ def filtered_search(
         show_progress_bar=False,
     )[0].tolist()
 
-    qfilter = _build_qdrant_filter(parsed_filters, strict_exclude=False, strict_include=False)
-
     client = _get_client()
-
-    # Retrieve a larger pool of results to re-rank
     fetch_limit = MAX_QUERY_RESULTS
-
-    results = client.query_points(
-        collection_name=COLLECTION_NAME,
-        query=query_emb,
-        query_filter=qfilter,
-        limit=fetch_limit,
-    )
-
-    hits = results.points
-    client.close()
-
-    p_weight = penalty_weight if penalty_weight is not None else PENALTY_WEIGHT
-    b_weight = boost_weight if boost_weight is not None else BOOST_WEIGHT
-
-    # Apply penalty/boost for items that match exclusion/inclusion filters
+    
     excludes = parsed_filters.get("exclude", {})
     includes = parsed_filters.get("include", {})
-    
-    if excludes or includes:
-        for hit in hits:
-            # Penalize
-            for field, values in excludes.items():
-                payload_val = hit.payload.get(field)
-                if payload_val is None:
-                    continue
-                if isinstance(payload_val, list):
-                    if any(v in payload_val for v in values):
-                        hit.score -= p_weight
-                else:
-                    if payload_val in values:
-                        hit.score -= p_weight
 
-            # Boost
-            for field, values in includes.items():
-                payload_val = hit.payload.get(field)
-                if payload_val is None:
-                    continue
-                if isinstance(payload_val, list):
-                    if any(v in payload_val for v in values):
-                        hit.score += b_weight
-                else:
-                    if payload_val in values:
-                        hit.score += b_weight
+    if strict:
+        qfilter = _build_qdrant_filter(parsed_filters, strict_exclude=True, strict_include=True)
+        results = client.query_points(
+            collection_name=COLLECTION_NAME,
+            query=query_emb,
+            query_filter=qfilter,
+            limit=fetch_limit,
+        )
+        hits = results.points
+    else:
+        if not excludes:
+            # no values on "exclude" -> search normally without any filtering
+            results = client.query_points(
+                collection_name=COLLECTION_NAME,
+                query=query_emb,
+                limit=fetch_limit,
+            )
+            hits = results.points
+        else:
+            # two searches
+            qfilter_exclude = _build_qdrant_filter(parsed_filters, strict_exclude=True, strict_include=False)
+            results_exclude = client.query_points(
+                collection_name=COLLECTION_NAME,
+                query=query_emb,
+                query_filter=qfilter_exclude,
+                limit=fetch_limit,
+            )
+            results_normal = client.query_points(
+                collection_name=COLLECTION_NAME,
+                query=query_emb,
+                limit=fetch_limit,
+            )
+            
+            # merge hits, avoiding duplicates
+            hits_dict = {}
+            for hit in results_normal.points + results_exclude.points:
+                if hit.id not in hits_dict:
+                    hits_dict[hit.id] = hit
+            hits = list(hits_dict.values())
+            
+        p_weight = penalty_weight if penalty_weight is not None else PENALTY_WEIGHT
+        b_weight = boost_weight if boost_weight is not None else BOOST_WEIGHT
+
+        if excludes or includes:
+            for hit in hits:
+                # Penalize
+                for field, values in excludes.items():
+                    payload_val = hit.payload.get(field)
+                    if payload_val is None:
+                        continue
+                    if isinstance(payload_val, list):
+                        if any(v in payload_val for v in values):
+                            hit.score -= p_weight
+                    else:
+                        if payload_val in values:
+                            hit.score -= p_weight
+
+                # # Check if it lacks anything in include
+                # for field, values in includes.items():
+                #     payload_val = hit.payload.get(field)
+                #     has_include = False
+                #     if payload_val is not None:
+                #         if isinstance(payload_val, list):
+                #             if any(v in payload_val for v in values):
+                #                 has_include = True
+                #         else:
+                #             if payload_val in values:
+                #                 has_include = True
+                #     # The user said: "penalising... the ones that do not have something in the "include""
+                #     if not has_include:
+                #         hit.score -= p_weight
+
+    client.close()
 
     # Filter out anything that drops below the score threshold after penalization
     final_threshold = score_threshold if score_threshold is not None else SIMILARITY_THRESHOLD

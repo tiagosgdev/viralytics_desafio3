@@ -1,0 +1,210 @@
+{
+  "query": "Kids clothes for the beach, short sleeve",
+  "parsed_filters": {
+    "include": {
+      "type": [
+        "short_sleeve_top"
+      ],
+      "gender": [
+        "unisex"
+      ],
+      "age_group": [
+        "child"
+      ],
+      "occasion": [
+        "beach"
+      ]
+    }
+  },
+  "strict_mode": true,
+  "expected_item_ids": [
+    338,
+    880,
+    2357,
+    7052,
+    7133,
+    7225,
+    7785,
+    8029
+  ],
+  "evaluation": {
+    "precision": 1.0,
+    "recall": 0.75,
+    "f1": 0.8571,
+    "avg_score": 0.6239,
+    "returned_count": 6,
+    "expected_count": 8,
+    "hit_count": 6,
+    "hit_ids": [
+      880,
+      7052,
+      7133,
+      7225,
+      7785,
+      8029
+    ],
+    "miss_ids": [
+      338,
+      2357
+    ],
+    "extra_ids": []
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 8029,
+      "score": 0.652,
+      "is_expected": true,
+      "payload": {
+        "item_id": 8029,
+        "description": "This is a green short sleeve top (t-shirt, tee). The style is casual (everyday, relaxed, informal) with a embroidered (stitched design, decorative stitching) pattern. Made of linen (lightweight, breathable, natural) with a regular fit (standard, normal fit). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years). Suitable for all-season (year-round, versatile) and beach (vacation, resort, seaside). Brand: Ralph Lauren. Price: €67.95 (affordable). Features: V-neck (V-shaped neckline), button-down collar (casual, preppy collar), regular sleeves (standard, classic sleeves), split hem (side-slit, vented hem).",
+        "type": "short_sleeve_top",
+        "color": "green",
+        "style": "casual",
+        "pattern": "embroidered",
+        "material": "linen",
+        "fit": "regular",
+        "gender": "unisex",
+        "age_group": "child",
+        "season": "all-season",
+        "occasion": "beach",
+        "brand": "Ralph Lauren",
+        "price": 67.95,
+        "neckline": "v-neck",
+        "collar": "button-down",
+        "sleeve_style": "regular",
+        "hem_style": "split"
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 7052,
+      "score": 0.646,
+      "is_expected": true,
+      "payload": {
+        "item_id": 7052,
+        "description": "This is a red (crimson, scarlet) short sleeve top (t-shirt, tee). The style is sporty (athletic, active, sport-inspired) with a camouflage (camo, military pattern) pattern. Made of rayon (semi-synthetic, silky feel) with a tailored fit (structured, precise fit). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and beach (vacation, resort, seaside). Brand: Superdry. Price: €39.00 (affordable). Features: boat neck (bateau, wide horizontal neckline), button-down collar (casual, preppy collar), cuffed sleeves (turned-up cuff, banded sleeves), straight hem (even, clean-cut hem).",
+        "type": "short_sleeve_top",
+        "color": "red",
+        "style": "sporty",
+        "pattern": "camouflage",
+        "material": "rayon",
+        "fit": "tailored",
+        "gender": "unisex",
+        "age_group": "child",
+        "season": "summer",
+        "occasion": "beach",
+        "brand": "Superdry",
+        "price": 39.0,
+        "neckline": "boat neck",
+        "collar": "button-down",
+        "sleeve_style": "cuffed",
+        "hem_style": "straight"
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 7225,
+      "score": 0.6247,
+      "is_expected": true,
+      "payload": {
+        "item_id": 7225,
+        "description": "This is a burgundy (wine red, maroon, dark red) short sleeve top (t-shirt, tee). The style is casual (everyday, relaxed, informal) with a striped (stripes, lined) pattern. Made of linen (lightweight, breathable, natural) with a cropped (shortened, above natural length). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years). Suitable for spring (mild weather, transitional) and beach (vacation, resort, seaside). Brand: Everlane. Price: €20.99 (budget-friendly, cheap, inexpensive). Features: boat neck (bateau, wide horizontal neckline), rolled sleeves (folded-up, casual cuff), raw edge hem (unfinished, frayed hem).",
+        "type": "short_sleeve_top",
+        "color": "burgundy",
+        "style": "casual",
+        "pattern": "striped",
+        "material": "linen",
+        "fit": "cropped",
+        "gender": "unisex",
+        "age_group": "child",
+        "season": "spring",
+        "occasion": "beach",
+        "brand": "Everlane",
+        "price": 20.99,
+        "neckline": "boat neck",
+        "collar": "none",
+        "sleeve_style": "rolled",
+        "hem_style": "raw edge"
+      }
+    },
+    {
+      "rank": 4,
+      "item_id": 880,
+      "score": 0.6143,
+      "is_expected": true,
+      "payload": {
+        "item_id": 880,
+        "description": "This is a teal (blue-green, turquoise) short sleeve top (t-shirt, tee). The style is preppy (collegiate, classic American, polished) with a floral (flower pattern, botanical print) pattern. Made of wool (warm, cozy, natural fiber) with a cropped (shortened, above natural length). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years). Suitable for winter (cold weather, warm clothing) and beach (vacation, resort, seaside). Brand: Puma. Price: €34.99 (affordable). Features: turtleneck (high neck, roll neck, polo neck), peter pan collar (round, flat collar), bell sleeves (wide, flared sleeves), asymmetric hem (uneven, high-low hem).",
+        "type": "short_sleeve_top",
+        "color": "teal",
+        "style": "preppy",
+        "pattern": "floral",
+        "material": "wool",
+        "fit": "cropped",
+        "gender": "unisex",
+        "age_group": "child",
+        "season": "winter",
+        "occasion": "beach",
+        "brand": "Puma",
+        "price": 34.99,
+        "neckline": "turtleneck",
+        "collar": "peter pan",
+        "sleeve_style": "bell",
+        "hem_style": "asymmetric"
+      }
+    },
+    {
+      "rank": 5,
+      "item_id": 7785,
+      "score": 0.6142,
+      "is_expected": true,
+      "payload": {
+        "item_id": 7785,
+        "description": "This is a multicolor (colorful, multi-colored, patterned) short sleeve top (t-shirt, tee). The style is formal (dressy, elegant, professional) with a plain (solid color, no pattern, simple) pattern. Made of organic cotton (eco-friendly, sustainable, natural) with a fitted (form-fitting, close to body). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years). Suitable for autumn (fall, cool weather) and beach (vacation, resort, seaside). Brand: Burberry. Price: €116.00 (mid-range). Features: collared neckline (shirt collar, classic collar), peter pan collar (round, flat collar), puff sleeves (puffy, voluminous, balloon sleeves), raw edge hem (unfinished, frayed hem).",
+        "type": "short_sleeve_top",
+        "color": "multicolor",
+        "style": "formal",
+        "pattern": "plain",
+        "material": "organic cotton",
+        "fit": "fitted",
+        "gender": "unisex",
+        "age_group": "child",
+        "season": "autumn",
+        "occasion": "beach",
+        "brand": "Burberry",
+        "price": 116.0,
+        "neckline": "collared",
+        "collar": "peter pan",
+        "sleeve_style": "puff",
+        "hem_style": "raw edge"
+      }
+    },
+    {
+      "rank": 6,
+      "item_id": 7133,
+      "score": 0.5923,
+      "is_expected": true,
+      "payload": {
+        "item_id": 7133,
+        "description": "This is a burgundy (wine red, maroon, dark red) short sleeve top (t-shirt, tee). The style is preppy (collegiate, classic American, polished) with a checkered (checked, gingham) pattern. Made of cotton (soft, breathable, natural fiber) with a relaxed fit (comfortable, easy fit). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years). Suitable for autumn (fall, cool weather) and beach (vacation, resort, seaside). Brand: American Eagle. Price: €12.99 (budget-friendly, cheap, inexpensive). Features: square neck (angular, straight-across neckline), shawl collar (rolled, wrap-around collar), puff sleeves (puffy, voluminous, balloon sleeves), longline hem (extended, long-cut hem).",
+        "type": "short_sleeve_top",
+        "color": "burgundy",
+        "style": "preppy",
+        "pattern": "checkered",
+        "material": "cotton",
+        "fit": "relaxed",
+        "gender": "unisex",
+        "age_group": "child",
+        "season": "autumn",
+        "occasion": "beach",
+        "brand": "American Eagle",
+        "price": 12.99,
+        "neckline": "square neck",
+        "collar": "shawl",
+        "sleeve_style": "puff",
+        "hem_style": "longline"
+      }
+    }
+  ]
+}

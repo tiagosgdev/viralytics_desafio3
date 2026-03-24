@@ -51,11 +51,16 @@ def _display_results(hits: list, parsed_filters: dict):
         print(f"  Type    : {p.get('type', '?')}")
         print(f"  Color   : {p.get('color', '?')}")
         print(f"  Style   : {p.get('style', '?')}")
-        print(f"  Brand   : {p.get('brand', '?')}")
-        print(f"  Price   : {p.get('price', '?')}")
-        print(f"  Season  : {p.get('season', '?')}")
-        print(f"  Occasion: {p.get('occasion', '?')}")
+        print(f"  Pattern : {p.get('pattern', '?')}")
+        print(f"  Material: {p.get('material', '?')}")
+        print(f"  Fit     : {p.get('fit', '?')}")
         print(f"  Gender  : {p.get('gender', '?')}")
+        print(f"  Age Grp : {p.get('age_group', '?')}")
+        print(f"  Season  : {p.get('season', '?')}")
+        print(f"  Occasion : {p.get('occasion', '?')}")
+        print(f"  Brand   : {p.get('brand', '?')}")
+        print(f"  Price   : ${p.get('price', '?')}")
+
 
         desc = p.get("description", "")
         if len(desc) > 200:
@@ -106,11 +111,15 @@ def main():
         print("\n  Extracted filters:")
         print(f"  {json.dumps(parsed_filters, indent=4)}")
 
-        # Step 2: Filtered semantic search
-        print("\n  Searching ...")
-        hits = filtered_search(query, parsed_filters, model)
+        # Step 2: Ask user for strictness
+        strict_ans = input("\n  Do you mind getting some results that do not match exactly your requirements? (y/n) > ").strip().lower()
+        strict = strict_ans == 'y'
 
-        # Step 3: Display results
+        # Step 3: Filtered semantic search
+        print("\n  Searching ...")
+        hits = filtered_search(query, parsed_filters, model, strict=strict)
+
+        # Step 4: Display results
         _display_results(hits, parsed_filters)
 
 

@@ -66,39 +66,36 @@ Return ONLY a JSON object with this schema — no explanation, no markdown:
   }},
   "exclude": {{
     "<field>": ["<value>", ...]
-  }},
-  "price_range": {{
-    "min": <number or null>,
-    "max": <number or null>
   }}
 }}
 
 RULES:
 - "include" lists the values the user WANTS.
 - "exclude" lists the values the user does NOT want (negation).
-- Only include fields that the user explicitly or implicitly mentions.
+- Only include fields that the user explicitly mentions.
+- If the user says something like "I do not want floral pattern", put "floral" under "exclude" for the "pattern" field and DO NOT include all the other patterns in the "include" section.
 - If the user says "t-shirt", map it to "short_sleeve_top".
 - If the user says "dress" generically, include ALL dress types:
   ["short_sleeve_dress","long_sleeve_dress","vest_dress","sling_dress"].
-- If the user says "jacket" or "coat", include ALL outwear types:
-  ["short_sleeve_outwear","long_sleeve_outwear"].
-- PRICE rules:
-  * Set price_range ONLY when the user explicitly mentions price, cost, or money with words
-    like "cheap", "budget", "affordable", "expensive", "premium", "luxury".
-  * If the user mentions NO price, omit price_range entirely (min: null, max: null).
-  * Style words like "casual", "formal", "elegant", "fancy" refer to STYLE ONLY — they
-    NEVER imply any price range. Do NOT set price_range based on style words.
-  * If the user says "cheap" or "budget", set price_range (min: 0, max: 50).
-  * If the user says "premium" or "luxury", set price_range (min: 150, max: null).
+- If the user says "jacket" or "coat", map it to "long_sleeve_outwear".
+- If a user says that it does not want a pattern, set "pattern" to ["plain"] in the "include" section.
 - COLOR rules:
   * If the user says "dark colors", expand to: ["black","navy","burgundy","olive","brown"].
-  * If the user says "bright colors", "vivid colors", or "bold colors", expand to:
+  * If the user says "vivid colors", or "bold colors", expand to:
     ["white","yellow","orange","pink","red","purple","coral","teal"].
   * If the user says "neutral colors", expand to: ["white","gray","beige","cream","brown"].
+- Age group ranges:
+  * "baby": (0, 2)
+  * "child": (3, 12)
+  * "teenager": (13, 17)
+  * "young adult": (18, 29)
+  * "adult": (30, 59)
+  * "senior": (60, 120)
 - If the user mentions NO exclusions, set "exclude" to {{}}.
 - Omit any section that is empty.
-"""
 
+After creating the JSON, do a double check on all the rules above to make sure you followed them. If not, fix the JSON until it is correct.
+"""
 
 def _build_user_prompt(query: str) -> str:
     return f'User query: "{query}"'
@@ -118,7 +115,7 @@ def parse_query(query: str, model: str | None = None, verbose: bool = False) -> 
         verbose: Print the raw LLM response for debugging.
 
     Returns:
-        Dict with keys "include", "exclude", "price_range" (any may be absent).
+        Dict with keys "include", "exclude" (either may be absent).
     """
     model = model or OLLAMA_MODEL
 
@@ -176,20 +173,6 @@ def _validate(parsed: dict) -> dict:
             parsed[section] = cleaned
         elif section in parsed:
             del parsed[section]
-
-    # Validate price_range
-    pr = parsed.get("price_range", {})
-    if pr:
-        pr_min = pr.get("min")
-        pr_max = pr.get("max")
-        if pr_min is not None and not isinstance(pr_min, (int, float)):
-            pr_min = None
-        if pr_max is not None and not isinstance(pr_max, (int, float)):
-            pr_max = None
-        if pr_min is not None or pr_max is not None:
-            parsed["price_range"] = {"min": pr_min, "max": pr_max}
-        else:
-            parsed.pop("price_range", None)
 
     return parsed
 

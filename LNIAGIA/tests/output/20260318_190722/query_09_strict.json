@@ -1,0 +1,65 @@
+{
+  "query": "A floral summer long sleeve dress, feminine and bohemian",
+  "parsed_filters": {
+    "include": {
+      "type": [
+        "long_sleeve_dress"
+      ],
+      "color": [
+        "multicolor"
+      ],
+      "style": [
+        "bohemian"
+      ],
+      "pattern": [
+        "floral"
+      ]
+    }
+  },
+  "strict_mode": true,
+  "expected_item_ids": [],
+  "evaluation": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "avg_score": 0.7284,
+    "returned_count": 1,
+    "expected_count": 0,
+    "hit_count": 0,
+    "hit_ids": [],
+    "miss_ids": [],
+    "extra_ids": [
+      4283
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 4283,
+      "score": 0.7284,
+      "is_expected": false,
+      "payload": {
+        "item_id": 4283,
+        "description": "This is a multicolor (colorful, multi-colored, patterned) long sleeve dress. The style is bohemian (boho, free-spirited, artistic) with a floral (flower pattern, botanical print) pattern. Made of velvet (plush, luxurious, soft) with a baggy (very loose, oversized, roomy). Designed for women's (female, feminine) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years), teenager (teen, adolescent, 13-17 years), young adult (young, 18-29 years). Suitable for winter (cold weather, warm clothing) and travel (comfortable, versatile, journey). Brand: Zimmermann. Price: €196.00 (mid-range). Features: turtleneck (high neck, roll neck, polo neck), bishop sleeves (full, gathered-at-cuff sleeves), knotted hem (tied-up, front-knot hem), maxi dress (long, floor-length, flowing), knee-length (at the knee), low-rise waist (low waist, hip-hugger).",
+        "type": "long_sleeve_dress",
+        "color": "multicolor",
+        "style": "bohemian",
+        "pattern": "floral",
+        "material": "velvet",
+        "fit": "baggy",
+        "gender": "female",
+        "age_group": "baby, child, teenager, young adult",
+        "season": "winter",
+        "occasion": "travel",
+        "brand": "Zimmermann",
+        "price": 196.0,
+        "dress_style": "maxi",
+        "neckline": "turtleneck",
+        "length": "knee-length",
+        "waist_style": "low-rise",
+        "sleeve_style": "bishop",
+        "hem_style": "knotted"
+      }
+    }
+  ]
+}

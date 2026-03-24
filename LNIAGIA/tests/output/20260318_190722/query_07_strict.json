@@ -1,0 +1,123 @@
+{
+  "query": "Premium black leather jacket, streetwear style",
+  "parsed_filters": {
+    "include": {
+      "type": [
+        "long_sleeve_outwear"
+      ],
+      "color": [
+        "black"
+      ],
+      "style": [
+        "streetwear"
+      ]
+    }
+  },
+  "strict_mode": true,
+  "expected_item_ids": [],
+  "evaluation": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "avg_score": 0.7057,
+    "returned_count": 3,
+    "expected_count": 0,
+    "hit_count": 0,
+    "hit_ids": [],
+    "miss_ids": [],
+    "extra_ids": [
+      3520,
+      3948,
+      4080
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 3520,
+      "score": 0.7181,
+      "is_expected": false,
+      "payload": {
+        "item_id": 3520,
+        "description": "This is a black (dark, noir) long sleeve jacket (coat, hoodie, outerwear). The style is streetwear (urban, hip-hop inspired, trendy) with a checkered (checked, gingham) pattern. Made of silk (luxurious, smooth, elegant) with a fitted (form-fitting, close to body). Designed for men's (male, masculine) — young adult (young, 18-29 years), adult (grown-up, 30-59 years), teenager (teen, adolescent, 13-17 years). Suitable for all-season (year-round, versatile) and sport (exercise, gym, athletic activities). Brand: Boohoo. Price: €69.99 (affordable). Features: peter pan collar (round, flat collar), bell sleeves (wide, flared sleeves), belt closure (belted, tie-waist), detachable hood (removable hood, zip-off hood), light insulation (lightly lined, thin padding), hand warmer pockets (fleece-lined, warm pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "black",
+        "style": "streetwear",
+        "pattern": "checkered",
+        "material": "silk",
+        "fit": "fitted",
+        "gender": "male",
+        "age_group": "young adult, adult, teenager",
+        "season": "all-season",
+        "occasion": "sport",
+        "brand": "Boohoo",
+        "price": 69.99,
+        "closure": "belt",
+        "hood": "detachable",
+        "insulation": "light",
+        "waterproof": "none",
+        "outwear_pockets": "hand warmer pockets",
+        "collar": "peter pan",
+        "sleeve_style": "bell"
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 4080,
+      "score": 0.7117,
+      "is_expected": false,
+      "payload": {
+        "item_id": 4080,
+        "description": "This is a black (dark, noir) long sleeve jacket (coat, hoodie, outerwear). The style is streetwear (urban, hip-hop inspired, trendy) with a plain (solid color, no pattern, simple) pattern. Made of fleece (soft, warm, cozy) with a athletic fit (sporty, performance fit). Designed for men's (male, masculine) — baby (infant, newborn, 0-2 years). Suitable for winter (cold weather, warm clothing) and travel (comfortable, versatile, journey). Brand: Patagonia. Price: €295.99 (premium, high-end, luxury). Features: cap sleeves (short, minimal coverage sleeves), zipper closure (zip-up, zip front), detachable hood (removable hood, zip-off hood), synthetic insulation (synthetic fill, polyester fill), waterproof (fully waterproof, rain-proof, sealed), side pockets (hip pockets, hand pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "black",
+        "style": "streetwear",
+        "pattern": "plain",
+        "material": "fleece",
+        "fit": "athletic",
+        "gender": "male",
+        "age_group": "baby",
+        "season": "winter",
+        "occasion": "travel",
+        "brand": "Patagonia",
+        "price": 295.99,
+        "closure": "zipper",
+        "hood": "detachable",
+        "insulation": "synthetic",
+        "waterproof": "waterproof",
+        "outwear_pockets": "side pockets",
+        "collar": "none",
+        "sleeve_style": "cap"
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 3948,
+      "score": 0.6873,
+      "is_expected": false,
+      "payload": {
+        "item_id": 3948,
+        "description": "This is a black (dark, noir) long sleeve jacket (coat, hoodie, outerwear). The style is streetwear (urban, hip-hop inspired, trendy) with a tie-dye (psychedelic, rainbow swirl) pattern. Made of cotton (soft, breathable, natural fiber) with a regular fit (standard, normal fit). Designed for men's (male, masculine) — teenager (teen, adolescent, 13-17 years), young adult (young, 18-29 years), child (kids, children, 3-12 years). Suitable for spring (mild weather, transitional) and sport (exercise, gym, athletic activities). Brand: Canada Goose. Price: €408.99 (premium, high-end, luxury). Features: mandarin collar (band collar, nehru collar, stand-up), puff sleeves (puffy, voluminous, balloon sleeves), button closure (button-up, button front), light insulation (lightly lined, thin padding), waterproof (fully waterproof, rain-proof, sealed), multiple pockets (many pockets, utility pockets).",
+        "type": "long_sleeve_outwear",
+        "color": "black",
+        "style": "streetwear",
+        "pattern": "tie-dye",
+        "material": "cotton",
+        "fit": "regular",
+        "gender": "male",
+        "age_group": "teenager, young adult, child",
+        "season": "spring",
+        "occasion": "sport",
+        "brand": "Canada Goose",
+        "price": 408.99,
+        "closure": "buttons",
+        "hood": "none",
+        "insulation": "light",
+        "waterproof": "waterproof",
+        "outwear_pockets": "multiple pockets",
+        "collar": "mandarin",
+        "sleeve_style": "puff"
+      }
+    }
+  ]
+}

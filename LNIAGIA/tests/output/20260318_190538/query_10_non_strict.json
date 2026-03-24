@@ -1,0 +1,215 @@
+{
+  "query": "Warm cozy sweater for autumn, wool",
+  "parsed_filters": {
+    "include": {
+      "type": [
+        "long_sleeve_top"
+      ],
+      "material": [
+        "wool"
+      ],
+      "season": [
+        "autumn",
+        "winter"
+      ],
+      "insulation": [
+        "heavy"
+      ]
+    }
+  },
+  "strict_mode": false,
+  "expected_item_ids": [
+    805,
+    1430,
+    1447,
+    2104,
+    2187,
+    2801,
+    3546,
+    3911,
+    4094,
+    4569,
+    4736,
+    4799,
+    5093,
+    5176,
+    5932,
+    7569,
+    8169,
+    8518,
+    9691
+  ],
+  "evaluation": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "avg_score": 0.4036,
+    "returned_count": 5,
+    "expected_count": 19,
+    "hit_count": 0,
+    "hit_ids": [],
+    "miss_ids": [
+      805,
+      1430,
+      1447,
+      2104,
+      2187,
+      2801,
+      3546,
+      3911,
+      4094,
+      4569,
+      4736,
+      4799,
+      5093,
+      5176,
+      5932,
+      7569,
+      8169,
+      8518,
+      9691
+    ],
+    "extra_ids": [
+      162,
+      340,
+      2490,
+      4412,
+      8851
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 162,
+      "score": 0.4074,
+      "is_expected": false,
+      "payload": {
+        "item_id": 162,
+        "description": "This is a green long sleeve top (shirt, sweater, long-sleeved shirt). The style is preppy (collegiate, classic American, polished) with a checkered (checked, gingham) pattern. Made of wool (warm, cozy, natural fiber) with a loose fit (flowy, relaxed, roomy). Designed for women's (female, feminine) — senior (elderly, mature, 60+ years), adult (grown-up, 30-59 years), young adult (young, 18-29 years). Suitable for winter (cold weather, warm clothing) and lounge (home, relaxation, comfort). Brand: Zara. Price: €27.99 (budget-friendly, cheap, inexpensive). Features: square neck (angular, straight-across neckline), puff sleeves (puffy, voluminous, balloon sleeves), split hem (side-slit, vented hem).",
+        "type": "long_sleeve_top",
+        "color": "green",
+        "style": "preppy",
+        "pattern": "checkered",
+        "material": "wool",
+        "fit": "loose",
+        "gender": "female",
+        "age_group": "senior, adult, young adult",
+        "season": "winter",
+        "occasion": "lounge",
+        "brand": "Zara",
+        "price": 27.99,
+        "neckline": "square neck",
+        "collar": "none",
+        "sleeve_style": "puff",
+        "hem_style": "split"
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 340,
+      "score": 0.4062,
+      "is_expected": false,
+      "payload": {
+        "item_id": 340,
+        "description": "This is a coral (salmon, peachy pink) long sleeve top (shirt, sweater, long-sleeved shirt). The style is sporty (athletic, active, sport-inspired) with a polka dot (dotted, spotted) pattern. Made of wool (warm, cozy, natural fiber) with a fitted (form-fitting, close to body). Designed for women's (female, feminine) — senior (elderly, mature, 60+ years), adult (grown-up, 30-59 years). Suitable for winter (cold weather, warm clothing) and everyday wear (daily, casual occasions). Brand: Adidas. Price: €45.99 (affordable). Features: off-shoulder (bare shoulders, strapless top), shawl collar (rolled, wrap-around collar), bell sleeves (wide, flared sleeves), asymmetric hem (uneven, high-low hem).",
+        "type": "long_sleeve_top",
+        "color": "coral",
+        "style": "sporty",
+        "pattern": "polka dot",
+        "material": "wool",
+        "fit": "fitted",
+        "gender": "female",
+        "age_group": "senior, adult",
+        "season": "winter",
+        "occasion": "everyday",
+        "brand": "Adidas",
+        "price": 45.99,
+        "neckline": "off-shoulder",
+        "collar": "shawl",
+        "sleeve_style": "bell",
+        "hem_style": "asymmetric"
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 8851,
+      "score": 0.403,
+      "is_expected": false,
+      "payload": {
+        "item_id": 8851,
+        "description": "This is a teal (blue-green, turquoise) long sleeve jacket (coat, hoodie, outerwear). The style is smart casual (business casual, polished casual) with a embroidered (stitched design, decorative stitching) pattern. Made of wool (warm, cozy, natural fiber) with a relaxed fit (comfortable, easy fit). Designed for unisex (gender-neutral, for everyone) — adult (grown-up, 30-59 years), young adult (young, 18-29 years). Suitable for autumn (fall, cool weather) and date night (romantic, evening out). Brand: Canada Goose. Price: €853.99 (premium, high-end, luxury). Features: pointed collar (classic shirt collar), raglan sleeves (baseball-style, diagonal seam sleeves), zipper closure (zip-up, zip front), attached hood (fixed hood, built-in hood), heavy insulation (thick, very warm, heavily padded).",
+        "type": "long_sleeve_outwear",
+        "color": "teal",
+        "style": "smart casual",
+        "pattern": "embroidered",
+        "material": "wool",
+        "fit": "relaxed",
+        "gender": "unisex",
+        "age_group": "adult, young adult",
+        "season": "autumn",
+        "occasion": "date night",
+        "brand": "Canada Goose",
+        "price": 853.99,
+        "closure": "zipper",
+        "hood": "attached",
+        "insulation": "heavy",
+        "waterproof": "none",
+        "outwear_pockets": "none",
+        "collar": "pointed",
+        "sleeve_style": "raglan"
+      }
+    },
+    {
+      "rank": 4,
+      "item_id": 4412,
+      "score": 0.4013,
+      "is_expected": false,
+      "payload": {
+        "item_id": 4412,
+        "description": "This is a pink (rose, blush) long sleeve top (shirt, sweater, long-sleeved shirt). The style is preppy (collegiate, classic American, polished) with a checkered (checked, gingham) pattern. Made of wool (warm, cozy, natural fiber) with a slim fit (fitted, body-hugging, narrow cut). Designed for unisex (gender-neutral, for everyone) — senior (elderly, mature, 60+ years), adult (grown-up, 30-59 years), young adult (young, 18-29 years). Suitable for winter (cold weather, warm clothing) and work (office, professional, business). Brand: H&M. Price: €18.00 (budget-friendly, cheap, inexpensive). Features: scoop neck (wide, low round neckline), peter pan collar (round, flat collar), raglan sleeves (baseball-style, diagonal seam sleeves), curved hem (rounded, scoop hem).",
+        "type": "long_sleeve_top",
+        "color": "pink",
+        "style": "preppy",
+        "pattern": "checkered",
+        "material": "wool",
+        "fit": "slim fit",
+        "gender": "unisex",
+        "age_group": "senior, adult, young adult",
+        "season": "winter",
+        "occasion": "work",
+        "brand": "H&M",
+        "price": 18.0,
+        "neckline": "scoop neck",
+        "collar": "peter pan",
+        "sleeve_style": "raglan",
+        "hem_style": "curved"
+      }
+    },
+    {
+      "rank": 5,
+      "item_id": 2490,
+      "score": 0.4002,
+      "is_expected": false,
+      "payload": {
+        "item_id": 2490,
+        "description": "This is a green long sleeve top (shirt, sweater, long-sleeved shirt). The style is smart casual (business casual, polished casual) with a abstract (artistic pattern, modern print) pattern. Made of wool (warm, cozy, natural fiber) with a athletic fit (sporty, performance fit). Designed for unisex (gender-neutral, for everyone) — young adult (young, 18-29 years), adult (grown-up, 30-59 years), teenager (teen, adolescent, 13-17 years). Suitable for winter (cold weather, warm clothing) and party (celebration, night out, festive). Brand: Pull&Bear. Price: €29.99 (budget-friendly, cheap, inexpensive). Features: collared neckline (shirt collar, classic collar), shawl collar (rolled, wrap-around collar), bell sleeves (wide, flared sleeves), asymmetric hem (uneven, high-low hem).",
+        "type": "long_sleeve_top",
+        "color": "green",
+        "style": "smart casual",
+        "pattern": "abstract",
+        "material": "wool",
+        "fit": "athletic",
+        "gender": "unisex",
+        "age_group": "young adult, adult, teenager",
+        "season": "winter",
+        "occasion": "party",
+        "brand": "Pull&Bear",
+        "price": 29.99,
+        "neckline": "collared",
+        "collar": "shawl",
+        "sleeve_style": "bell",
+        "hem_style": "asymmetric"
+      }
+    }
+  ]
+}

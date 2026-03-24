@@ -1,0 +1,75 @@
+{
+  "query": "Warm cozy sweater for autumn, wool",
+  "parsed_filters": {
+    "include": {
+      "type": [
+        "long_sleeve_top"
+      ],
+      "material": [
+        "wool"
+      ],
+      "season": [
+        "autumn",
+        "winter"
+      ],
+      "insulation": [
+        "heavy"
+      ]
+    }
+  },
+  "strict_mode": true,
+  "expected_item_ids": [
+    805,
+    1430,
+    1447,
+    2104,
+    2187,
+    2801,
+    3546,
+    3911,
+    4094,
+    4569,
+    4736,
+    4799,
+    5093,
+    5176,
+    5932,
+    7569,
+    8169,
+    8518,
+    9691
+  ],
+  "evaluation": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "avg_score": 0.0,
+    "returned_count": 0,
+    "expected_count": 19,
+    "hit_count": 0,
+    "hit_ids": [],
+    "miss_ids": [
+      805,
+      1430,
+      1447,
+      2104,
+      2187,
+      2801,
+      3546,
+      3911,
+      4094,
+      4569,
+      4736,
+      4799,
+      5093,
+      5176,
+      5932,
+      7569,
+      8169,
+      8518,
+      9691
+    ],
+    "extra_ids": []
+  },
+  "results": []
+}

@@ -1,0 +1,313 @@
+{
+  "query": "A simple minimalist white shirt for work",
+  "parsed_filters": {
+    "include": {
+      "type": [
+        "short_sleeve_top"
+      ],
+      "color": [
+        "white"
+      ],
+      "style": [
+        "minimalist"
+      ],
+      "gender": [
+        "female"
+      ],
+      "occasion": [
+        "work"
+      ]
+    }
+  },
+  "strict_mode": false,
+  "expected_item_ids": [
+    2317
+  ],
+  "evaluation": {
+    "precision": 0.1,
+    "recall": 1.0,
+    "f1": 0.1818,
+    "avg_score": 0.3477,
+    "returned_count": 10,
+    "expected_count": 1,
+    "hit_count": 1,
+    "hit_ids": [
+      2317
+    ],
+    "miss_ids": [],
+    "extra_ids": [
+      1227,
+      3910,
+      5360,
+      6045,
+      7068,
+      7222,
+      7810,
+      9046,
+      9301
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 3910,
+      "score": 0.4746,
+      "is_expected": false,
+      "payload": {
+        "item_id": 3910,
+        "description": "This is a white (bright, clean) short sleeve top (t-shirt, tee). The style is smart casual (business casual, polished casual) with a polka dot (dotted, spotted) pattern. Made of nylon (synthetic, durable, lightweight) with a regular fit (standard, normal fit). Designed for women's (female, feminine) — adult (grown-up, 30-59 years), senior (elderly, mature, 60+ years), young adult (young, 18-29 years). Suitable for autumn (fall, cool weather) and work (office, professional, business). Brand: COS. Price: €32.00 (affordable). Features: off-shoulder (bare shoulders, strapless top), raglan sleeves (baseball-style, diagonal seam sleeves), split hem (side-slit, vented hem).",
+        "type": "short_sleeve_top",
+        "color": "white",
+        "style": "smart casual",
+        "pattern": "polka dot",
+        "material": "nylon",
+        "fit": "regular",
+        "gender": "female",
+        "age_group": "adult, senior, young adult",
+        "season": "autumn",
+        "occasion": "work",
+        "brand": "COS",
+        "price": 32.0,
+        "neckline": "off-shoulder",
+        "collar": "none",
+        "sleeve_style": "raglan",
+        "hem_style": "split"
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 7222,
+      "score": 0.4621,
+      "is_expected": false,
+      "payload": {
+        "item_id": 7222,
+        "description": "This is a white (bright, clean) short sleeve top (t-shirt, tee). The style is vintage (retro, classic, old-school) with a polka dot (dotted, spotted) pattern. Made of linen (lightweight, breathable, natural) with a fitted (form-fitting, close to body). Designed for women's (female, feminine) — teenager (teen, adolescent, 13-17 years), child (kids, children, 3-12 years). Suitable for spring (mild weather, transitional) and work (office, professional, business). Brand: Abercrombie & Fitch. Price: €18.99 (budget-friendly, cheap, inexpensive). Features: V-neck (V-shaped neckline), mandarin collar (band collar, nehru collar, stand-up), lantern sleeves (rounded, voluminous mid-arm sleeves), straight hem (even, clean-cut hem).",
+        "type": "short_sleeve_top",
+        "color": "white",
+        "style": "vintage",
+        "pattern": "polka dot",
+        "material": "linen",
+        "fit": "fitted",
+        "gender": "female",
+        "age_group": "teenager, child",
+        "season": "spring",
+        "occasion": "work",
+        "brand": "Abercrombie & Fitch",
+        "price": 18.99,
+        "neckline": "v-neck",
+        "collar": "mandarin",
+        "sleeve_style": "lantern",
+        "hem_style": "straight"
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 7068,
+      "score": 0.454,
+      "is_expected": false,
+      "payload": {
+        "item_id": 7068,
+        "description": "This is a white (bright, clean) short sleeve top (t-shirt, tee). The style is minimalist (simple, clean, understated) with a animal print (leopard, zebra, snake print) pattern. Made of fleece (soft, warm, cozy) with a athletic fit (sporty, performance fit). Designed for women's (female, feminine) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and lounge (home, relaxation, comfort). Brand: Levi's. Price: €34.99 (affordable). Features: square neck (angular, straight-across neckline), notched collar (lapel collar, blazer collar), lantern sleeves (rounded, voluminous mid-arm sleeves), straight hem (even, clean-cut hem).",
+        "type": "short_sleeve_top",
+        "color": "white",
+        "style": "minimalist",
+        "pattern": "animal print",
+        "material": "fleece",
+        "fit": "athletic",
+        "gender": "female",
+        "age_group": "baby, child",
+        "season": "summer",
+        "occasion": "lounge",
+        "brand": "Levi's",
+        "price": 34.99,
+        "neckline": "square neck",
+        "collar": "notched",
+        "sleeve_style": "lantern",
+        "hem_style": "straight"
+      }
+    },
+    {
+      "rank": 4,
+      "item_id": 9301,
+      "score": 0.4479,
+      "is_expected": false,
+      "payload": {
+        "item_id": 9301,
+        "description": "This is a white (bright, clean) short sleeve top (t-shirt, tee). The style is formal (dressy, elegant, professional) with a plain (solid color, no pattern, simple) pattern. Made of cashmere (luxury wool, ultra-soft) with a oversized (big, roomy, loose, baggy). Designed for women's (female, feminine) — adult (grown-up, 30-59 years). Suitable for winter (cold weather, warm clothing) and work (office, professional, business). Brand: Prada. Price: €427.00 (premium, high-end, luxury). Features: mock neck (short turtleneck, stand-up collar), cuban collar (camp collar, open revere collar), dolman sleeves (batwing, wide loose sleeves), split hem (side-slit, vented hem).",
+        "type": "short_sleeve_top",
+        "color": "white",
+        "style": "formal",
+        "pattern": "plain",
+        "material": "cashmere",
+        "fit": "oversized",
+        "gender": "female",
+        "age_group": "adult",
+        "season": "winter",
+        "occasion": "work",
+        "brand": "Prada",
+        "price": 427.0,
+        "neckline": "mock neck",
+        "collar": "cuban",
+        "sleeve_style": "dolman",
+        "hem_style": "split"
+      }
+    },
+    {
+      "rank": 5,
+      "item_id": 2317,
+      "score": 0.2973,
+      "is_expected": true,
+      "payload": {
+        "item_id": 2317,
+        "description": "This is a white (bright, clean) long sleeve top (shirt, sweater, long-sleeved shirt). The style is minimalist (simple, clean, understated) with a geometric (shapes, abstract geometric) pattern. Made of satin (smooth, shiny, silky) with a relaxed fit (comfortable, easy fit). Designed for unisex (gender-neutral, for everyone) — adult (grown-up, 30-59 years). Suitable for winter (cold weather, warm clothing) and work (office, professional, business). Brand: Superdry. Price: €61.99 (affordable). Features: crew neck (round neck, classic neckline), pointed collar (classic shirt collar), dolman sleeves (batwing, wide loose sleeves), asymmetric hem (uneven, high-low hem).",
+        "type": "long_sleeve_top",
+        "color": "white",
+        "style": "minimalist",
+        "pattern": "geometric",
+        "material": "satin",
+        "fit": "relaxed",
+        "gender": "unisex",
+        "age_group": "adult",
+        "season": "winter",
+        "occasion": "work",
+        "brand": "Superdry",
+        "price": 61.99,
+        "neckline": "crew neck",
+        "collar": "pointed",
+        "sleeve_style": "dolman",
+        "hem_style": "asymmetric"
+      }
+    },
+    {
+      "rank": 6,
+      "item_id": 5360,
+      "score": 0.2747,
+      "is_expected": false,
+      "payload": {
+        "item_id": 5360,
+        "description": "This is a white (bright, clean) short sleeve top (t-shirt, tee). The style is minimalist (simple, clean, understated) with a plaid (tartan, checked pattern) pattern. Made of chiffon (sheer, lightweight, flowy) with a regular fit (standard, normal fit). Designed for men's (male, masculine) — baby (infant, newborn, 0-2 years). Suitable for summer (hot weather, warm season) and everyday wear (daily, casual occasions). Brand: Balenciaga. Price: €510.99 (premium, high-end, luxury). Features: collared neckline (shirt collar, classic collar), shawl collar (rolled, wrap-around collar), bishop sleeves (full, gathered-at-cuff sleeves), cropped hem (short, above-waist hem).",
+        "type": "short_sleeve_top",
+        "color": "white",
+        "style": "minimalist",
+        "pattern": "plaid",
+        "material": "chiffon",
+        "fit": "regular",
+        "gender": "male",
+        "age_group": "baby",
+        "season": "summer",
+        "occasion": "everyday",
+        "brand": "Balenciaga",
+        "price": 510.99,
+        "neckline": "collared",
+        "collar": "shawl",
+        "sleeve_style": "bishop",
+        "hem_style": "cropped"
+      }
+    },
+    {
+      "rank": 7,
+      "item_id": 6045,
+      "score": 0.2745,
+      "is_expected": false,
+      "payload": {
+        "item_id": 6045,
+        "description": "This is a white (bright, clean) short sleeve top (t-shirt, tee). The style is vintage (retro, classic, old-school) with a checkered (checked, gingham) pattern. Made of rayon (semi-synthetic, silky feel) with a regular fit (standard, normal fit). Designed for men's (male, masculine) — adult (grown-up, 30-59 years), young adult (young, 18-29 years). Suitable for summer (hot weather, warm season) and work (office, professional, business). Brand: Uniqlo. Price: €22.00 (budget-friendly, cheap, inexpensive). Features: off-shoulder (bare shoulders, strapless top), cap sleeves (short, minimal coverage sleeves), split hem (side-slit, vented hem).",
+        "type": "short_sleeve_top",
+        "color": "white",
+        "style": "vintage",
+        "pattern": "checkered",
+        "material": "rayon",
+        "fit": "regular",
+        "gender": "male",
+        "age_group": "adult, young adult",
+        "season": "summer",
+        "occasion": "work",
+        "brand": "Uniqlo",
+        "price": 22.0,
+        "neckline": "off-shoulder",
+        "collar": "none",
+        "sleeve_style": "cap",
+        "hem_style": "split"
+      }
+    },
+    {
+      "rank": 8,
+      "item_id": 1227,
+      "score": 0.2682,
+      "is_expected": false,
+      "payload": {
+        "item_id": 1227,
+        "description": "This is a white (bright, clean) short sleeve jacket (light outerwear). The style is minimalist (simple, clean, understated) with a geometric (shapes, abstract geometric) pattern. Made of linen (lightweight, breathable, natural) with a slim fit (fitted, body-hugging, narrow cut). Designed for women's (female, feminine) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and sport (exercise, gym, athletic activities). Brand: & Other Stories. Price: €91.00 (mid-range). Features: shawl collar (rolled, wrap-around collar), cap sleeves (short, minimal coverage sleeves), open front (no closure, cardigan-style), water resistant (light rain protection, splash-proof), multiple pockets (many pockets, utility pockets).",
+        "type": "short_sleeve_outwear",
+        "color": "white",
+        "style": "minimalist",
+        "pattern": "geometric",
+        "material": "linen",
+        "fit": "slim fit",
+        "gender": "female",
+        "age_group": "baby, child",
+        "season": "summer",
+        "occasion": "sport",
+        "brand": "& Other Stories",
+        "price": 91.0,
+        "closure": "open front",
+        "hood": "none",
+        "insulation": "none",
+        "waterproof": "water resistant",
+        "outwear_pockets": "multiple pockets",
+        "collar": "shawl",
+        "sleeve_style": "cap"
+      }
+    },
+    {
+      "rank": 9,
+      "item_id": 7810,
+      "score": 0.2658,
+      "is_expected": false,
+      "payload": {
+        "item_id": 7810,
+        "description": "This is a white (bright, clean) sleeveless vest (tank top, sleeveless top). The style is minimalist (simple, clean, understated) with a geometric (shapes, abstract geometric) pattern. Made of cotton (soft, breathable, natural fiber) with a relaxed fit (comfortable, easy fit). Designed for women's (female, feminine) — baby (infant, newborn, 0-2 years). Suitable for winter (cold weather, warm clothing) and sport (exercise, gym, athletic activities). Brand: J.Crew. Price: €59.95 (affordable). Features: turtleneck (high neck, roll neck, polo neck), cropped hem (short, above-waist hem).",
+        "type": "vest",
+        "color": "white",
+        "style": "minimalist",
+        "pattern": "geometric",
+        "material": "cotton",
+        "fit": "relaxed",
+        "gender": "female",
+        "age_group": "baby",
+        "season": "winter",
+        "occasion": "sport",
+        "brand": "J.Crew",
+        "price": 59.95,
+        "neckline": "turtleneck",
+        "hem_style": "cropped"
+      }
+    },
+    {
+      "rank": 10,
+      "item_id": 9046,
+      "score": 0.2574,
+      "is_expected": false,
+      "payload": {
+        "item_id": 9046,
+        "description": "This is a white (bright, clean) short sleeve top (t-shirt, tee). The style is minimalist (simple, clean, understated) with a abstract (artistic pattern, modern print) pattern. Made of denim (jeans material, sturdy cotton) with a cropped (shortened, above natural length). Designed for men's (male, masculine) — young adult (young, 18-29 years), teenager (teen, adolescent, 13-17 years). Suitable for spring (mild weather, transitional) and party (celebration, night out, festive). Brand: Superdry. Price: €18.00 (budget-friendly, cheap, inexpensive). Features: sweetheart neckline (heart-shaped, romantic neckline), peter pan collar (round, flat collar), rolled sleeves (folded-up, casual cuff), curved hem (rounded, scoop hem).",
+        "type": "short_sleeve_top",
+        "color": "white",
+        "style": "minimalist",
+        "pattern": "abstract",
+        "material": "denim",
+        "fit": "cropped",
+        "gender": "male",
+        "age_group": "young adult, teenager",
+        "season": "spring",
+        "occasion": "party",
+        "brand": "Superdry",
+        "price": 18.0,
+        "neckline": "sweetheart",
+        "collar": "peter pan",
+        "sleeve_style": "rolled",
+        "hem_style": "curved"
+      }
+    }
+  ]
+}
