@@ -1,0 +1,231 @@
+{
+  "query": "A floral summer dress, feminine and bohemian",
+  "expected_item_ids": [
+    282,
+    368,
+    662,
+    806,
+    943
+  ],
+  "evaluation": {
+    "precision": 0.1,
+    "recall": 0.2,
+    "f1": 0.1333,
+    "avg_score": 0.7631,
+    "returned_count": 10,
+    "expected_count": 5,
+    "hit_count": 1,
+    "hit_ids": [
+      806
+    ],
+    "miss_ids": [
+      282,
+      368,
+      662,
+      943
+    ],
+    "extra_ids": [
+      28,
+      121,
+      149,
+      170,
+      205,
+      309,
+      687,
+      838,
+      918
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 687,
+      "score": 0.777,
+      "is_expected": false,
+      "payload": {
+        "item_id": 687,
+        "description": "This is a multicolor (colorful, multi-colored, patterned) short sleeve dress. The style is bohemian (boho, free-spirited, artistic) with a floral (flower pattern, botanical print) pattern. Made of leather (genuine leather, premium) with a regular fit (standard, normal fit). Designed for women's (female, feminine) — teenager (teen, adolescent, 13-17 years). Suitable for spring (mild weather, transitional) and date night (romantic, evening out). Brand: Sandro. Price: €138.00 (mid-range). Features: square neck (angular, straight-across neckline), bell sleeves (wide, flared sleeves), split hem (side-slit, vented hem), shift dress (straight, loose, boxy silhouette), midi length (below knee, mid-calf), high-waisted (high waist, above-navel).",
+        "type": "short_sleeve_dress",
+        "color": "multicolor",
+        "style": "bohemian",
+        "gender": "female",
+        "age_group": "teenager",
+        "season": "spring",
+        "occasion": "date night",
+        "brand": "Sandro",
+        "price": 138.0
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 149,
+      "score": 0.7705,
+      "is_expected": false,
+      "payload": {
+        "item_id": 149,
+        "description": "This is a yellow (golden, sunny) sleeveless dress (vest dress). The style is bohemian (boho, free-spirited, artistic) with a tie-dye (psychedelic, rainbow swirl) pattern. Made of organic cotton (eco-friendly, sustainable, natural) with a relaxed fit (comfortable, easy fit). Designed for women's (female, feminine) — adult (grown-up, 30-59 years), young adult (young, 18-29 years). Suitable for spring (mild weather, transitional) and work (office, professional, business). Brand: Theory. Price: €125.00 (mid-range). Features: V-neck (V-shaped neckline), split hem (side-slit, vented hem), bodycon dress (body-conscious, tight-fitting, figure-hugging), cropped length (above ankle, shortened), paper bag waist (gathered, pleated high waist).",
+        "type": "vest_dress",
+        "color": "yellow",
+        "style": "bohemian",
+        "gender": "female",
+        "age_group": "adult, young adult",
+        "season": "spring",
+        "occasion": "work",
+        "brand": "Theory",
+        "price": 125.0
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 806,
+      "score": 0.769,
+      "is_expected": true,
+      "payload": {
+        "item_id": 806,
+        "description": "This is a pink (rose, blush) short sleeve dress. The style is bohemian (boho, free-spirited, artistic) with a floral (flower pattern, botanical print) pattern. Made of organic cotton (eco-friendly, sustainable, natural) with a relaxed fit (comfortable, easy fit). Designed for unisex (gender-neutral, for everyone) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and lounge (home, relaxation, comfort). Brand: & Other Stories. Price: €77.00 (affordable). Features: square neck (angular, straight-across neckline), raglan sleeves (baseball-style, diagonal seam sleeves), split hem (side-slit, vented hem), mini dress (short, above-knee), short length (above knee), belted waist (with belt, cinched waist).",
+        "type": "short_sleeve_dress",
+        "color": "pink",
+        "style": "bohemian",
+        "gender": "unisex",
+        "age_group": "baby, child",
+        "season": "summer",
+        "occasion": "lounge",
+        "brand": "& Other Stories",
+        "price": 77.0
+      }
+    },
+    {
+      "rank": 4,
+      "item_id": 205,
+      "score": 0.767,
+      "is_expected": false,
+      "payload": {
+        "item_id": 205,
+        "description": "This is a teal (blue-green, turquoise) short sleeve dress. The style is bohemian (boho, free-spirited, artistic) with a striped (stripes, lined) pattern. Made of rayon (semi-synthetic, silky feel) with a relaxed fit (comfortable, easy fit). Designed for unisex (gender-neutral, for everyone) — young adult (young, 18-29 years), teenager (teen, adolescent, 13-17 years). Suitable for spring (mild weather, transitional) and lounge (home, relaxation, comfort). Brand: Shein. Price: €18.95 (budget-friendly, cheap, inexpensive). Features: off-shoulder (bare shoulders, strapless top), bishop sleeves (full, gathered-at-cuff sleeves), longline hem (extended, long-cut hem), shirt dress (button-front, collared, casual dress), knee-length (at the knee), elastic waist (stretch waistband, pull-on).",
+        "type": "short_sleeve_dress",
+        "color": "teal",
+        "style": "bohemian",
+        "gender": "unisex",
+        "age_group": "young adult, teenager",
+        "season": "spring",
+        "occasion": "lounge",
+        "brand": "Shein",
+        "price": 18.95
+      }
+    },
+    {
+      "rank": 5,
+      "item_id": 121,
+      "score": 0.7667,
+      "is_expected": false,
+      "payload": {
+        "item_id": 121,
+        "description": "This is a yellow (golden, sunny) skirt. The style is bohemian (boho, free-spirited, artistic) with a floral (flower pattern, botanical print) pattern. Made of suede (soft leather, velvety texture) with a slim fit (fitted, body-hugging, narrow cut). Designed for women's (female, feminine) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years), teenager (teen, adolescent, 13-17 years). Suitable for autumn (fall, cool weather) and lounge (home, relaxation, comfort). Brand: Reformation. Price: €74.00 (affordable). Features: short length (above knee), paper bag waist (gathered, pleated high waist), size medium (M).",
+        "type": "skirt",
+        "color": "yellow",
+        "style": "bohemian",
+        "gender": "female",
+        "age_group": "baby, child, teenager",
+        "season": "autumn",
+        "occasion": "lounge",
+        "brand": "Reformation",
+        "price": 74.0
+      }
+    },
+    {
+      "rank": 6,
+      "item_id": 838,
+      "score": 0.76,
+      "is_expected": false,
+      "payload": {
+        "item_id": 838,
+        "description": "This is a gray (grey, neutral) long sleeve dress. The style is bohemian (boho, free-spirited, artistic) with a checkered (checked, gingham) pattern. Made of cotton (soft, breathable, natural fiber) with a baggy (very loose, oversized, roomy). Designed for unisex (gender-neutral, for everyone) — young adult (young, 18-29 years), teenager (teen, adolescent, 13-17 years). Suitable for summer (hot weather, warm season) and date night (romantic, evening out). Brand: Reiss. Price: €137.99 (mid-range). Features: turtleneck (high neck, roll neck, polo neck), regular sleeves (standard, classic sleeves), straight hem (even, clean-cut hem), sheath dress (tailored, column silhouette, fitted), full length (floor-length, to the floor), drawstring waist (adjustable, tie waist).",
+        "type": "long_sleeve_dress",
+        "color": "gray",
+        "style": "bohemian",
+        "gender": "unisex",
+        "age_group": "young adult, teenager",
+        "season": "summer",
+        "occasion": "date night",
+        "brand": "Reiss",
+        "price": 137.99
+      }
+    },
+    {
+      "rank": 7,
+      "item_id": 309,
+      "score": 0.7569,
+      "is_expected": false,
+      "payload": {
+        "item_id": 309,
+        "description": "This is a navy blue (dark blue, maritime blue) skirt. The style is elegant (sophisticated, refined, chic) with a floral (flower pattern, botanical print) pattern. Made of leather (genuine leather, premium) with a fitted (form-fitting, close to body). Designed for women's (female, feminine) — teenager (teen, adolescent, 13-17 years), young adult (young, 18-29 years), child (kids, children, 3-12 years), baby (infant, newborn, 0-2 years). Suitable for summer (hot weather, warm season) and work (office, professional, business). Brand: Free People. Price: €116.99 (mid-range). Features: full length (floor-length, to the floor), elastic waist (stretch waistband, pull-on), size double extra large (XXL, 2XL).",
+        "type": "skirt",
+        "color": "navy",
+        "style": "elegant",
+        "gender": "female",
+        "age_group": "teenager, young adult, child, baby",
+        "season": "summer",
+        "occasion": "work",
+        "brand": "Free People",
+        "price": 116.99
+      }
+    },
+    {
+      "rank": 8,
+      "item_id": 28,
+      "score": 0.7559,
+      "is_expected": false,
+      "payload": {
+        "item_id": 28,
+        "description": "This is a green skirt. The style is bohemian (boho, free-spirited, artistic) with a geometric (shapes, abstract geometric) pattern. Made of suede (soft leather, velvety texture) with a relaxed fit (comfortable, easy fit). Designed for unisex (gender-neutral, for everyone) — teenager (teen, adolescent, 13-17 years). Suitable for spring (mild weather, transitional) and date night (romantic, evening out). Brand: Massimo Dutti. Price: €88.99 (mid-range). Features: full length (floor-length, to the floor), paper bag waist (gathered, pleated high waist), size large (L).",
+        "type": "skirt",
+        "color": "green",
+        "style": "bohemian",
+        "gender": "unisex",
+        "age_group": "teenager",
+        "season": "spring",
+        "occasion": "date night",
+        "brand": "Massimo Dutti",
+        "price": 88.99
+      }
+    },
+    {
+      "rank": 9,
+      "item_id": 170,
+      "score": 0.7543,
+      "is_expected": false,
+      "payload": {
+        "item_id": 170,
+        "description": "This is a navy blue (dark blue, maritime blue) skirt. The style is bohemian (boho, free-spirited, artistic) with a tie-dye (psychedelic, rainbow swirl) pattern. Made of organic cotton (eco-friendly, sustainable, natural) with a oversized (big, roomy, loose, baggy). Designed for women's (female, feminine) — young adult (young, 18-29 years), teenager (teen, adolescent, 13-17 years). Suitable for spring (mild weather, transitional) and party (celebration, night out, festive). Brand: Karen Millen. Price: €74.95 (affordable). Features: maxi length (long, floor-sweeping), paper bag waist (gathered, pleated high waist), size extra large (XL).",
+        "type": "skirt",
+        "color": "navy",
+        "style": "bohemian",
+        "gender": "female",
+        "age_group": "young adult, teenager",
+        "season": "spring",
+        "occasion": "party",
+        "brand": "Karen Millen",
+        "price": 74.95
+      }
+    },
+    {
+      "rank": 10,
+      "item_id": 918,
+      "score": 0.754,
+      "is_expected": false,
+      "payload": {
+        "item_id": 918,
+        "description": "This is a black (dark, noir) short sleeve dress. The style is vintage (retro, classic, old-school) with a polka dot (dotted, spotted) pattern. Made of chiffon (sheer, lightweight, flowy) with a regular fit (standard, normal fit). Designed for women's (female, feminine) — teenager (teen, adolescent, 13-17 years). Suitable for summer (hot weather, warm season) and beach (vacation, resort, seaside). Brand: Ba&sh. Price: €139.00 (mid-range). Features: sweetheart neckline (heart-shaped, romantic neckline), cap sleeves (short, minimal coverage sleeves), raw edge hem (unfinished, frayed hem), shirt dress (button-front, collared, casual dress), midi length (below knee, mid-calf), elastic waist (stretch waistband, pull-on).",
+        "type": "short_sleeve_dress",
+        "color": "black",
+        "style": "vintage",
+        "gender": "female",
+        "age_group": "teenager",
+        "season": "summer",
+        "occasion": "beach",
+        "brand": "Ba&sh",
+        "price": 139.0
+      }
+    }
+  ]
+}

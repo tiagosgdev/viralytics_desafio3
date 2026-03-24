@@ -1,0 +1,239 @@
+{
+  "query": "Kids clothes for the beach, something colorful and fun",
+  "expected_item_ids": [
+    30,
+    96,
+    206,
+    251,
+    486,
+    551,
+    590,
+    745,
+    801,
+    907,
+    930
+  ],
+  "evaluation": {
+    "precision": 0.5,
+    "recall": 0.4545,
+    "f1": 0.4762,
+    "avg_score": 0.6864,
+    "returned_count": 10,
+    "expected_count": 11,
+    "hit_count": 5,
+    "hit_ids": [
+      96,
+      551,
+      745,
+      801,
+      930
+    ],
+    "miss_ids": [
+      30,
+      206,
+      251,
+      486,
+      590,
+      907
+    ],
+    "extra_ids": [
+      71,
+      303,
+      747,
+      748,
+      830
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 551,
+      "score": 0.7014,
+      "is_expected": true,
+      "payload": {
+        "item_id": 551,
+        "description": "This is a coral (salmon, peachy pink) skirt. The style is casual (everyday, relaxed, informal) with a striped (stripes, lined) pattern. Made of polyester (durable, synthetic, easy-care) with a slim fit (fitted, body-hugging, narrow cut). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and beach (vacation, resort, seaside). Brand: Maje. Price: €76.00 (affordable). Features: mini length (very short, above mid-thigh), mid-rise waist (sits at hip, medium waist), size large (L).",
+        "type": "skirt",
+        "color": "coral",
+        "style": "casual",
+        "gender": "unisex",
+        "age_group": "child",
+        "season": "summer",
+        "occasion": "beach",
+        "brand": "Maje",
+        "price": 76.0
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 801,
+      "score": 0.6921,
+      "is_expected": true,
+      "payload": {
+        "item_id": 801,
+        "description": "This is a coral (salmon, peachy pink) skirt. The style is sporty (athletic, active, sport-inspired) with a graphic (printed design, logo, artwork) pattern. Made of velvet (plush, luxurious, soft) with a cropped (shortened, above natural length). Designed for women's (female, feminine) — child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and beach (vacation, resort, seaside). Brand: & Other Stories. Price: €45.95 (affordable). Features: maxi length (long, floor-sweeping), regular waist (standard waist, natural waist), size double extra large (XXL, 2XL).",
+        "type": "skirt",
+        "color": "coral",
+        "style": "sporty",
+        "gender": "female",
+        "age_group": "child",
+        "season": "summer",
+        "occasion": "beach",
+        "brand": "& Other Stories",
+        "price": 45.95
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 930,
+      "score": 0.6882,
+      "is_expected": true,
+      "payload": {
+        "item_id": 930,
+        "description": "This is a pink (rose, blush) shorts (short pants). The style is smart casual (business casual, polished casual) with a polka dot (dotted, spotted) pattern. Made of spandex (stretchy, elastic, flexible) with a regular fit (standard, normal fit). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years). Suitable for all-season (year-round, versatile) and beach (vacation, resort, seaside). Brand: Puma. Price: €20.95 (budget-friendly, cheap, inexpensive). Features: knee-length (at the knee), regular waist (standard waist, natural waist), size extra small (XS), high-rise (sits above waist, high waist), skinny leg (tight, skin-tight, narrow), hidden pockets (concealed, invisible pockets).",
+        "type": "shorts",
+        "color": "pink",
+        "style": "smart casual",
+        "gender": "unisex",
+        "age_group": "child",
+        "season": "all-season",
+        "occasion": "beach",
+        "brand": "Puma",
+        "price": 20.95
+      }
+    },
+    {
+      "rank": 4,
+      "item_id": 71,
+      "score": 0.6869,
+      "is_expected": false,
+      "payload": {
+        "item_id": 71,
+        "description": "This is a white (bright, clean) long sleeve top (shirt, sweater, long-sleeved shirt). The style is casual (everyday, relaxed, informal) with a embroidered (stitched design, decorative stitching) pattern. Made of cotton (soft, breathable, natural fiber) with a baggy (very loose, oversized, roomy). Designed for women's (female, feminine) — child (kids, children, 3-12 years), baby (infant, newborn, 0-2 years). Suitable for autumn (fall, cool weather) and party (celebration, night out, festive). Brand: Hollister. Price: €18.00 (budget-friendly, cheap, inexpensive). Features: boat neck (bateau, wide horizontal neckline), puff sleeves (puffy, voluminous, balloon sleeves), longline hem (extended, long-cut hem).",
+        "type": "long_sleeve_top",
+        "color": "white",
+        "style": "casual",
+        "gender": "female",
+        "age_group": "child, baby",
+        "season": "autumn",
+        "occasion": "party",
+        "brand": "Hollister",
+        "price": 18.0
+      }
+    },
+    {
+      "rank": 5,
+      "item_id": 745,
+      "score": 0.6858,
+      "is_expected": true,
+      "payload": {
+        "item_id": 745,
+        "description": "This is a coral (salmon, peachy pink) skirt. The style is streetwear (urban, hip-hop inspired, trendy) with a camouflage (camo, military pattern) pattern. Made of chiffon (sheer, lightweight, flowy) with a relaxed fit (comfortable, easy fit). Designed for unisex (gender-neutral, for everyone) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and beach (vacation, resort, seaside). Brand: Zimmermann. Price: €137.00 (mid-range). Features: knee-length (at the knee), drawstring waist (adjustable, tie waist), size double extra large (XXL, 2XL).",
+        "type": "skirt",
+        "color": "coral",
+        "style": "streetwear",
+        "gender": "unisex",
+        "age_group": "baby, child",
+        "season": "summer",
+        "occasion": "beach",
+        "brand": "Zimmermann",
+        "price": 137.0
+      }
+    },
+    {
+      "rank": 6,
+      "item_id": 96,
+      "score": 0.6855,
+      "is_expected": true,
+      "payload": {
+        "item_id": 96,
+        "description": "This is a coral (salmon, peachy pink) spaghetti strap top (camisole, strappy top). The style is minimalist (simple, clean, understated) with a plain (solid color, no pattern, simple) pattern. Made of cotton (soft, breathable, natural fiber) with a tailored fit (structured, precise fit). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years), teenager (teen, adolescent, 13-17 years), baby (infant, newborn, 0-2 years). Suitable for spring (mild weather, transitional) and beach (vacation, resort, seaside). Brand: Boohoo. Price: €11.99 (budget-friendly, cheap, inexpensive). Features: boat neck (bateau, wide horizontal neckline), raw edge hem (unfinished, frayed hem).",
+        "type": "sling",
+        "color": "coral",
+        "style": "minimalist",
+        "gender": "unisex",
+        "age_group": "child, teenager, baby",
+        "season": "spring",
+        "occasion": "beach",
+        "brand": "Boohoo",
+        "price": 11.99
+      }
+    },
+    {
+      "rank": 7,
+      "item_id": 748,
+      "score": 0.6831,
+      "is_expected": false,
+      "payload": {
+        "item_id": 748,
+        "description": "This is a navy blue (dark blue, maritime blue) skirt. The style is bohemian (boho, free-spirited, artistic) with a floral (flower pattern, botanical print) pattern. Made of wool (warm, cozy, natural fiber) with a baggy (very loose, oversized, roomy). Designed for women's (female, feminine) — child (kids, children, 3-12 years). Suitable for autumn (fall, cool weather) and beach (vacation, resort, seaside). Brand: ASOS. Price: €28.95 (budget-friendly, cheap, inexpensive). Features: mini length (very short, above mid-thigh), belted waist (with belt, cinched waist), size double extra large (XXL, 2XL).",
+        "type": "skirt",
+        "color": "navy",
+        "style": "bohemian",
+        "gender": "female",
+        "age_group": "child",
+        "season": "autumn",
+        "occasion": "beach",
+        "brand": "ASOS",
+        "price": 28.95
+      }
+    },
+    {
+      "rank": 8,
+      "item_id": 747,
+      "score": 0.6814,
+      "is_expected": false,
+      "payload": {
+        "item_id": 747,
+        "description": "This is a coral (salmon, peachy pink) skirt. The style is casual (everyday, relaxed, informal) with a embroidered (stitched design, decorative stitching) pattern. Made of rayon (semi-synthetic, silky feel) with a baggy (very loose, oversized, roomy). Designed for women's (female, feminine) — child (kids, children, 3-12 years), teenager (teen, adolescent, 13-17 years), baby (infant, newborn, 0-2 years). Suitable for spring (mild weather, transitional) and lounge (home, relaxation, comfort). Brand: Maje. Price: €66.00 (affordable). Features: knee-length (at the knee), low-rise waist (low waist, hip-hugger), size large (L).",
+        "type": "skirt",
+        "color": "coral",
+        "style": "casual",
+        "gender": "female",
+        "age_group": "child, teenager, baby",
+        "season": "spring",
+        "occasion": "lounge",
+        "brand": "Maje",
+        "price": 66.0
+      }
+    },
+    {
+      "rank": 9,
+      "item_id": 303,
+      "score": 0.6798,
+      "is_expected": false,
+      "payload": {
+        "item_id": 303,
+        "description": "This is a coral (salmon, peachy pink) skirt. The style is bohemian (boho, free-spirited, artistic) with a geometric (shapes, abstract geometric) pattern. Made of chiffon (sheer, lightweight, flowy) with a baggy (very loose, oversized, roomy). Designed for unisex (gender-neutral, for everyone) — baby (infant, newborn, 0-2 years), child (kids, children, 3-12 years). Suitable for spring (mild weather, transitional) and everyday wear (daily, casual occasions). Brand: Sandro. Price: €55.99 (affordable). Features: maxi length (long, floor-sweeping), mid-rise waist (sits at hip, medium waist), size double extra large (XXL, 2XL).",
+        "type": "skirt",
+        "color": "coral",
+        "style": "bohemian",
+        "gender": "unisex",
+        "age_group": "baby, child",
+        "season": "spring",
+        "occasion": "everyday",
+        "brand": "Sandro",
+        "price": 55.99
+      }
+    },
+    {
+      "rank": 10,
+      "item_id": 830,
+      "score": 0.6793,
+      "is_expected": false,
+      "payload": {
+        "item_id": 830,
+        "description": "This is a blue spaghetti strap top (camisole, strappy top). The style is bohemian (boho, free-spirited, artistic) with a abstract (artistic pattern, modern print) pattern. Made of linen (lightweight, breathable, natural) with a regular fit (standard, normal fit). Designed for unisex (gender-neutral, for everyone) — child (kids, children, 3-12 years), baby (infant, newborn, 0-2 years). Suitable for spring (mild weather, transitional) and lounge (home, relaxation, comfort). Brand: Sandro. Price: €47.00 (affordable). Features: boat neck (bateau, wide horizontal neckline), knotted hem (tied-up, front-knot hem).",
+        "type": "sling",
+        "color": "blue",
+        "style": "bohemian",
+        "gender": "unisex",
+        "age_group": "child, baby",
+        "season": "spring",
+        "occasion": "lounge",
+        "brand": "Sandro",
+        "price": 47.0
+      }
+    }
+  ]
+}

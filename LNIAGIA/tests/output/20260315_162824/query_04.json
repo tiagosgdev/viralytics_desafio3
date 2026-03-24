@@ -1,0 +1,238 @@
+{
+  "query": "Cheap sporty shorts for running, any color",
+  "expected_item_ids": [
+    12,
+    22,
+    56,
+    144,
+    167,
+    210,
+    233,
+    243,
+    305,
+    328
+  ],
+  "evaluation": {
+    "precision": 0.4,
+    "recall": 0.4,
+    "f1": 0.4,
+    "avg_score": 0.7465,
+    "returned_count": 10,
+    "expected_count": 10,
+    "hit_count": 4,
+    "hit_ids": [
+      56,
+      144,
+      210,
+      305
+    ],
+    "miss_ids": [
+      12,
+      22,
+      167,
+      233,
+      243,
+      328
+    ],
+    "extra_ids": [
+      129,
+      348,
+      652,
+      777,
+      821,
+      997
+    ]
+  },
+  "results": [
+    {
+      "rank": 1,
+      "item_id": 348,
+      "score": 0.7603,
+      "is_expected": false,
+      "payload": {
+        "item_id": 348,
+        "description": "This is a white (bright, clean) shorts (short pants). The style is formal (dressy, elegant, professional) with a plain (solid color, no pattern, simple) pattern. Made of linen (lightweight, breathable, natural) with a athletic fit (sporty, performance fit). Designed for unisex (gender-neutral, for everyone) — adult (grown-up, 30-59 years), young adult (young, 18-29 years). Suitable for summer (hot weather, warm season) and work (office, professional, business). Brand: Nike. Price: €23.00 (budget-friendly, cheap, inexpensive). Features: mini length (very short, above mid-thigh), low-rise waist (low waist, hip-hugger), size small (S), high-rise (sits above waist, high waist), cargo leg (utility, multi-pocket, military-inspired), back pockets (rear pockets, seat pockets).",
+        "type": "shorts",
+        "color": "white",
+        "style": "formal",
+        "gender": "unisex",
+        "age_group": "adult, young adult",
+        "season": "summer",
+        "occasion": "work",
+        "brand": "Nike",
+        "price": 23.0
+      }
+    },
+    {
+      "rank": 2,
+      "item_id": 210,
+      "score": 0.7576,
+      "is_expected": true,
+      "payload": {
+        "item_id": 210,
+        "description": "This is a beige (cream, sand, off-white) shorts (short pants). The style is sporty (athletic, active, sport-inspired) with a geometric (shapes, abstract geometric) pattern. Made of cotton (soft, breathable, natural fiber) with a cropped (shortened, above natural length). Designed for unisex (gender-neutral, for everyone) — teenager (teen, adolescent, 13-17 years), young adult (young, 18-29 years), child (kids, children, 3-12 years). Suitable for summer (hot weather, warm season) and party (celebration, night out, festive). Brand: ASOS. Price: €10.99 (budget-friendly, cheap, inexpensive). Features: midi length (below knee, mid-calf), elastic waist (stretch waistband, pull-on), size double extra large (XXL, 2XL), high-rise (sits above waist, high waist), wide leg (palazzo, flowing, roomy leg).",
+        "type": "shorts",
+        "color": "beige",
+        "style": "sporty",
+        "gender": "unisex",
+        "age_group": "teenager, young adult, child",
+        "season": "summer",
+        "occasion": "party",
+        "brand": "ASOS",
+        "price": 10.99
+      }
+    },
+    {
+      "rank": 3,
+      "item_id": 652,
+      "score": 0.7572,
+      "is_expected": false,
+      "payload": {
+        "item_id": 652,
+        "description": "This is a multicolor (colorful, multi-colored, patterned) shorts (short pants). The style is preppy (collegiate, classic American, polished) with a checkered (checked, gingham) pattern. Made of denim (jeans material, sturdy cotton) with a tailored fit (structured, precise fit). Designed for women's (female, feminine) — child (kids, children, 3-12 years). Suitable for spring (mild weather, transitional) and everyday wear (daily, casual occasions). Brand: Nike. Price: €19.99 (budget-friendly, cheap, inexpensive). Features: midi length (below knee, mid-calf), low-rise waist (low waist, hip-hugger), size medium (M), high-rise (sits above waist, high waist), bootcut leg (slightly flared from knee, boot-friendly), zippered pockets (zip pockets, secure pockets).",
+        "type": "shorts",
+        "color": "multicolor",
+        "style": "preppy",
+        "gender": "female",
+        "age_group": "child",
+        "season": "spring",
+        "occasion": "everyday",
+        "brand": "Nike",
+        "price": 19.99
+      }
+    },
+    {
+      "rank": 4,
+      "item_id": 305,
+      "score": 0.7452,
+      "is_expected": true,
+      "payload": {
+        "item_id": 305,
+        "description": "This is a navy blue (dark blue, maritime blue) shorts (short pants). The style is streetwear (urban, hip-hop inspired, trendy) with a polka dot (dotted, spotted) pattern. Made of organic cotton (eco-friendly, sustainable, natural) with a baggy (very loose, oversized, roomy). Designed for men's (male, masculine) — teenager (teen, adolescent, 13-17 years). Suitable for summer (hot weather, warm season) and sport (exercise, gym, athletic activities). Brand: Gap. Price: €41.99 (affordable). Features: mini length (very short, above mid-thigh), belted waist (with belt, cinched waist), size large (L), mid-rise (sits at hips, standard rise), straight leg (even width, classic cut), hidden pockets (concealed, invisible pockets).",
+        "type": "shorts",
+        "color": "navy",
+        "style": "streetwear",
+        "gender": "male",
+        "age_group": "teenager",
+        "season": "summer",
+        "occasion": "sport",
+        "brand": "Gap",
+        "price": 41.99
+      }
+    },
+    {
+      "rank": 5,
+      "item_id": 129,
+      "score": 0.7438,
+      "is_expected": false,
+      "payload": {
+        "item_id": 129,
+        "description": "This is a burgundy (wine red, maroon, dark red) shorts (short pants). The style is streetwear (urban, hip-hop inspired, trendy) with a camouflage (camo, military pattern) pattern. Made of nylon (synthetic, durable, lightweight) with a regular fit (standard, normal fit). Designed for men's (male, masculine) — baby (infant, newborn, 0-2 years). Suitable for winter (cold weather, warm clothing) and beach (vacation, resort, seaside). Brand: Uniqlo. Price: €20.00 (budget-friendly, cheap, inexpensive). Features: cropped length (above ankle, shortened), paper bag waist (gathered, pleated high waist), size extra large (XL), mid-rise (sits at hips, standard rise), jogger style (elastic cuff, sporty, ribbed ankle), side pockets (hip pockets, trouser pockets).",
+        "type": "shorts",
+        "color": "burgundy",
+        "style": "streetwear",
+        "gender": "male",
+        "age_group": "baby",
+        "season": "winter",
+        "occasion": "beach",
+        "brand": "Uniqlo",
+        "price": 20.0
+      }
+    },
+    {
+      "rank": 6,
+      "item_id": 56,
+      "score": 0.7428,
+      "is_expected": true,
+      "payload": {
+        "item_id": 56,
+        "description": "This is a blue shorts (short pants). The style is preppy (collegiate, classic American, polished) with a checkered (checked, gingham) pattern. Made of polyester (durable, synthetic, easy-care) with a relaxed fit (comfortable, easy fit). Designed for women's (female, feminine) — young adult (young, 18-29 years). Suitable for summer (hot weather, warm season) and sport (exercise, gym, athletic activities). Brand: Uniqlo. Price: €51.00 (affordable). Features: full length (floor-length, to the floor), belted waist (with belt, cinched waist), size extra large (XL), low-rise (sits below hips, low waist), straight leg (even width, classic cut), welt pockets (slit pockets, piped pockets).",
+        "type": "shorts",
+        "color": "blue",
+        "style": "preppy",
+        "gender": "female",
+        "age_group": "young adult",
+        "season": "summer",
+        "occasion": "sport",
+        "brand": "Uniqlo",
+        "price": 51.0
+      }
+    },
+    {
+      "rank": 7,
+      "item_id": 997,
+      "score": 0.7424,
+      "is_expected": false,
+      "payload": {
+        "item_id": 997,
+        "description": "This is a orange (tangerine) shorts (short pants). The style is sporty (athletic, active, sport-inspired) with a camouflage (camo, military pattern) pattern. Made of linen (lightweight, breathable, natural) with a fitted (form-fitting, close to body). Designed for men's (male, masculine) — child (kids, children, 3-12 years). Suitable for spring (mild weather, transitional) and lounge (home, relaxation, comfort). Brand: Pull&Bear. Price: €19.99 (budget-friendly, cheap, inexpensive). Features: full length (floor-length, to the floor), paper bag waist (gathered, pleated high waist), size double extra large (XXL, 2XL), low-rise (sits below hips, low waist), wide leg (palazzo, flowing, roomy leg), side pockets (hip pockets, trouser pockets).",
+        "type": "shorts",
+        "color": "orange",
+        "style": "sporty",
+        "gender": "male",
+        "age_group": "child",
+        "season": "spring",
+        "occasion": "lounge",
+        "brand": "Pull&Bear",
+        "price": 19.99
+      }
+    },
+    {
+      "rank": 8,
+      "item_id": 777,
+      "score": 0.7392,
+      "is_expected": false,
+      "payload": {
+        "item_id": 777,
+        "description": "This is a coral (salmon, peachy pink) shorts (short pants). The style is casual (everyday, relaxed, informal) with a polka dot (dotted, spotted) pattern. Made of organic cotton (eco-friendly, sustainable, natural) with a regular fit (standard, normal fit). Designed for unisex (gender-neutral, for everyone) — baby (infant, newborn, 0-2 years). Suitable for spring (mild weather, transitional) and everyday wear (daily, casual occasions). Brand: Nike. Price: €30.00 (budget-friendly, cheap, inexpensive). Features: mini length (very short, above mid-thigh), belted waist (with belt, cinched waist), size extra small (XS), high-rise (sits above waist, high waist), bootcut leg (slightly flared from knee, boot-friendly), patch pockets (sewn-on, external pockets).",
+        "type": "shorts",
+        "color": "coral",
+        "style": "casual",
+        "gender": "unisex",
+        "age_group": "baby",
+        "season": "spring",
+        "occasion": "everyday",
+        "brand": "Nike",
+        "price": 30.0
+      }
+    },
+    {
+      "rank": 9,
+      "item_id": 144,
+      "score": 0.7389,
+      "is_expected": true,
+      "payload": {
+        "item_id": 144,
+        "description": "This is a blue shorts (short pants). The style is elegant (sophisticated, refined, chic) with a camouflage (camo, military pattern) pattern. Made of chiffon (sheer, lightweight, flowy) with a tailored fit (structured, precise fit). Designed for men's (male, masculine) — child (kids, children, 3-12 years). Suitable for spring (mild weather, transitional) and sport (exercise, gym, athletic activities). Brand: Gap. Price: €36.00 (affordable). Features: full length (floor-length, to the floor), high-waisted (high waist, above-navel), size large (L), mid-rise (sits at hips, standard rise), jogger style (elastic cuff, sporty, ribbed ankle), side pockets (hip pockets, trouser pockets).",
+        "type": "shorts",
+        "color": "blue",
+        "style": "elegant",
+        "gender": "male",
+        "age_group": "child",
+        "season": "spring",
+        "occasion": "sport",
+        "brand": "Gap",
+        "price": 36.0
+      }
+    },
+    {
+      "rank": 10,
+      "item_id": 821,
+      "score": 0.738,
+      "is_expected": false,
+      "payload": {
+        "item_id": 821,
+        "description": "This is a blue shorts (short pants). The style is sporty (athletic, active, sport-inspired) with a plain (solid color, no pattern, simple) pattern. Made of cotton (soft, breathable, natural fiber) with a fitted (form-fitting, close to body). Designed for women's (female, feminine) — senior (elderly, mature, 60+ years). Suitable for summer (hot weather, warm season) and everyday wear (daily, casual occasions). Brand: Pull&Bear. Price: €12.95 (budget-friendly, cheap, inexpensive). Features: short length (above knee), mid-rise waist (sits at hip, medium waist), size medium (M), mid-rise (sits at hips, standard rise), skinny leg (tight, skin-tight, narrow).",
+        "type": "shorts",
+        "color": "blue",
+        "style": "sporty",
+        "gender": "female",
+        "age_group": "senior",
+        "season": "summer",
+        "occasion": "everyday",
+        "brand": "Pull&Bear",
+        "price": 12.95
+      }
+    }
+  ]
+}
