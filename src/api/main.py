@@ -70,7 +70,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 def _find_weights() -> str:
     env = os.getenv("MODEL_WEIGHTS")
     if env:
-        return env
+        full = PROJECT_ROOT / "models" / "weights" / env / "weights" / "best.pt"
+        return str(full)
     candidates = [
         "yolov8l_fashion/weights/best.pt",
         "yolov8m_fashion/weights/best.pt",
@@ -112,13 +113,27 @@ async def startup():
     recommender = RecommendationEngine(top_k=5)
     camera      = CameraStream(detector, recommender, source=0)
 
-    # Load Whisper for voice transcription
-    try:
-        from faster_whisper import WhisperModel
-        whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
-        print("🎙️  Whisper speech-to-text loaded")
-    except Exception as e:
-        print(f"⚠️  Whisper not available: {e}")
+    # Load Whisper for voice transcription in a background thread
+    # (can be slow on first run — downloads model weights)
+    async def _load_whisper():
+        global whisper_model
+        try:
+            from faster_whisper import WhisperModel
+            loop = asyncio.get_event_loop()
+            print("🎙️  Loading Whisper model (may download on first run)...")
+            whisper_model = await asyncio.wait_for(
+                loop.run_in_executor(
+                    None, lambda: WhisperModel("base", device="cpu", compute_type="int8")
+                ),
+                timeout=60,
+            )
+            print("🎙️  Whisper speech-to-text loaded")
+        except asyncio.TimeoutError:
+            print("⚠️  Whisper loading timed out after 60s — voice input disabled")
+        except Exception as e:
+            print(f"⚠️  Whisper not available: {e}")
+
+    asyncio.create_task(_load_whisper())
 
     print("✅  API ready\n")
 

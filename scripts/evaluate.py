@@ -22,6 +22,7 @@ def main():
     parser.add_argument("--data",    default="data/sample_dataset/yolo/dataset.yaml")
     parser.add_argument("--imgsz",   type=int, default=640)
     parser.add_argument("--conf",    type=float, default=0.25)
+    parser.add_argument("--split",   default="val", choices=["val", "test"], help="Dataset split to evaluate on")
     args = parser.parse_args()
 
     if not Path(args.weights).exists():
@@ -38,6 +39,7 @@ def main():
         data  = args.data,
         imgsz = args.imgsz,
         conf  = args.conf,
+        split = args.split,
         verbose = True,
     )
 

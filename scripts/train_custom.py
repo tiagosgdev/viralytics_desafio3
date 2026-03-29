@@ -16,11 +16,12 @@ import json
 import time
 from pathlib import Path
 
+import yaml
 from tqdm import tqdm
 
 import torch
 import torch.optim as optim
-from torch.optim.lr_scheduler import OneCycleLR
+from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -50,6 +51,25 @@ def parse_args():
                    help="Use TinyFashionNet (fewer channels) for quick testing")
     p.add_argument("--max_samples", type=int, default=0,
                    help="Cap dataset size for quick testing (0 = use all)")
+
+    # Experiment flags
+    p.add_argument("--lambda_box", type=float, default=5.0,
+                   help="Box loss weight (old default was 0.05)")
+    p.add_argument("--lambda_obj", type=float, default=1.0,
+                   help="Objectness loss weight")
+    p.add_argument("--lambda_cls", type=float, default=0.5,
+                   help="Classification loss weight")
+    p.add_argument("--augment",  default="light",
+                   choices=["light", "medium", "heavy"],
+                   help="Augmentation intensity level")
+    p.add_argument("--multi_cell", action="store_true",
+                   help="Assign each GT to multiple nearby grid cells")
+    p.add_argument("--num_classes", type=int, default=0,
+                   help="Number of classes (0 = auto-read from dataset.yaml)")
+    p.add_argument("--dropout",  type=float, default=0.0,
+                   help="Dropout rate in detection heads (0 = disabled)")
+    p.add_argument("--cos_lr",   action="store_true",
+                   help="Use CosineAnnealingLR instead of OneCycleLR")
     return p.parse_args()
 
 
@@ -74,7 +94,8 @@ def save_checkpoint(model, optimizer, scheduler, epoch, metrics, path: Path):
     }, path)
 
 
-def train_one_epoch(model, loader, criterion, optimizer, device, epoch, total_epochs):
+def train_one_epoch(model, loader, criterion, optimizer, device, epoch, total_epochs,
+                    batch_scheduler=None):
     model.train()
     total_loss = box_loss = obj_loss = cls_loss = 0.0
 
@@ -92,6 +113,9 @@ def train_one_epoch(model, loader, criterion, optimizer, device, epoch, total_ep
 
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=10.0)
         optimizer.step()
+
+        if batch_scheduler is not None:
+            batch_scheduler.step()
 
         total_loss += loss.item()
         box_loss   += components['box']
@@ -136,47 +160,75 @@ def main():
     out    = Path(args.output)
     out.mkdir(parents=True, exist_ok=True)
 
+    # ── Resolve num_classes ──────────────────────────────────────────────
+    num_classes = args.num_classes
+    if num_classes == 0:
+        yaml_path = Path(args.data) / "dataset.yaml"
+        if yaml_path.exists():
+            with open(yaml_path) as f:
+                cfg = yaml.safe_load(f)
+            num_classes = cfg.get("nc", 13)
+        else:
+            num_classes = 13
+
     print(f"\n{'='*55}")
     print(f"  FashionNet — training from scratch")
-    print(f"  Device  : {device}")
-    print(f"  Epochs  : {args.epochs}")
-    print(f"  Batch   : {args.batch}")
-    print(f"  Image   : {args.imgsz}×{args.imgsz}")
+    print(f"  Device    : {device}")
+    print(f"  Epochs    : {args.epochs}")
+    print(f"  Batch     : {args.batch}")
+    print(f"  Image     : {args.imgsz}×{args.imgsz}")
+    print(f"  Classes   : {num_classes}")
+    print(f"  Loss wts  : box={args.lambda_box} obj={args.lambda_obj} cls={args.lambda_cls}")
+    print(f"  Augment   : {args.augment}")
+    print(f"  Multi-cell: {args.multi_cell}")
+    print(f"  Dropout   : {args.dropout}")
+    print(f"  Scheduler : {'CosineAnnealing' if args.cos_lr else 'OneCycleLR'}")
     if args.fast:
-        print(f"  Mode    : FAST (TinyFashionNet + capped samples)")
+        print(f"  Mode      : FAST (TinyFashionNet + capped samples)")
     if args.max_samples:
-        print(f"  Samples : max {args.max_samples} per split")
+        print(f"  Samples   : max {args.max_samples} per split")
     print(f"{'='*55}\n")
 
     # ── Data ──────────────────────────────────────────────────────────────
     train_dl, val_dl = build_dataloaders(
         args.data, args.imgsz, args.batch, args.workers,
         max_samples=args.max_samples,
+        augment_level=args.augment,
     )
 
     # ── Model ─────────────────────────────────────────────────────────────
     if args.fast:
-        model = TinyFashionNet().to(device)
+        model = TinyFashionNet(num_classes=num_classes).to(device)
         print(f"  Mode: FAST (TinyFashionNet — reduced channels)")
     else:
-        model = FashionNet().to(device)
+        model = FashionNet(num_classes=num_classes, dropout=args.dropout).to(device)
     print(f"  Parameters: {model.count_parameters():,}")
 
     # ── Loss ──────────────────────────────────────────────────────────────
-    criterion = FashionNetLoss(img_size=args.imgsz)
+    criterion = FashionNetLoss(
+        num_classes=num_classes,
+        lambda_box=args.lambda_box,
+        lambda_obj=args.lambda_obj,
+        lambda_cls=args.lambda_cls,
+        img_size=args.imgsz,
+        multi_cell=args.multi_cell,
+    )
 
-    # ── Optimiser — AdamW + OneCycleLR ────────────────────────────────────
+    # ── Optimiser + Scheduler ─────────────────────────────────────────────
     optimizer = optim.AdamW(
         model.parameters(), lr=args.lr,
         weight_decay=5e-4, betas=(0.937, 0.999)
     )
-    scheduler = OneCycleLR(
-        optimizer,
-        max_lr       = args.lr,
-        total_steps  = args.epochs * len(train_dl),
-        pct_start    = 0.1,          # 10% warmup
-        anneal_strategy = 'cos',
-    )
+    if args.cos_lr:
+        scheduler = CosineAnnealingLR(optimizer, T_max=args.epochs, eta_min=args.lr * 0.01)
+    else:
+        scheduler = OneCycleLR(
+            optimizer,
+            max_lr       = args.lr,
+            total_steps  = args.epochs * len(train_dl),
+            pct_start    = 0.1,          # 10% warmup
+            anneal_strategy = 'cos',
+        )
 
     # ── Resume ────────────────────────────────────────────────────────────
     start_epoch  = 1
@@ -192,16 +244,25 @@ def main():
         start_epoch = ckpt['epoch'] + 1
         print(f"  Resumed from epoch {ckpt['epoch']}")
 
+    # ── Save experiment config ────────────────────────────────────────────
+    config = vars(args)
+    config["num_classes_resolved"] = num_classes
+    with open(out / "config.json", "w") as f:
+        json.dump(config, f, indent=2)
+
     # ── Training loop ──────────────────────────────────────────────────────
     print(f"\n  Starting training for {args.epochs} epochs...\n")
 
     for epoch in range(start_epoch, args.epochs + 1):
         t_epoch = time.time()
 
+        # OneCycleLR steps per batch; CosineAnnealingLR steps per epoch
+        batch_sched = scheduler if not args.cos_lr else None
         train_metrics = train_one_epoch(
-            model, train_dl, criterion, optimizer, device, epoch, args.epochs
+            model, train_dl, criterion, optimizer, device, epoch, args.epochs,
+            batch_scheduler=batch_sched,
         )
-        if scheduler:
+        if args.cos_lr:
             scheduler.step()
 
         val_metrics = validate(model, val_dl, criterion, device)

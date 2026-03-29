@@ -28,18 +28,57 @@ CATEGORY_NAMES = [
 ]
 
 
-def get_train_transforms(img_size: int = 640) -> A.Compose:
-    return A.Compose([
+def get_train_transforms(img_size: int = 640, level: str = "light") -> A.Compose:
+    """
+    Training augmentations at three intensity levels.
+
+    - light  : horizontal flip + color jitter (original)
+    - medium : + random scale/rotation/translate
+    - heavy  : + aggressive scale/rotation, Gaussian noise, coarse dropout
+    """
+    common_pre = [
         A.LongestMaxSize(max_size=img_size),
         A.PadIfNeeded(img_size, img_size, border_mode=cv2.BORDER_CONSTANT),
-        A.HorizontalFlip(p=0.5),
-        A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.7, hue=0.015, p=0.8),
-        A.ToGray(p=0.01),
+    ]
+    common_post = [
         A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2(),
-    ], bbox_params=A.BboxParams(
-        format='yolo', label_fields=['class_labels'], min_visibility=0.3
-    ))
+    ]
+
+    if level == "heavy":
+        spatial = [
+            A.HorizontalFlip(p=0.5),
+            A.Affine(scale=(0.5, 1.5), rotate=(-15, 15), translate_percent=(-0.1, 0.1),
+                     border_mode=cv2.BORDER_CONSTANT, p=0.7),
+            A.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.7, hue=0.02, p=0.8),
+            A.ToGray(p=0.05),
+            A.GaussNoise(std_range=(0.02, 0.1), p=0.3),
+            A.CoarseDropout(num_holes_range=(4, 8),
+                            hole_height_range=(16, 32),
+                            hole_width_range=(16, 32),
+                            fill=0, p=0.3),
+        ]
+    elif level == "medium":
+        spatial = [
+            A.HorizontalFlip(p=0.5),
+            A.Affine(scale=(0.7, 1.3), rotate=(-10, 10), translate_percent=(-0.1, 0.1),
+                     border_mode=cv2.BORDER_CONSTANT, p=0.5),
+            A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.7, hue=0.015, p=0.8),
+            A.ToGray(p=0.02),
+        ]
+    else:  # light
+        spatial = [
+            A.HorizontalFlip(p=0.5),
+            A.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.7, hue=0.015, p=0.8),
+            A.ToGray(p=0.01),
+        ]
+
+    return A.Compose(
+        common_pre + spatial + common_post,
+        bbox_params=A.BboxParams(
+            format='yolo', label_fields=['class_labels'], min_visibility=0.3
+        ),
+    )
 
 
 def get_val_transforms(img_size: int = 640) -> A.Compose:
@@ -72,10 +111,11 @@ class FashionDataset(Dataset):
         img_size:   int = 640,
         transforms: Optional[A.Compose] = None,
         max_samples: int = 0,
+        augment_level: str = "light",
     ):
         self.img_size   = img_size
         self.transforms = transforms or (
-            get_train_transforms(img_size) if split == "train"
+            get_train_transforms(img_size, augment_level) if split == "train"
             else get_val_transforms(img_size)
         )
 
@@ -164,10 +204,12 @@ def build_dataloaders(
     batch_size:  int = 16,
     workers:     int = 0,
     max_samples: int = 0,
+    augment_level: str = "light",
 ) -> Tuple[DataLoader, DataLoader]:
     """Build train and val DataLoaders."""
     val_cap  = max(1, max_samples // 5) if max_samples else 0
-    train_ds = FashionDataset(yolo_dir, "train", img_size, max_samples=max_samples)
+    train_ds = FashionDataset(yolo_dir, "train", img_size, max_samples=max_samples,
+                              augment_level=augment_level)
     val_ds   = FashionDataset(yolo_dir, "val",   img_size, max_samples=val_cap)
 
     train_dl = DataLoader(

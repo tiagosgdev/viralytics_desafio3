@@ -218,13 +218,17 @@ class DetectionHead(nn.Module):
 
     Total output per scale: grid_h × grid_w × (5 + NUM_CLASSES)
     """
-    def __init__(self, in_channels: int, num_classes: int = NUM_CLASSES):
+    def __init__(self, in_channels: int, num_classes: int = NUM_CLASSES,
+                 dropout: float = 0.0):
         super().__init__()
         mid = in_channels // 2
-        self.pre = nn.Sequential(
+        layers = [
             ConvBnRelu(in_channels, mid, k=3, s=1, p=1),
             ConvBnRelu(mid,        mid, k=3, s=1, p=1),
-        )
+        ]
+        if dropout > 0:
+            layers.append(nn.Dropout2d(dropout))
+        self.pre = nn.Sequential(*layers)
         # 5 = (cx, cy, w, h, obj)
         self.pred = nn.Conv2d(mid, 5 + num_classes, kernel_size=1)
         nn.init.normal_(self.pred.weight, std=0.01)
@@ -251,14 +255,14 @@ class FashionNet(nn.Module):
         (B, 5+NC, 40, 40)
         (B, 5+NC, 20, 20)
     """
-    def __init__(self, num_classes: int = NUM_CLASSES):
+    def __init__(self, num_classes: int = NUM_CLASSES, dropout: float = 0.0):
         super().__init__()
         self.num_classes = num_classes
         self.backbone    = FashionBackbone()
         self.neck        = FashionNeck()
-        self.head_p3     = DetectionHead(128,  num_classes)
-        self.head_p4     = DetectionHead(256,  num_classes)
-        self.head_p5     = DetectionHead(512,  num_classes)
+        self.head_p3     = DetectionHead(128,  num_classes, dropout=dropout)
+        self.head_p4     = DetectionHead(256,  num_classes, dropout=dropout)
+        self.head_p5     = DetectionHead(512,  num_classes, dropout=dropout)
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
         p3, p4, p5             = self.backbone(x)

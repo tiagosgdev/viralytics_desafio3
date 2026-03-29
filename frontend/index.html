@@ -542,9 +542,13 @@ async function loadMicDevices() {
   if (real) micSelect.value = real.deviceId;
   console.log('[Voice] Mics found:', mics.map(d => d.label));
 }
-loadMicDevices();
+let micDevicesLoaded = false;
 
-function toggleVoice() {
+async function toggleVoice() {
+  if (!micDevicesLoaded) {
+    await loadMicDevices();
+    micDevicesLoaded = true;
+  }
   if (isListening) {
     // Stop recording → send to backend
     mediaRecorder.stop();
@@ -607,7 +611,11 @@ function toggleVoice() {
           form.append('audio', blob, 'voice.webm');
 
           fetch('/api/transcribe', { method: 'POST', body: form })
-            .then(r => r.json())
+            .then(r => {
+              if (r.status === 503) throw new Error('Voice model is still loading. Please wait a moment and try again.');
+              if (!r.ok) throw new Error('Transcription failed (HTTP ' + r.status + ')');
+              return r.json();
+            })
             .then(d => {
               console.log('[Voice] Transcribe response:', d);
               chatInput.placeholder = 'Type a message...';
