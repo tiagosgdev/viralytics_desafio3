@@ -28,7 +28,8 @@ CATEGORY_NAMES = [
 ]
 
 
-def get_train_transforms(img_size: int = 640, level: str = "light") -> A.Compose:
+def get_train_transforms(img_size: int = 640, level: str = "light",
+                         grayscale: bool = False) -> A.Compose:
     """
     Training augmentations at three intensity levels.
 
@@ -40,6 +41,8 @@ def get_train_transforms(img_size: int = 640, level: str = "light") -> A.Compose
         A.LongestMaxSize(max_size=img_size),
         A.PadIfNeeded(img_size, img_size, border_mode=cv2.BORDER_CONSTANT),
     ]
+    grayscale_tf = [A.ToGray(p=1.0)] if grayscale else []
+
     common_post = [
         A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2(),
@@ -74,17 +77,19 @@ def get_train_transforms(img_size: int = 640, level: str = "light") -> A.Compose
         ]
 
     return A.Compose(
-        common_pre + spatial + common_post,
+        common_pre + spatial + grayscale_tf + common_post,
         bbox_params=A.BboxParams(
             format='yolo', label_fields=['class_labels'], min_visibility=0.3
         ),
     )
 
 
-def get_val_transforms(img_size: int = 640) -> A.Compose:
+def get_val_transforms(img_size: int = 640, grayscale: bool = False) -> A.Compose:
+    grayscale_tf = [A.ToGray(p=1.0)] if grayscale else []
     return A.Compose([
         A.LongestMaxSize(max_size=img_size),
         A.PadIfNeeded(img_size, img_size, border_mode=cv2.BORDER_CONSTANT),
+        *grayscale_tf,
         A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2(),
     ], bbox_params=A.BboxParams(
@@ -112,11 +117,13 @@ class FashionDataset(Dataset):
         transforms: Optional[A.Compose] = None,
         max_samples: int = 0,
         augment_level: str = "light",
+        grayscale: bool = False,
     ):
         self.img_size   = img_size
         self.transforms = transforms or (
-            get_train_transforms(img_size, augment_level) if split == "train"
-            else get_val_transforms(img_size)
+            get_train_transforms(img_size, augment_level, grayscale=grayscale)
+            if split == "train"
+            else get_val_transforms(img_size, grayscale=grayscale)
         )
 
         img_dir = Path(yolo_dir) / "images" / split
@@ -205,12 +212,14 @@ def build_dataloaders(
     workers:     int = 0,
     max_samples: int = 0,
     augment_level: str = "light",
+    grayscale: bool = False,
 ) -> Tuple[DataLoader, DataLoader]:
     """Build train and val DataLoaders."""
     val_cap  = max(1, max_samples // 5) if max_samples else 0
     train_ds = FashionDataset(yolo_dir, "train", img_size, max_samples=max_samples,
-                              augment_level=augment_level)
-    val_ds   = FashionDataset(yolo_dir, "val",   img_size, max_samples=val_cap)
+                              augment_level=augment_level, grayscale=grayscale)
+    val_ds   = FashionDataset(yolo_dir, "val",   img_size, max_samples=val_cap,
+                              grayscale=grayscale)
 
     train_dl = DataLoader(
         train_ds, batch_size=batch_size, shuffle=True,

@@ -57,6 +57,10 @@ The model has no regularisation beyond weight decay. For a from-scratch model wi
 | `--num_classes` | auto | Read from dataset.yaml, or override |
 | `--dropout` | 0.0 | Dropout rate in detection heads |
 | `--cos_lr` | off | Use CosineAnnealingLR instead of OneCycleLR |
+| `--grayscale` | off | Convert images to grayscale (3ch repeated) — tests shape vs colour |
+| `--warmup_epochs` | 0 | Linear LR warmup before main schedule (0 = disabled) |
+| `--optimizer` | adamw | Optimizer: `adamw` or `sgd` (momentum=0.937, nesterov) |
+| `--ema` | off | Exponential Moving Average of weights (used for val/inference) |
 
 ---
 
@@ -71,7 +75,7 @@ Purpose: Establish baseline with correct num_classes but **old** lambda_box=0.05
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device mps --lambda_box 0.05 \
+  --batch 16 --device cuda --lambda_box 0.05 \
   --output models/weights/exp1_baseline
 ```
 
@@ -82,7 +86,7 @@ Purpose: Test impact of corrected box loss weight (0.05 → 5.0). **Expected big
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device mps \
+  --batch 16 --device cuda \
   --output models/weights/exp2_loss_fix
 ```
 
@@ -93,7 +97,7 @@ Purpose: Test if more positive training signal improves convergence.
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device mps --multi_cell \
+  --batch 16 --device cuda --multi_cell \
   --output models/weights/exp3_multicell
 ```
 
@@ -104,7 +108,7 @@ Purpose: Test scale/rotation augmentation impact.
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device mps --multi_cell --augment medium \
+  --batch 16 --device cuda --multi_cell --augment medium \
   --output models/weights/exp4_aug_medium
 ```
 
@@ -115,7 +119,7 @@ Purpose: Test if heavy augmentation helps or hurts with limited samples.
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device mps --multi_cell --augment heavy \
+  --batch 16 --device cuda --multi_cell --augment heavy \
   --output models/weights/exp5_aug_heavy
 ```
 
@@ -126,7 +130,7 @@ Purpose: Test if slower learning rate with cosine annealing improves convergence
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device mps --multi_cell --augment medium \
+  --batch 16 --device cuda --multi_cell --augment medium \
   --lr 0.0005 --cos_lr \
   --output models/weights/exp6_cos_lr
 ```
@@ -138,10 +142,86 @@ Purpose: Test regularisation impact on a from-scratch model.
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device mps --multi_cell --augment medium \
+  --batch 16 --device cuda --multi_cell --augment medium \
   --dropout 0.1 \
   --output models/weights/exp7_dropout
 ```
+
+### Experiment 8 — Grayscale Only
+
+Purpose: Test if removing colour information forces the model to learn shape/silhouette features, improving discrimination between same-colour clothing types. Uses the loss fix from Exp 2 but no other changes, to isolate the grayscale effect.
+
+```bash
+python scripts/train_custom.py \
+  --data data/balanced_dataset --max_samples 2000 --epochs 20 \
+  --batch 16 --device cuda --grayscale \
+  --output models/weights/exp8_grayscale
+```
+
+### Experiment 9 — Grayscale + Best Config
+
+Purpose: Combine grayscale with the best configuration from Experiments 3-7. Replace flags below with whichever config won.
+
+```bash
+python scripts/train_custom.py \
+  --data data/balanced_dataset --max_samples 2000 --epochs 20 \
+  --batch 16 --device cuda --multi_cell --augment medium --grayscale \
+  --output models/weights/exp9_grayscale_best
+```
+
+### Experiment 10 — Best Config + Warmup
+
+Purpose: Test if a 3-epoch linear warmup stabilises early training for a from-scratch model. Requires `--cos_lr` since OneCycleLR has its own built-in warmup.
+
+```bash
+python scripts/train_custom.py \
+  --data data/balanced_dataset --max_samples 2000 --epochs 20 \
+  --batch 16 --device cuda --multi_cell --augment medium \
+  --cos_lr --warmup_epochs 3 \
+  --output models/weights/exp10_warmup
+```
+
+### Experiment 11 — SGD + Momentum
+
+Purpose: Test if SGD with momentum (standard for YOLO detectors) converges better than AdamW for from-scratch CNN training. SGD is generally slower per epoch but can reach a better final mAP.
+
+```bash
+python scripts/train_custom.py \
+  --data data/balanced_dataset --max_samples 2000 --epochs 20 \
+  --batch 16 --device cuda --multi_cell --augment medium \
+  --optimizer sgd --lr 0.01 \
+  --output models/weights/exp11_sgd
+```
+
+### Experiment 12 — Best Config + EMA
+
+Purpose: Test if Exponential Moving Average of model weights improves validation mAP at effectively zero training cost. EMA smooths out noisy weight updates and is used by default in YOLOv5/v8.
+
+```bash
+python scripts/train_custom.py \
+  --data data/balanced_dataset --max_samples 2000 --epochs 20 \
+  --batch 16 --device cuda --multi_cell --augment medium \
+  --ema \
+  --output models/weights/exp12_ema
+```
+
+---
+
+## Metrics to Track
+
+### Primary: mAP@50
+A prediction is correct only if the predicted class is right AND the box overlaps the ground truth by ≥ 50% (IoU ≥ 0.50). This is the standard single-number summary for object detection. Higher = better.
+
+### Per-class AP
+The most important metric for diagnosing the same-colour confusion issue. Instead of one average number, you get AP for each class individually (e.g., shorts: 0.45, trousers: 0.62). Compare per-class AP between colour and grayscale experiments to see which clothing types benefit from removing colour.
+
+### Precision / Recall
+- **Precision**: of all boxes the model predicted, what fraction were correct? High precision = few false positives.
+- **Recall**: of all ground-truth objects, what fraction did the model find? High recall = few missed detections.
+- There is always a trade-off — a model that predicts everything has high recall but low precision.
+
+### val_loss (proxy only)
+Useful for quick iteration during training. Lower is generally better, but val_loss can disagree with mAP — a model with lower loss can still produce worse mAP if its confidence thresholds are poorly calibrated. Use val_loss to compare runs quickly, but confirm the winner with actual mAP evaluation.
 
 ---
 
@@ -166,7 +246,7 @@ Once the best config is identified, run a full training on the complete balanced
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --epochs 100 \
-  --batch 16 --device mps \
+  --batch 16 --device cuda \
   <best flags from experiments> \
   --output models/weights/fashionnet_v2
 ```
