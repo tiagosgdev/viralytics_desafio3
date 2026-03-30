@@ -316,6 +316,8 @@ def main():
     # ── Training loop ──────────────────────────────────────────────────────
     print(f"\n  Starting training for {args.epochs} epochs...\n")
 
+    t_train_start = time.time()
+
     for epoch in range(start_epoch, args.epochs + 1):
         t_epoch = time.time()
 
@@ -354,8 +356,14 @@ def main():
         with open(out / "history.json", "w") as f:
             json.dump(history, f, indent=2)
 
+    total_time = time.time() - t_train_start
+    total_mins, total_secs = divmod(int(total_time), 60)
+    avg_epoch = total_time / args.epochs
+
     print(f"\n{'='*55}")
     print(f"  Training complete!")
+    print(f"  Total time    : {total_mins}m {total_secs:02d}s")
+    print(f"  Avg per epoch : {avg_epoch:.1f}s")
     print(f"  Best val_loss : {best_val:.4f}")
     print(f"  Weights saved : {(out / 'best.pt').resolve()}")
     print(f"  Run comparison: python scripts/compare_models.py")

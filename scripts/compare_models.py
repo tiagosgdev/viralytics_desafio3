@@ -23,9 +23,11 @@ import time
 from pathlib import Path
 from collections import defaultdict
 
+import yaml
 import cv2
 import numpy as np
 import torch
+import torchvision.ops as tv_ops
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from ultralytics import YOLO
@@ -37,12 +39,12 @@ from src.custom_model.model   import FashionNet
 from src.custom_model.dataset import FashionDataset, get_val_transforms, collate_fn
 from src.utils.metrics        import iou, detection_report, per_class_ap
 
-CATEGORY_NAMES = [
-    "short_sleeve_top", "long_sleeve_top", "short_sleeve_outwear",
-    "long_sleeve_outwear", "vest", "sling", "shorts", "trousers",
-    "skirt", "short_sleeve_dress", "long_sleeve_dress",
-    "vest_dress", "sling_dress",
-]
+
+def load_category_names(data_dir: str) -> list:
+    yaml_path = Path(data_dir) / "dataset.yaml"
+    with open(yaml_path) as f:
+        cfg = yaml.safe_load(f)
+    return cfg["names"]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -51,21 +53,28 @@ CATEGORY_NAMES = [
 
 def decode_fashionnet_output(
     preds: list,
-    conf_thresh: float = 0.25,
+    conf_thresh: float = 0.001,
     nms_thresh:  float = 0.45,
     img_size:    int   = 640,
+    max_det:     int   = 300,
 ):
     """
     Convert FashionNet raw output tensors to a list of detections per image.
+    Accumulates candidates across all 3 scales, keeps top-max_det by score,
+    then applies per-class NMS.
     Returns list of dicts: {boxes: [[x1,y1,x2,y2],...], scores: [...], classes: [...]}
     """
-    device     = preds[0].device
-    strides    = [img_size // p.shape[-1] for p in preds]
-    B          = preds[0].shape[0]
-    all_dets   = [{"boxes": [], "scores": [], "classes": []} for _ in range(B)]
+    device  = preds[0].device
+    strides = [img_size // p.shape[-1] for p in preds]
+    B       = preds[0].shape[0]
+
+    # Accumulate raw candidates across scales: one list per image
+    raw_boxes   = [[] for _ in range(B)]
+    raw_scores  = [[] for _ in range(B)]
+    raw_classes = [[] for _ in range(B)]
 
     for pred, stride in zip(preds, strides):
-        B, C, gs, _ = pred.shape
+        _, C, gs, _ = pred.shape
         p = pred.permute(0, 2, 3, 1)   # (B, gs, gs, 5+NC)
 
         p_xy  = torch.sigmoid(p[..., :2])
@@ -73,16 +82,14 @@ def decode_fashionnet_output(
         p_obj = torch.sigmoid(p[..., 4])
         p_cls = torch.sigmoid(p[..., 5:])
 
-        # Build grid offsets
         gy, gx = torch.meshgrid(
             torch.arange(gs, device=device, dtype=torch.float32),
             torch.arange(gs, device=device, dtype=torch.float32),
-            indexing='ij'
+            indexing='ij',
         )
 
         for bi in range(B):
-            obj  = p_obj[bi]   # (gs, gs)
-            mask = obj > conf_thresh
+            mask = p_obj[bi] > conf_thresh
             if not mask.any():
                 continue
 
@@ -92,22 +99,56 @@ def decode_fashionnet_output(
             h  = p_wh[bi, ..., 1][mask]
 
             scores_cls, classes = p_cls[bi][mask].max(dim=-1)
-            scores = obj[mask] * scores_cls
+            scores = p_obj[bi][mask] * scores_cls
 
             keep = scores > conf_thresh
             if not keep.any():
                 continue
 
             boxes = torch.stack([
-                cx[keep] - w[keep]/2,
-                cy[keep] - h[keep]/2,
-                cx[keep] + w[keep]/2,
-                cy[keep] + h[keep]/2,
+                cx[keep] - w[keep] / 2,
+                cy[keep] - h[keep] / 2,
+                cx[keep] + w[keep] / 2,
+                cy[keep] + h[keep] / 2,
             ], dim=1)
 
-            all_dets[bi]["boxes"].extend(boxes.cpu().tolist())
-            all_dets[bi]["scores"].extend(scores[keep].cpu().tolist())
-            all_dets[bi]["classes"].extend(classes[keep].cpu().tolist())
+            raw_boxes[bi].append(boxes)
+            raw_scores[bi].append(scores[keep])
+            raw_classes[bi].append(classes[keep])
+
+    # Per-image: top-K cap → per-class NMS
+    all_dets = []
+    for bi in range(B):
+        if not raw_scores[bi]:
+            all_dets.append({"boxes": [], "scores": [], "classes": []})
+            continue
+
+        boxes_t   = torch.cat(raw_boxes[bi],   dim=0)   # (N, 4)
+        scores_t  = torch.cat(raw_scores[bi],  dim=0)   # (N,)
+        classes_t = torch.cat(raw_classes[bi], dim=0)   # (N,)
+
+        # Keep top max_det candidates before NMS
+        if scores_t.shape[0] > max_det:
+            topk = scores_t.topk(max_det).indices
+            boxes_t, scores_t, classes_t = boxes_t[topk], scores_t[topk], classes_t[topk]
+
+        # Per-class NMS
+        kept_boxes, kept_scores, kept_classes = [], [], []
+        for cls_id in classes_t.unique():
+            m = classes_t == cls_id
+            keep_idx = tv_ops.nms(boxes_t[m], scores_t[m], nms_thresh)
+            kept_boxes.append(boxes_t[m][keep_idx])
+            kept_scores.append(scores_t[m][keep_idx])
+            kept_classes.extend([cls_id.item()] * keep_idx.shape[0])
+
+        if kept_boxes:
+            all_dets.append({
+                "boxes":   torch.cat(kept_boxes).cpu().tolist(),
+                "scores":  torch.cat(kept_scores).cpu().tolist(),
+                "classes": kept_classes,
+            })
+        else:
+            all_dets.append({"boxes": [], "scores": [], "classes": []})
 
     return all_dets
 
@@ -134,12 +175,26 @@ def benchmark_speed(model_fn, device, n_runs=100, img_size=640):
 
 def evaluate_fashionnet(weights_path, data_dir, device, img_size=640, batch=8):
     """Run FashionNet on validation set, collect predictions and ground truths."""
-    model = FashionNet()
-    ckpt  = torch.load(weights_path, map_location=device)
+    ckpt = torch.load(weights_path, map_location=device)
+
+    # Resolve num_classes: prefer config.json, then infer from checkpoint head shape, then dataset.yaml
+    config_path = Path(weights_path).parent / "config.json"
+    if config_path.exists():
+        with open(config_path) as f:
+            num_classes = json.load(f).get("num_classes_resolved", 13)
+    else:
+        head_weight = ckpt['model'].get('head_p3.pred.weight')
+        if head_weight is not None:
+            num_classes = head_weight.shape[0] - 5
+        else:
+            num_classes = len(load_category_names(data_dir))
+
+    model = FashionNet(num_classes=num_classes)
     model.load_state_dict(ckpt['model'])
     model.to(device).eval()
 
-    val_ds = FashionDataset(data_dir, "val", img_size, get_val_transforms(img_size))
+    grayscale = config_path.exists() and json.load(open(config_path)).get("grayscale", False)
+    val_ds = FashionDataset(data_dir, "val", img_size, get_val_transforms(img_size, grayscale=grayscale))
     val_dl = DataLoader(val_ds, batch_size=batch, collate_fn=collate_fn, num_workers=0)
 
     all_preds, all_gts = [], []
@@ -234,10 +289,11 @@ def evaluate_yolo(weights_path, data_dir, device_str, img_size=640):
     yaml  = str(Path(data_dir) / "dataset.yaml")
 
     results  = model.val(data=yaml, imgsz=img_size, verbose=False)
+    nc       = len(load_category_names(data_dir))
     map50    = float(results.box.map50)
     ap_list  = results.box.ap50.tolist() if hasattr(results.box.ap50, 'tolist') else []
     ap_dict  = {i: float(ap_list[i]) if i < len(ap_list) else float('nan')
-                for i in range(13)}
+                for i in range(nc)}
 
     # Speed benchmark
     device = torch.device(device_str if device_str else "cpu")
@@ -262,7 +318,8 @@ def evaluate_yolo(weights_path, data_dir, device_str, img_size=640):
 # Report
 # ─────────────────────────────────────────────────────────────────────────────
 
-def print_comparison(custom: dict, yolo: dict, custom_name: str, yolo_name: str):
+def print_comparison(custom: dict, yolo: dict, custom_name: str, yolo_name: str,
+                     category_names: list):
     print("\n" + "═"*70)
     print("  MODEL COMPARISON REPORT")
     print("═"*70)
@@ -289,31 +346,44 @@ def print_comparison(custom: dict, yolo: dict, custom_name: str, yolo_name: str)
     print(f"  {'Category':<30} {custom_name:>12} {yolo_name:>12}  {'Better':>8}")
     print("  " + "─"*66)
 
-    for i, name in enumerate(CATEGORY_NAMES):
+    # Build a name lookup covering both models (one may have more classes)
+    all_class_ids = sorted(set(custom["ap_per_class"].keys()) | set(yolo["ap_per_class"].keys()))
+    for i in all_class_ids:
+        name = category_names[i] if i < len(category_names) else f"class_{i}"
         c_ap = custom["ap_per_class"].get(i, float('nan'))
         y_ap = yolo["ap_per_class"].get(i, float('nan'))
         if np.isnan(c_ap) and np.isnan(y_ap):
             continue
-        c_str  = f"{c_ap:.4f}" if not np.isnan(c_ap) else "  N/A"
-        y_str  = f"{y_ap:.4f}" if not np.isnan(y_ap) else "  N/A"
-        winner = custom_name if (not np.isnan(c_ap) and not np.isnan(y_ap) and c_ap > y_ap) \
-                 else yolo_name if not np.isnan(y_ap) else ""
+        c_str  = f"{c_ap:.4f}" if not np.isnan(c_ap) else "   N/A"
+        y_str  = f"{y_ap:.4f}" if not np.isnan(y_ap) else "   N/A"
+        if not np.isnan(c_ap) and not np.isnan(y_ap) and c_ap != y_ap:
+            winner = custom_name if c_ap > y_ap else yolo_name
+        else:
+            winner = ""
         print(f"  {name:<30} {c_str:>12} {y_str:>12}  {winner:>8}")
 
     print("\n" + "═"*70)
     diff = custom["map50"] - yolo["map50"]
-    if diff < 0:
-        print(f"  {yolo_name} outperforms {custom_name} by {abs(diff):.4f} mAP@50")
-        print(f"  This gap reflects pretrained COCO weights, architectural")
-        print(f"  optimisations, and years of engineering in Ultralytics.")
-    else:
-        print(f"  {custom_name} outperforms {yolo_name} by {diff:.4f} mAP@50")
+    winner   = custom_name if diff >= 0 else yolo_name
+    loser    = yolo_name   if diff >= 0 else custom_name
+    margin   = abs(diff)
+    print(f"  {winner} outperforms {loser} by {margin:.4f} mAP@50")
     print("═"*70 + "\n")
+
+
+def is_fashionnet_checkpoint(path: str) -> bool:
+    """Detect if a weights file is a FashionNet checkpoint (has 'model' key)."""
+    try:
+        ckpt = torch.load(path, map_location="cpu")
+        return isinstance(ckpt, dict) and "model" in ckpt
+    except Exception:
+        return False
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--yolo_weights",   default="models/weights/yolov8n_fashion/weights/best.pt")
+    parser.add_argument("--yolo_weights",   default="models/weights/yolov8n_fashion/weights/best.pt",
+                        help="YOLOv8 weights OR a previous FashionNet checkpoint for exp-vs-exp comparison")
     parser.add_argument("--custom_weights", default="models/weights/fashionnet/best.pt")
     parser.add_argument("--data",           default="data/sample_dataset/yolo")
     parser.add_argument("--imgsz",          type=int, default=640)
@@ -322,8 +392,18 @@ def main():
     parser.add_argument("--out",            default="docs/comparison.json")
     args = parser.parse_args()
 
-    device = torch.device(args.device if args.device else "cpu")
+    if args.device:
+        device = torch.device(args.device)
+    elif torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
     print(f"\nDevice: {device}")
+
+    category_names = load_category_names(args.data)
+    print(f"Classes ({len(category_names)}): {', '.join(category_names)}")
 
     # Derive display names from weight paths: pick first parent that isn't "weights"
     def _model_name(p):
@@ -333,25 +413,31 @@ def main():
         return Path(p).stem
 
     custom_name = _model_name(args.custom_weights)
-    yolo_name   = _model_name(args.yolo_weights)
+    ref_name    = _model_name(args.yolo_weights)
 
     print(f"\n[1/2] Evaluating {custom_name}...")
     custom_results = evaluate_fashionnet(
         args.custom_weights, args.data, device, args.imgsz, args.batch
     )
 
-    print(f"\n[2/2] Evaluating {yolo_name}...")
-    yolo_results = evaluate_yolo(
-        args.yolo_weights, args.data, args.device, args.imgsz
-    )
+    print(f"\n[2/2] Evaluating {ref_name}...")
+    if is_fashionnet_checkpoint(args.yolo_weights):
+        ref_results = evaluate_fashionnet(
+            args.yolo_weights, args.data, device, args.imgsz, args.batch
+        )
+    else:
+        ref_results = evaluate_yolo(
+            args.yolo_weights, args.data, args.device, args.imgsz
+        )
 
-    print_comparison(custom_results, yolo_results, custom_name, yolo_name)
+    print_comparison(custom_results, ref_results, custom_name, ref_name,
+                     category_names)
 
     # Save JSON for notebook / thesis tables
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w") as f:
-        json.dump({custom_name: custom_results, yolo_name: yolo_results}, f, indent=2)
+        json.dump({custom_name: custom_results, ref_name: ref_results}, f, indent=2)
     print(f"Results saved to: {out_path.resolve()}\n")
 
 

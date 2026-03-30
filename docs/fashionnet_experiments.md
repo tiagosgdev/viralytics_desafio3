@@ -66,7 +66,7 @@ The model has no regularisation beyond weight decay. For a from-scratch model wi
 
 ## Experiment Configurations
 
-All experiments use the balanced dataset with `--max_samples 2000 --epochs 20` for fast iteration. Each adds one change over the previous to isolate individual impact.
+All experiments use the balanced dataset with `--max_samples 2000 --epochs 20` for fast iteration. Compare results using `val_loss` from `history.json` (see How to Compare below). Each adds one change over the previous to isolate individual impact.
 
 ### Experiment 1 — Baseline (fixed num_classes only)
 
@@ -75,9 +75,11 @@ Purpose: Establish baseline with correct num_classes but **old** lambda_box=0.05
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --lambda_box 0.05 \
+  --batch 32 --device cuda --lambda_box 0.05 \
   --output models/weights/exp1_baseline
 ```
+
+---
 
 ### Experiment 2 — Loss Weights Fix
 
@@ -86,9 +88,11 @@ Purpose: Test impact of corrected box loss weight (0.05 → 5.0). **Expected big
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda \
+  --batch 32 --device cuda \
   --output models/weights/exp2_loss_fix
 ```
+
+---
 
 ### Experiment 3 — Loss Fix + Multi-Cell Assignment
 
@@ -97,9 +101,11 @@ Purpose: Test if more positive training signal improves convergence.
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --multi_cell \
+  --batch 32 --device cuda --multi_cell \
   --output models/weights/exp3_multicell
 ```
+
+---
 
 ### Experiment 4 — Loss Fix + Multi-Cell + Medium Augmentation
 
@@ -108,9 +114,11 @@ Purpose: Test scale/rotation augmentation impact.
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --multi_cell --augment medium \
+  --batch 32 --device cuda --multi_cell --augment medium \
   --output models/weights/exp4_aug_medium
 ```
+
+---
 
 ### Experiment 5 — Loss Fix + Multi-Cell + Heavy Augmentation
 
@@ -119,9 +127,11 @@ Purpose: Test if heavy augmentation helps or hurts with limited samples.
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --multi_cell --augment heavy \
+  --batch 32 --device cuda --multi_cell --augment heavy \
   --output models/weights/exp5_aug_heavy
 ```
+
+---
 
 ### Experiment 6 — Best Config + Lower LR + Cosine Schedule
 
@@ -130,10 +140,12 @@ Purpose: Test if slower learning rate with cosine annealing improves convergence
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --multi_cell --augment medium \
+  --batch 32 --device cuda --multi_cell --augment medium \
   --lr 0.0005 --cos_lr \
   --output models/weights/exp6_cos_lr
 ```
+
+---
 
 ### Experiment 7 — Best Config + Dropout
 
@@ -142,10 +154,12 @@ Purpose: Test regularisation impact on a from-scratch model.
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --multi_cell --augment medium \
+  --batch 32 --device cuda --multi_cell --augment medium \
   --dropout 0.1 \
   --output models/weights/exp7_dropout
 ```
+
+---
 
 ### Experiment 8 — Grayscale Only
 
@@ -154,9 +168,11 @@ Purpose: Test if removing colour information forces the model to learn shape/sil
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --grayscale \
+  --batch 32 --device cuda --grayscale \
   --output models/weights/exp8_grayscale
 ```
+
+---
 
 ### Experiment 9 — Grayscale + Best Config
 
@@ -165,9 +181,11 @@ Purpose: Combine grayscale with the best configuration from Experiments 3-7. Rep
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --multi_cell --augment medium --grayscale \
+  --batch 32 --device cuda --multi_cell --augment medium --grayscale \
   --output models/weights/exp9_grayscale_best
 ```
+
+---
 
 ### Experiment 10 — Best Config + Warmup
 
@@ -176,10 +194,12 @@ Purpose: Test if a 3-epoch linear warmup stabilises early training for a from-sc
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --multi_cell --augment medium \
+  --batch 32 --device cuda --multi_cell --augment medium \
   --cos_lr --warmup_epochs 3 \
   --output models/weights/exp10_warmup
 ```
+
+---
 
 ### Experiment 11 — SGD + Momentum
 
@@ -188,10 +208,12 @@ Purpose: Test if SGD with momentum (standard for YOLO detectors) converges bette
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --multi_cell --augment medium \
+  --batch 32 --device cuda --multi_cell --augment medium \
   --optimizer sgd --lr 0.01 \
   --output models/weights/exp11_sgd
 ```
+
+---
 
 ### Experiment 12 — Best Config + EMA
 
@@ -200,7 +222,7 @@ Purpose: Test if Exponential Moving Average of model weights improves validation
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --max_samples 2000 --epochs 20 \
-  --batch 16 --device cuda --multi_cell --augment medium \
+  --batch 32 --device cuda --multi_cell --augment medium \
   --ema \
   --output models/weights/exp12_ema
 ```
@@ -230,7 +252,7 @@ Useful for quick iteration during training. Lower is generally better, but val_l
 After running all experiments, compare `val_loss` from each `history.json`:
 
 ```bash
-for exp in exp1_baseline exp2_loss_fix exp3_multicell exp4_aug_medium exp5_aug_heavy exp6_cos_lr exp7_dropout; do
+for exp in exp1_baseline exp2_loss_fix exp3_multicell exp4_aug_medium exp5_aug_heavy exp6_cos_lr exp7_dropout exp8_grayscale exp9_grayscale_best exp10_warmup exp11_sgd exp12_ema; do
   echo "=== $exp ==="
   python -c "
 import json
@@ -246,7 +268,7 @@ Once the best config is identified, run a full training on the complete balanced
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset --epochs 100 \
-  --batch 16 --device cuda \
+  --batch 32 --device cuda \
   <best flags from experiments> \
   --output models/weights/fashionnet_v2
 ```
