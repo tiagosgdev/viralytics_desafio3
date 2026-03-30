@@ -62,8 +62,8 @@ exp5 (heavy) at 12.35 is worse than exp4 (medium) at 8.88. With only 2000 sample
 ### Setup
 
 - Config: exp4 winner (multi_cell + augment medium)
-- Dataset: full balanced_dataset (no sample cap)
-- Epochs: 100
+- Dataset: full balanced_dataset, 52,199 training images (no sample cap)
+- Epochs: 50
 - Batch: 32
 - Device: CUDA (NVIDIA GPU, 16GB VRAM)
 - Training time: 612m 28s (~10h 12m)
@@ -96,6 +96,47 @@ exp5 (heavy) at 12.35 is worse than exp4 (medium) at 8.88. With only 2000 sample
 | sling_dress | 0.2722 | 0.0000 |
 
 fashionnet_balanced_v1 outperforms the original by **0.2280 mAP@50** across all classes. The improvements from fixing the pipeline (lambda_box, multi_cell, augmentation) combined with proper full training account for essentially all of this gain.
+
+---
+
+### Notes
+
+- Worst performing classes: short_sleeve_top (0.1461), long_sleeve_top (0.1553), skirt (0.1673)
+- short_sleeve_top and long_sleeve_top being the two worst is likely inter-class confusion (visually almost identical) rather than a data quantity problem
+- The jump from 20-epoch quick tests (val_loss ~8.88) to 50 full epochs (val_loss 3.23) shows training time has significant impact
+
+---
+
+## Considerations for v2
+
+### Option A — Train for 100 epochs (recommended first step)
+Same config, double the epochs. The 20→50 epoch jump was large; 50→100 may push mAP significantly further before any data changes are needed.
+
+```bash
+python scripts/train_custom.py \
+  --data data/balanced_dataset \
+  --multi_cell --augment medium \
+  --batch 32 --device cuda --epochs 100 \
+  --output models/weights/fashionnet_balanced_v2
+```
+
+### Option B — Merge similar classes
+Reduces problem difficulty and increases examples per class. Proposed merges:
+
+| New class | Merged from |
+|-----------|------------|
+| top | short_sleeve_top + long_sleeve_top |
+| outwear | short_sleeve_outwear + long_sleeve_outwear |
+| dress | short_sleeve_dress + long_sleeve_dress + vest_dress + sling_dress |
+| shorts | shorts (unchanged) |
+| trousers | trousers (unchanged) |
+| skirt | skirt (unchanged) |
+| vest | vest (unchanged) |
+
+Reduces from 11 → 7 classes. Requires rebuilding labels and dataset.yaml.
+
+### Option C — Add images to weakest classes
+Only useful if classes are visually distinct but underrepresented. Less likely to help for short/long sleeve top confusion since the model already has 52K images to learn from.
 
 ---
 
