@@ -1,0 +1,8265 @@
+[
+  {
+    "id": "llm_aug_00001",
+    "query": "I'm looking for a wool sweater without a baggy fit.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "wool",
+      "sweater",
+      "without",
+      "a",
+      "baggy",
+      "fit",
+      "."
+    ],
+    "include": {
+      "material": [
+        "wool"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "baggy"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "material": [
+          "wool"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "baggy"
+        ]
+      },
+      "style": [
+        "polite request"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "NEG",
+      "O",
+      "B-FIT-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00002",
+    "query": "I'm after some casual unisex pants for summer, without regular fit.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "casual",
+      "unisex",
+      "pants",
+      "for",
+      "summer",
+      ",",
+      "without",
+      "regular",
+      "fit",
+      "."
+    ],
+    "include": {
+      "gender": [
+        "female",
+        "unisex"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "regular"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "gender": [
+          "female",
+          "unisex"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "regular"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'casual' which is not included in the include attributes.",
+      "The query specifies 'unisex', but it is correctly included.",
+      "The query excludes 'regular fit', which is correctly excluded."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00003",
+    "query": "Find me a burgundy polka dot outfit suitable for both sports and weddings, but not regular fit.",
+    "tokens": [
+      "Find",
+      "me",
+      "a",
+      "burgundy",
+      "polka",
+      "dot",
+      "outfit",
+      "suitable",
+      "for",
+      "both",
+      "sports",
+      "and",
+      "weddings",
+      ",",
+      "but",
+      "not",
+      "regular",
+      "fit",
+      "."
+    ],
+    "include": {
+      "color": [
+        "burgundy"
+      ],
+      "pattern": [
+        "polka dot"
+      ],
+      "occasion": [
+        "sport",
+        "wedding"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "regular"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "color": [
+          "burgundy"
+        ],
+        "pattern": [
+          "polka dot"
+        ],
+        "occasion": [
+          "sport",
+          "wedding"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "regular"
+        ]
+      },
+      "style": [
+        "direct command"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-PATTERN",
+      "I-PATTERN",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'both sports and weddings', but the annotation only includes 'sport' and 'wedding'.",
+      "The query specifies 'not regular fit', but the annotation does not explicitly exclude 'regular fit'."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00004",
+    "query": "I'm looking for an elegant shirt for a teenager, not a child or a coat.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "an",
+      "elegant",
+      "shirt",
+      "for",
+      "a",
+      "teenager",
+      ",",
+      "not",
+      "a",
+      "child",
+      "or",
+      "a",
+      "coat",
+      "."
+    ],
+    "include": {
+      "style": [
+        "elegant"
+      ],
+      "age_group": [
+        "teenager"
+      ]
+    },
+    "exclude": {
+      "age_group": [
+        "child"
+      ],
+      "type": [
+        "long_sleeve_outwear"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "style": [
+          "elegant"
+        ],
+        "age_group": [
+          "teenager"
+        ]
+      },
+      "exclude": {
+        "age_group": [
+          "child"
+        ],
+        "type": [
+          "coat"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "NEG",
+      "O",
+      "B-AGE_GROUP-X",
+      "O",
+      "O",
+      "B-TYPE-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'elegant' is not mentioned in the query.",
+      "'long_sleeve_outwear' should be excluded."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00005",
+    "query": "I need some camouflage clothing without vintage style or beige colors.",
+    "tokens": [
+      "I",
+      "need",
+      "some",
+      "camouflage",
+      "clothing",
+      "without",
+      "vintage",
+      "style",
+      "or",
+      "beige",
+      "colors",
+      "."
+    ],
+    "include": {
+      "pattern": [
+        "camouflage"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "vintage"
+      ],
+      "color": [
+        "beige"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "pattern": [
+          "camouflage"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "vintage"
+        ],
+        "color": [
+          "beige"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "NEG",
+      "B-STYLE-X",
+      "O",
+      "O",
+      "B-COLOR-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00006",
+    "query": "I need a graphic all-season top, not in blue.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "graphic",
+      "all",
+      "-",
+      "season",
+      "top",
+      ",",
+      "not",
+      "in",
+      "blue",
+      "."
+    ],
+    "include": {
+      "pattern": [
+        "graphic"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "blue"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "pattern": [
+          "graphic"
+        ],
+        "season": [
+          "all-season"
+        ]
+      },
+      "exclude": {
+        "color": [
+          "blue"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "B-SEASON",
+      "O",
+      "I-SEASON",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-COLOR-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'Include' should not contain 'season': all-season. 'Exclude' is correctly negating color: blue."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00007",
+    "query": "I need a red blouse without geometric patterns.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "red",
+      "blouse",
+      "without",
+      "geometric",
+      "patterns",
+      "."
+    ],
+    "include": {
+      "color": [
+        "red"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "geometric"
+      ],
+      "color": [
+        "cream"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "color": [
+          "red",
+          "cream"
+        ]
+      },
+      "exclude": {
+        "pattern": [
+          "geometric"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "NEG",
+      "B-PATTERN-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "Incorrect inclusion of 'cream' in include attributes",
+      "Missing exclusion of 'plain' pattern"
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00008",
+    "query": "I'd like to find a coral-colored shirt, without loose fit.",
+    "tokens": [
+      "I",
+      "'d",
+      "like",
+      "to",
+      "find",
+      "a",
+      "coral",
+      "-",
+      "colored",
+      "shirt",
+      ",",
+      "without",
+      "loose",
+      "fit",
+      "."
+    ],
+    "include": {
+      "color": [
+        "coral"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "loose"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "color": [
+          "coral"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "loose"
+        ]
+      },
+      "style": [
+        "polite request"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00009",
+    "query": "I need a senior t-shirt for a casual outing, but not made of silk.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "senior",
+      "t",
+      "-",
+      "shirt",
+      "for",
+      "a",
+      "casual",
+      "outing",
+      ",",
+      "but",
+      "not",
+      "made",
+      "of",
+      "silk",
+      "."
+    ],
+    "include": {
+      "type": [
+        "short_sleeve_top"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "silk"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "senior"
+        ],
+        "type": [
+          "t-shirt"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "silk"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "B-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'short_sleeve_top' is included but not mentioned in the query.",
+      "'material: silk' is excluded but not negated in the query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00010",
+    "query": "I'm after a top made from organic cotton with a Cuban collar for a casual outing, but not in brown.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "a",
+      "top",
+      "made",
+      "from",
+      "organic",
+      "cotton",
+      "with",
+      "a",
+      "Cuban",
+      "collar",
+      "for",
+      "a",
+      "casual",
+      "outing",
+      ",",
+      "but",
+      "not",
+      "in",
+      "brown",
+      "."
+    ],
+    "include": {
+      "material": [
+        "organic cotton"
+      ],
+      "collar": [
+        "cuban"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "brown"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "material": [
+          "organic cotton"
+        ],
+        "collar": [
+          "cuban"
+        ]
+      },
+      "exclude": {
+        "color": [
+          "brown"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "I-MATERIAL",
+      "O",
+      "O",
+      "B-COLLAR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-COLOR-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'cuban collar' is included but 'cuban' should be 'collar'",
+      "'brown' is excluded but not all mentions of brown are negated"
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00011",
+    "query": "Find me some coral travel clothes for work, without olive.",
+    "tokens": [
+      "Find",
+      "me",
+      "some",
+      "coral",
+      "travel",
+      "clothes",
+      "for",
+      "work",
+      ",",
+      "without",
+      "olive",
+      "."
+    ],
+    "include": {
+      "occasion": [
+        "travel",
+        "work"
+      ],
+      "color": [
+        "coral"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "olive"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "occasion": [
+          "travel",
+          "work"
+        ],
+        "color": [
+          "coral"
+        ]
+      },
+      "exclude": {
+        "color": [
+          "olive"
+        ]
+      },
+      "style": [
+        "direct command"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-OCCASION",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "B-COLOR-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00012",
+    "query": "What kind of oversized or regular winter clothing would be suitable for travel, without tie-dye patterns?",
+    "tokens": [
+      "What",
+      "kind",
+      "of",
+      "oversized",
+      "or",
+      "regular",
+      "winter",
+      "clothing",
+      "would",
+      "be",
+      "suitable",
+      "for",
+      "travel",
+      ",",
+      "without",
+      "tie",
+      "-",
+      "dye",
+      "patterns",
+      "?"
+    ],
+    "include": {
+      "pattern": [
+        "plain",
+        "striped",
+        "checkered",
+        "plaid",
+        "floral",
+        "polka dot",
+        "geometric",
+        "abstract",
+        "animal print",
+        "camouflage",
+        "graphic",
+        "embroidered"
+      ],
+      "season": [
+        "winter"
+      ],
+      "occasion": [
+        "travel"
+      ],
+      "fit": [
+        "oversized",
+        "regular"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "pattern": [
+          "tie-dye"
+        ],
+        "season": [
+          "winter"
+        ],
+        "occasion": [
+          "travel"
+        ],
+        "fit": [
+          "oversized",
+          "regular"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "question form"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "O",
+      "B-FIT",
+      "B-SEASON",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "B-PATTERN",
+      "O",
+      "I-PATTERN",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query explicitly excludes 'tie-dye' patterns, but the include list contains 'pattern': ['tie-dye'].",
+      "The query asks for winter clothing suitable for travel without mentioning any specific type of clothing, but the include list only includes fit and season attributes."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00013",
+    "query": "I'm after some white casual clothes to wear.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "white",
+      "casual",
+      "clothes",
+      "to",
+      "wear",
+      "."
+    ],
+    "include": {
+      "color": [
+        "white"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "color": [
+          "white"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00014",
+    "query": "I need synthetic insulation without preppy style.",
+    "tokens": [
+      "I",
+      "need",
+      "synthetic",
+      "insulation",
+      "without",
+      "preppy",
+      "style",
+      "."
+    ],
+    "include": {
+      "insulation": [
+        "synthetic"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "preppy"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "insulation": [
+          "synthetic"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "preppy"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "B-INSULATION",
+      "O",
+      "NEG",
+      "B-STYLE-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00015",
+    "query": "I'm looking for some abstract white female jeans, not in a boring solid pattern.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "some",
+      "abstract",
+      "white",
+      "female",
+      "jeans",
+      ",",
+      "not",
+      "in",
+      "a",
+      "boring",
+      "solid",
+      "pattern",
+      "."
+    ],
+    "include": {
+      "gender": [
+        "female"
+      ],
+      "pattern": [
+        "abstract"
+      ],
+      "color": [
+        "white"
+      ],
+      "type": [
+        "trousers"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "gender": [
+          "female"
+        ],
+        "pattern": [
+          "abstract"
+        ],
+        "color": [
+          "white"
+        ],
+        "type": [
+          "jeans"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "B-COLOR",
+      "B-GENDER",
+      "B-TYPE",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'female' jeans, but the include list does not specify 'trousers'.",
+      "The query specifies 'abstract', which is correctly included, but 'boring solid pattern' implies a negation that should be reflected in exclude.",
+      "No obvious attributes are missing from the current annotations."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00016",
+    "query": "I need some adult clothing, preferably for young adults, without fitted styles.",
+    "tokens": [
+      "I",
+      "need",
+      "some",
+      "adult",
+      "clothing",
+      ",",
+      "preferably",
+      "for",
+      "young",
+      "adults",
+      ",",
+      "without",
+      "fitted",
+      "styles",
+      "."
+    ],
+    "include": {
+      "age_group": [
+        "adult",
+        "young adult"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "adult",
+          "young adult"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "direct command"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'without fitted styles', but there is no explicit exclusion in the current annotations."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00017",
+    "query": "I need some adult coral clothes, not outerwear or cream.",
+    "tokens": [
+      "I",
+      "need",
+      "some",
+      "adult",
+      "coral",
+      "clothes",
+      ",",
+      "not",
+      "outerwear",
+      "or",
+      "cream",
+      "."
+    ],
+    "include": {
+      "color": [
+        "coral"
+      ],
+      "age_group": [
+        "adult"
+      ]
+    },
+    "exclude": {
+      "type": [
+        "long_sleeve_outwear"
+      ],
+      "color": [
+        "cream"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "color": [
+          "coral"
+        ],
+        "age_group": [
+          "senior",
+          "adult"
+        ]
+      },
+      "exclude": {
+        "type": [
+          "outerwear"
+        ],
+        "color": [
+          "cream"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "B-COLOR",
+      "O",
+      "O",
+      "NEG",
+      "B-TYPE-X",
+      "O",
+      "B-COLOR-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'adult coral clothes' but the include attributes only mention 'senior' and 'adult' for age_group. It should specifically include 'coral'.",
+      "The exclude attribute includes 'long_sleeve_outwear', which is not mentioned in the query, so it's correctly excluded.",
+      "There are no obvious missing attributes from the query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00018",
+    "query": "I need everyday clothes without coats.",
+    "tokens": [
+      "I",
+      "need",
+      "everyday",
+      "clothes",
+      "without",
+      "coats",
+      "."
+    ],
+    "include": {
+      "occasion": [
+        "everyday"
+      ]
+    },
+    "exclude": {
+      "type": [
+        "long_sleeve_outwear"
+      ],
+      "outwear_pockets": [
+        "hand warmer pockets",
+        "multiple pockets"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "occasion": [
+          "everyday"
+        ]
+      },
+      "exclude": {
+        "type": [
+          "coat"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "B-TYPE-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'long_sleeve_outwear' should be excluded as the query mentions 'everyday clothes without coats'. Coats typically include long sleeve outwear which is not suitable for everyday wear according to the query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00019",
+    "query": "I'm after a casual summer jacket, not made of suede.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "a",
+      "casual",
+      "summer",
+      "jacket",
+      ",",
+      "not",
+      "made",
+      "of",
+      "suede",
+      "."
+    ],
+    "include": {
+      "type": [
+        "long_sleeve_outwear"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "suede"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "type": [
+          "outerwear",
+          "jacket"
+        ],
+        "season": [
+          "summer"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "suede"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-SEASON",
+      "B-TYPE",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "B-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'long_sleeve_outwear' is not clearly implied as 'casual summer jacket' could be a short sleeve item.",
+      "'material: suede' should be excluded but it's not."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00020",
+    "query": "Could you please help me find a tailored athletic winter outfit suitable for sports, without anything too formal?",
+    "tokens": [
+      "Could",
+      "you",
+      "please",
+      "help",
+      "me",
+      "find",
+      "a",
+      "tailored",
+      "athletic",
+      "winter",
+      "outfit",
+      "suitable",
+      "for",
+      "sports",
+      ",",
+      "without",
+      "anything",
+      "too",
+      "formal",
+      "?"
+    ],
+    "include": {
+      "occasion": [
+        "sport"
+      ],
+      "season": [
+        "winter"
+      ],
+      "fit": [
+        "tailored",
+        "athletic"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "formal"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "occasion": [
+          "sport"
+        ],
+        "season": [
+          "winter"
+        ],
+        "fit": [
+          "tailored",
+          "athletic"
+        ],
+        "style": [
+          "formal"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "polite request"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "B-FIT",
+      "B-SEASON",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "NEG",
+      "O",
+      "B-STYLE",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query does not mention anything about formality or being too formal, but the annotation includes 'formal' in the style.",
+      "The query asks for a tailored athletic winter outfit without anything too formal, which implies that 'tailored' and 'athletic' are correctly included, but 'formal' should be excluded."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00021",
+    "query": "I need fleece clothing for autumn and spring, not just any material.",
+    "tokens": [
+      "I",
+      "need",
+      "fleece",
+      "clothing",
+      "for",
+      "autumn",
+      "and",
+      "spring",
+      ",",
+      "not",
+      "just",
+      "any",
+      "material",
+      "."
+    ],
+    "include": {
+      "season": [
+        "autumn",
+        "spring"
+      ],
+      "material": [
+        "fleece"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "season": [
+          "autumn",
+          "spring"
+        ],
+        "material": [
+          "fleece"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "B-SEASON",
+      "O",
+      "B-SEASON",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00022",
+    "query": "I need a high-waisted, xxl maxi dress that's not formal and doesn't use silk.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "high",
+      "-",
+      "waisted",
+      ",",
+      "xxl",
+      "maxi",
+      "dress",
+      "that",
+      "'s",
+      "not",
+      "formal",
+      "and",
+      "does",
+      "n't",
+      "use",
+      "silk",
+      "."
+    ],
+    "include": {
+      "waist": [
+        "xxl"
+      ],
+      "dress_style": [
+        "maxi"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "formal"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "waist": [
+          "xxl"
+        ],
+        "dress_style": [
+          "maxi"
+        ],
+        "waist_style": [
+          "high-waisted"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "formal"
+        ],
+        "material": [
+          "silk"
+        ]
+      },
+      "style": [
+        "direct command"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-WAIST_STYLE",
+      "O",
+      "I-WAIST_STYLE",
+      "O",
+      "B-WAIST",
+      "B-DRESS_STYLE",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-STYLE-X",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'xxl' waist size but the include does not specify it under 'waist'.",
+      "The query specifies 'maxi dress' which is included, but 'dress_style' should be corrected to match the exact term.",
+      "The query includes 'not formal', but 'formal' is missing from exclude."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00023",
+    "query": "I'm looking for casual tailored floral pants, not loose or slip dresses.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "casual",
+      "tailored",
+      "floral",
+      "pants",
+      ",",
+      "not",
+      "loose",
+      "or",
+      "slip",
+      "dresses",
+      "."
+    ],
+    "include": {
+      "fit": [
+        "tailored"
+      ],
+      "pattern": [
+        "floral"
+      ]
+    },
+    "exclude": {
+      "type": [
+        "sling_dress"
+      ],
+      "fit": [
+        "loose"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "fit": [
+          "tailored"
+        ],
+        "pattern": [
+          "floral"
+        ]
+      },
+      "exclude": {
+        "type": [
+          "slip dress"
+        ],
+        "fit": [
+          "loose"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "B-PATTERN",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'slip dresses' should be excluded but not explicitly mentioned in exclude field."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00024",
+    "query": "Find me formal wear made of nylon, without any informal styles.",
+    "tokens": [
+      "Find",
+      "me",
+      "formal",
+      "wear",
+      "made",
+      "of",
+      "nylon",
+      ",",
+      "without",
+      "any",
+      "informal",
+      "styles",
+      "."
+    ],
+    "include": {
+      "style": [
+        "formal"
+      ],
+      "material": [
+        "nylon"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "material": [
+          "nylon"
+        ],
+        "style": [
+          "formal"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "direct command"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query explicitly mentions 'formal wear' but the annotation only includes 'material: nylon'. The style should be included in the include list."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00025",
+    "query": "I'm searching for a sporty outfit for everyday wear in spring, avoiding brown entirely.",
+    "tokens": [
+      "I",
+      "'m",
+      "searching",
+      "for",
+      "a",
+      "sporty",
+      "outfit",
+      "for",
+      "everyday",
+      "wear",
+      "in",
+      "spring",
+      ",",
+      "avoiding",
+      "brown",
+      "entirely",
+      "."
+    ],
+    "include": {
+      "occasion": [
+        "everyday"
+      ],
+      "season": [
+        "spring"
+      ],
+      "style": [
+        "sporty"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "brown"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "occasion": [
+          "everyday"
+        ],
+        "season": [
+          "spring"
+        ],
+        "style": [
+          "sporty"
+        ]
+      },
+      "exclude": {
+        "color": [
+          "brown"
+        ]
+      },
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "O",
+      "B-SEASON",
+      "O",
+      "O",
+      "B-COLOR-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00026",
+    "query": "I’m after some slim fit clothes for a child, but not anything too formal.",
+    "tokens": [
+      "I",
+      "’m",
+      "after",
+      "some",
+      "slim",
+      "fit",
+      "clothes",
+      "for",
+      "a",
+      "child",
+      ",",
+      "but",
+      "not",
+      "anything",
+      "too",
+      "formal",
+      "."
+    ],
+    "include": {
+      "age_group": [
+        "child"
+      ],
+      "fit": [
+        "slim fit"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "child"
+        ],
+        "fit": [
+          "slim fit"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "I-FIT",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "NEG",
+      "NEG",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'slim fit' but does not imply any specific fit other than slim. The annotation should be more precise and include 'child' as well."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00027",
+    "query": "I'm looking for a casual, regular-fit beige chiffon top, not in any orange or preppy style.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "casual",
+      ",",
+      "regular",
+      "-",
+      "fit",
+      "beige",
+      "chiffon",
+      "top",
+      ",",
+      "not",
+      "in",
+      "any",
+      "orange",
+      "or",
+      "preppy",
+      "style",
+      "."
+    ],
+    "include": {
+      "color": [
+        "beige"
+      ],
+      "material": [
+        "chiffon"
+      ],
+      "fit": [
+        "regular"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "preppy"
+      ],
+      "color": [
+        "orange"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "color": [
+          "beige"
+        ],
+        "material": [
+          "chiffon"
+        ],
+        "fit": [
+          "regular"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "preppy"
+        ],
+        "color": [
+          "orange"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "B-COLOR-X",
+      "O",
+      "B-STYLE-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'casual' which is not included in the include attributes.",
+      "The query does not explicitly mention any brand, so it should be excluded from the exclude or include fields."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00028",
+    "query": "I'm looking for a leather jacket for autumn, specifically for female wear, without a preppy style.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "leather",
+      "jacket",
+      "for",
+      "autumn",
+      ",",
+      "specifically",
+      "for",
+      "female",
+      "wear",
+      ",",
+      "without",
+      "a",
+      "preppy",
+      "style",
+      "."
+    ],
+    "include": {
+      "season": [
+        "autumn"
+      ],
+      "material": [
+        "leather"
+      ],
+      "gender": [
+        "female"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "preppy"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "season": [
+          "autumn"
+        ],
+        "material": [
+          "leather"
+        ],
+        "gender": [
+          "female"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "preppy"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "B-SEASON",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-STYLE-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00029",
+    "query": "I need nylon clothing without chiffon.",
+    "tokens": [
+      "I",
+      "need",
+      "nylon",
+      "clothing",
+      "without",
+      "chiffon",
+      "."
+    ],
+    "include": {
+      "material": [
+        "nylon"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "chiffon"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "material": [
+          "nylon"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "chiffon"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "NEG",
+      "B-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00030",
+    "query": "I'm looking for a summer shirt for a teenager, but not regular fit.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "summer",
+      "shirt",
+      "for",
+      "a",
+      "teenager",
+      ",",
+      "but",
+      "not",
+      "regular",
+      "fit",
+      "."
+    ],
+    "include": {},
+    "exclude": {
+      "fit": [
+        "regular"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "season": [
+          "summer"
+        ],
+        "age_group": [
+          "teenager"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "regular"
+        ]
+      },
+      "style": [
+        "question form"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-SEASON",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'not regular fit', but the current exclude only negates 'fit: regular'. No specific fit is mentioned in include or exclude that aligns with this requirement."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00031",
+    "query": "I'm looking for formal plaid or abstract clothing without cropped fits.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "formal",
+      "plaid",
+      "or",
+      "abstract",
+      "clothing",
+      "without",
+      "cropped",
+      "fits",
+      "."
+    ],
+    "include": {
+      "pattern": [
+        "plaid",
+        "abstract"
+      ],
+      "style": [
+        "formal"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "cropped"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "pattern": [
+          "plaid",
+          "abstract"
+        ],
+        "style": [
+          "formal"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "cropped"
+        ]
+      },
+      "style": [
+        "question form"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "B-PATTERN",
+      "O",
+      "B-PATTERN",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'formal' style but the include only has 'formal'. It should also include 'plaid' and 'abstract' patterns.",
+      "The query does not mention any specific type of clothing, so it is implied that all types are included. The current exclude for fit does not cover this implication."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00032",
+    "query": "I'm interested in double breasted pants with a belt, but not athletic fit.",
+    "tokens": [
+      "I",
+      "'m",
+      "interested",
+      "in",
+      "double",
+      "breasted",
+      "pants",
+      "with",
+      "a",
+      "belt",
+      ",",
+      "but",
+      "not",
+      "athletic",
+      "fit",
+      "."
+    ],
+    "include": {
+      "closure": [
+        "belt"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "athletic"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "closure": [
+          "double breasted",
+          "belt"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "athletic"
+        ]
+      },
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-CLOSURE",
+      "I-CLOSURE",
+      "O",
+      "O",
+      "O",
+      "B-CLOSURE",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'athletic fit' should be excluded but is not in exclude list",
+      "'double breasted' and 'belt' are correctly included"
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00033",
+    "query": "I'm looking for an oversized coat with wide leg pants that have faux fur trim at the hood, and these should have a toggle closure, but avoid using suede.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "an",
+      "oversized",
+      "coat",
+      "with",
+      "wide",
+      "leg",
+      "pants",
+      "that",
+      "have",
+      "faux",
+      "fur",
+      "trim",
+      "at",
+      "the",
+      "hood",
+      ",",
+      "and",
+      "these",
+      "should",
+      "have",
+      "a",
+      "toggle",
+      "closure",
+      ",",
+      "but",
+      "avoid",
+      "using",
+      "suede",
+      "."
+    ],
+    "include": {
+      "fit": [
+        "oversized"
+      ],
+      "leg_style": [
+        "wide leg"
+      ],
+      "hood": [
+        "faux fur trim"
+      ],
+      "closure": [
+        "toggle"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "suede"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "fit": [
+          "oversized"
+        ],
+        "leg_style": [
+          "wide leg"
+        ],
+        "hood": [
+          "faux fur trim"
+        ],
+        "closure": [
+          "toggle"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "suede"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "O",
+      "O",
+      "B-LEG_STYLE",
+      "I-LEG_STYLE",
+      "O",
+      "O",
+      "O",
+      "B-HOOD",
+      "I-HOOD",
+      "I-HOOD",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-CLOSURE",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00034",
+    "query": "I'm after some streetwear-inspired smart casual pants to wear without a slip dress.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "streetwear",
+      "-",
+      "inspired",
+      "smart",
+      "casual",
+      "pants",
+      "to",
+      "wear",
+      "without",
+      "a",
+      "slip",
+      "dress",
+      "."
+    ],
+    "include": {
+      "style": [
+        "streetwear",
+        "smart casual"
+      ]
+    },
+    "exclude": {
+      "type": [
+        "sling_dress"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "style": [
+          "streetwear",
+          "smart casual"
+        ]
+      },
+      "exclude": {
+        "type": [
+          "slip dress"
+        ]
+      },
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "O",
+      "B-STYLE",
+      "I-STYLE",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-TYPE-X",
+      "I-TYPE-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00035",
+    "query": "I need a unisex, embroidered blouse for travel, not for formal occasions.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "unisex",
+      ",",
+      "embroidered",
+      "blouse",
+      "for",
+      "travel",
+      ",",
+      "not",
+      "for",
+      "formal",
+      "occasions",
+      "."
+    ],
+    "include": {
+      "gender": [
+        "unisex"
+      ],
+      "type": [
+        "short_sleeve_top"
+      ],
+      "pattern": [
+        "embroidered"
+      ],
+      "occasion": [
+        "travel"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "gender": [
+          "unisex"
+        ],
+        "type": [
+          "blouse"
+        ],
+        "pattern": [
+          "embroidered"
+        ],
+        "occasion": [
+          "travel"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "O",
+      "B-PATTERN",
+      "B-TYPE",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions the blouse should be 'for travel', but the annotation includes 'travel' under occasion which is not incorrect. However, the query also implies it's a short sleeve top, but the annotation includes 'long_sleeve_top'."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00036",
+    "query": "I'm looking for a winter tie-dye dress for senior women, specifically female seniors, without plain options.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "winter",
+      "tie",
+      "-",
+      "dye",
+      "dress",
+      "for",
+      "senior",
+      "women",
+      ",",
+      "specifically",
+      "female",
+      "seniors",
+      ",",
+      "without",
+      "plain",
+      "options",
+      "."
+    ],
+    "include": {
+      "gender": [
+        "female"
+      ],
+      "season": [
+        "winter"
+      ],
+      "pattern": [
+        "tie-dye"
+      ],
+      "age_group": [
+        "senior"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "plain"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "gender": [
+          "female"
+        ],
+        "season": [
+          "winter"
+        ],
+        "pattern": [
+          "tie-dye"
+        ],
+        "age_group": [
+          "senior"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-SEASON",
+      "B-PATTERN",
+      "O",
+      "I-PATTERN",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'specifically female seniors' which is correctly included in the gender field. However, it also mentions 'without plain options', which should be reflected in the exclude field."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00037",
+    "query": "I'm searching for regular-sleeved clothing without any specific style restrictions.",
+    "tokens": [
+      "I",
+      "'m",
+      "searching",
+      "for",
+      "regular",
+      "-",
+      "sleeved",
+      "clothing",
+      "without",
+      "any",
+      "specific",
+      "style",
+      "restrictions",
+      "."
+    ],
+    "include": {
+      "sleeve_style": [
+        "regular"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "sleeve_style": [
+          "regular"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-SLEEVE_STYLE",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00038",
+    "query": "I'm after regular waist smart casual clothing for seniors, without high-waisted styles.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "regular",
+      "waist",
+      "smart",
+      "casual",
+      "clothing",
+      "for",
+      "seniors",
+      ",",
+      "without",
+      "high",
+      "-",
+      "waisted",
+      "styles",
+      "."
+    ],
+    "include": {
+      "age_group": [
+        "senior"
+      ],
+      "waist_style": [
+        "regular"
+      ],
+      "style": [
+        "casual",
+        "smart casual"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "senior"
+        ],
+        "waist_style": [
+          "regular",
+          "high-waisted"
+        ],
+        "style": [
+          "casual",
+          "smart casual"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-WAIST_STYLE",
+      "O",
+      "B-STYLE",
+      "I-STYLE",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-WAIST_STYLE",
+      "O",
+      "I-WAIST_STYLE",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'high-waisted' waist_style should be excluded."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00039",
+    "query": "I'd like to find a silk clothing item suitable for children, without pink.",
+    "tokens": [
+      "I",
+      "'d",
+      "like",
+      "to",
+      "find",
+      "a",
+      "silk",
+      "clothing",
+      "item",
+      "suitable",
+      "for",
+      "children",
+      ",",
+      "without",
+      "pink",
+      "."
+    ],
+    "include": {
+      "age_group": [
+        "child"
+      ],
+      "material": [
+        "silk"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "pink"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "child"
+        ],
+        "material": [
+          "silk"
+        ]
+      },
+      "exclude": {
+        "color": [
+          "pink"
+        ]
+      },
+      "style": [
+        "polite request"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-COLOR-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'children' but the annotation only includes 'child'. The query does not mention any specific type of clothing item (e.g., top, skirt), which is implied in the include annotations. There are no obvious attributes missing or incorrectly negated."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00040",
+    "query": "I'm searching for a unisex or male autumn outfit for a wedding, avoiding sleeveless dresses.",
+    "tokens": [
+      "I",
+      "'m",
+      "searching",
+      "for",
+      "a",
+      "unisex",
+      "or",
+      "male",
+      "autumn",
+      "outfit",
+      "for",
+      "a",
+      "wedding",
+      ",",
+      "avoiding",
+      "sleeveless",
+      "dresses",
+      "."
+    ],
+    "include": {
+      "gender": [
+        "unisex",
+        "male"
+      ],
+      "season": [
+        "autumn"
+      ],
+      "occasion": [
+        "wedding"
+      ]
+    },
+    "exclude": {
+      "type": [
+        "vest_dress"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "occasion": [
+          "wedding"
+        ],
+        "gender": [
+          "unisex",
+          "male"
+        ],
+        "season": [
+          "autumn",
+          "spring"
+        ]
+      },
+      "exclude": {
+        "type": [
+          "sleeveless dress"
+        ]
+      },
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "O",
+      "B-GENDER",
+      "B-SEASON",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'autumn' but the include attributes also mention 'spring'.",
+      "The exclude attribute 'vest_dress' is not mentioned in the include or exclude fields, and it should be excluded based on the query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00041",
+    "query": "I'm after some spring clothing, not summer or with geometric patterns.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "spring",
+      "clothing",
+      ",",
+      "not",
+      "summer",
+      "or",
+      "with",
+      "geometric",
+      "patterns",
+      "."
+    ],
+    "include": {
+      "season": [
+        "spring"
+      ]
+    },
+    "exclude": {
+      "season": [
+        "summer"
+      ],
+      "pattern": [
+        "geometric"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "season": [
+          "spring"
+        ]
+      },
+      "exclude": {
+        "season": [
+          "summer"
+        ],
+        "pattern": [
+          "geometric"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-SEASON",
+      "O",
+      "O",
+      "NEG",
+      "B-SEASON-X",
+      "O",
+      "O",
+      "B-PATTERN-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00042",
+    "query": "Are you looking for a unisex cropped bohemian top suitable for travel, without any tight fits?",
+    "tokens": [
+      "Are",
+      "you",
+      "looking",
+      "for",
+      "a",
+      "unisex",
+      "cropped",
+      "bohemian",
+      "top",
+      "suitable",
+      "for",
+      "travel",
+      ",",
+      "without",
+      "any",
+      "tight",
+      "fits",
+      "?"
+    ],
+    "include": {
+      "style": [
+        "bohemian"
+      ],
+      "gender": [
+        "unisex"
+      ],
+      "occasion": [
+        "travel"
+      ],
+      "fit": [
+        "cropped"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "style": [
+          "bohemian"
+        ],
+        "gender": [
+          "unisex"
+        ],
+        "occasion": [
+          "travel"
+        ],
+        "fit": [
+          "cropped"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "question form"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "B-FIT",
+      "B-STYLE",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00043",
+    "query": "I'm after some casual summer pants, not for winter.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "casual",
+      "summer",
+      "pants",
+      ",",
+      "not",
+      "for",
+      "winter",
+      "."
+    ],
+    "include": {
+      "season": [
+        "summer"
+      ]
+    },
+    "exclude": {
+      "season": [
+        "winter"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "season": [
+          "summer"
+        ]
+      },
+      "exclude": {
+        "season": [
+          "winter"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-SEASON",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-SEASON-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00044",
+    "query": "Could you help me find an adult bohemian dress with a floral pattern, but not made of leather?",
+    "tokens": [
+      "Could",
+      "you",
+      "help",
+      "me",
+      "find",
+      "an",
+      "adult",
+      "bohemian",
+      "dress",
+      "with",
+      "a",
+      "floral",
+      "pattern",
+      ",",
+      "but",
+      "not",
+      "made",
+      "of",
+      "leather",
+      "?"
+    ],
+    "include": {
+      "style": [
+        "bohemian"
+      ],
+      "age_group": [
+        "adult"
+      ],
+      "pattern": [
+        "floral"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "leather"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "style": [
+          "bohemian"
+        ],
+        "age_group": [
+          "adult"
+        ],
+        "pattern": [
+          "floral"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "leather"
+        ]
+      },
+      "style": [
+        "polite request"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "B-STYLE",
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "B-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00045",
+    "query": "I’m looking for senior-sized, tailored spring plaid pants, not baggy.",
+    "tokens": [
+      "I",
+      "’m",
+      "looking",
+      "for",
+      "senior",
+      "-",
+      "sized",
+      ",",
+      "tailored",
+      "spring",
+      "plaid",
+      "pants",
+      ",",
+      "not",
+      "baggy",
+      "."
+    ],
+    "include": {
+      "age_group": [
+        "senior"
+      ],
+      "season": [
+        "spring"
+      ],
+      "pattern": [
+        "plaid",
+        "geometric"
+      ],
+      "fit": [
+        "tailored"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "baggy"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "senior"
+        ],
+        "season": [
+          "spring"
+        ],
+        "pattern": [
+          "plaid",
+          "geometric"
+        ],
+        "fit": [
+          "tailored"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "baggy"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "B-SEASON",
+      "B-PATTERN",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00046",
+    "query": "Looking for oversized denim jeans suitable for both kids and teenagers, not leather.",
+    "tokens": [
+      "Looking",
+      "for",
+      "oversized",
+      "denim",
+      "jeans",
+      "suitable",
+      "for",
+      "both",
+      "kids",
+      "and",
+      "teenagers",
+      ",",
+      "not",
+      "leather",
+      "."
+    ],
+    "include": {
+      "material": [
+        "denim"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "fit": [
+          "oversized"
+        ],
+        "age_group": [
+          "child",
+          "teenager"
+        ],
+        "material": [
+          "denim",
+          "leather"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "B-FIT",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-MATERIAL",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'not leather', but the annotation includes 'leather' in the material.",
+      "The annotation should not include 'shorts', 'vest', etc., as these are not mentioned or implied in the query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00047",
+    "query": "I'm after some casual red graphic velvet clothes, nothing boring like plain stuff.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "casual",
+      "red",
+      "graphic",
+      "velvet",
+      "clothes",
+      ",",
+      "nothing",
+      "boring",
+      "like",
+      "plain",
+      "stuff",
+      "."
+    ],
+    "include": {
+      "color": [
+        "red"
+      ],
+      "pattern": [
+        "graphic"
+      ],
+      "material": [
+        "velvet"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "color": [
+          "red"
+        ],
+        "pattern": [
+          "graphic"
+        ],
+        "material": [
+          "velvet"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-PATTERN",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'casual' is not included in the attributes.",
+      "'graphic' and 'velvet' are correctly included but 'red' should be in lowercase."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00048",
+    "query": "I need an adult olive dress to wear to a formal event, without white.",
+    "tokens": [
+      "I",
+      "need",
+      "an",
+      "adult",
+      "olive",
+      "dress",
+      "to",
+      "wear",
+      "to",
+      "a",
+      "formal",
+      "event",
+      ",",
+      "without",
+      "white",
+      "."
+    ],
+    "include": {
+      "age_group": [
+        "adult"
+      ],
+      "color": [
+        "olive"
+      ],
+      "type": [
+        "long_sleeve_dress"
+      ],
+      "occasion": [
+        "formal event"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "white"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "adult"
+        ],
+        "color": [
+          "olive"
+        ]
+      },
+      "exclude": {
+        "color": [
+          "white"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-COLOR-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'formal event' is not included in the annotations but implied by 'to wear to a formal event'",
+      "'dress' is not explicitly mentioned in the include or exclude fields"
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00049",
+    "query": "I'm in the market for smart casual tops with a bohemian vibe, specifically tie-dye or embroidered designs, but avoid animal print; I also prefer raglan or puff sleeves and faux fur trim details.",
+    "tokens": [
+      "I",
+      "'m",
+      "in",
+      "the",
+      "market",
+      "for",
+      "smart",
+      "casual",
+      "tops",
+      "with",
+      "a",
+      "bohemian",
+      "vibe",
+      ",",
+      "specifically",
+      "tie",
+      "-",
+      "dye",
+      "or",
+      "embroidered",
+      "designs",
+      ",",
+      "but",
+      "avoid",
+      "animal",
+      "print",
+      ";",
+      "I",
+      "also",
+      "prefer",
+      "raglan",
+      "or",
+      "puff",
+      "sleeves",
+      "and",
+      "faux",
+      "fur",
+      "trim",
+      "details",
+      "."
+    ],
+    "include": {
+      "pattern": [
+        "tie-dye",
+        "embroidered"
+      ],
+      "style": [
+        "smart casual",
+        "bohemian"
+      ],
+      "sleeve_style": [
+        "raglan",
+        "puff"
+      ],
+      "hood": [
+        "faux fur trim"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "animal print"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "pattern": [
+          "tie-dye",
+          "embroidered"
+        ],
+        "style": [
+          "smart casual",
+          "bohemian"
+        ],
+        "sleeve_style": [
+          "raglan",
+          "puff"
+        ],
+        "hood": [
+          "faux fur trim"
+        ]
+      },
+      "exclude": {
+        "pattern": [
+          "animal print"
+        ]
+      },
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "I-STYLE",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "I-PATTERN",
+      "O",
+      "B-PATTERN",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-PATTERN-X",
+      "I-PATTERN-X",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-SLEEVE_STYLE",
+      "O",
+      "B-SLEEVE_STYLE",
+      "O",
+      "O",
+      "B-HOOD",
+      "I-HOOD",
+      "I-HOOD",
+      "O",
+      "O"
+    ],
+    "was_validated": false,
+    "was_skipped": true,
+    "validation_error": "Expecting ',' delimiter: line 15 column 35 (char 529)"
+  },
+  {
+    "id": "llm_aug_00050",
+    "query": "Could you help me find some silk clothing suitable for a beach outing for a male child? Avoid anything too formal or not suitable for children.",
+    "tokens": [
+      "Could",
+      "you",
+      "help",
+      "me",
+      "find",
+      "some",
+      "silk",
+      "clothing",
+      "suitable",
+      "for",
+      "a",
+      "beach",
+      "outing",
+      "for",
+      "a",
+      "male",
+      "child",
+      "?",
+      "Avoid",
+      "anything",
+      "too",
+      "formal",
+      "or",
+      "not",
+      "suitable",
+      "for",
+      "children",
+      "."
+    ],
+    "include": {
+      "material": [
+        "silk"
+      ],
+      "gender": [
+        "male"
+      ],
+      "occasion": [
+        "beach"
+      ],
+      "age_group": [
+        "child"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "material": [
+          "silk"
+        ],
+        "gender": [
+          "male"
+        ],
+        "occasion": [
+          "beach"
+        ],
+        "age_group": [
+          "child"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "polite request"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "B-AGE_GROUP",
+      "O",
+      "NEG",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'material': 'silk' is not suitable for a beach outing.",
+      "'age_group': 'child' should be included."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00051",
+    "query": "Could you help me find a senior travel tee made of suede or velvet, but not with any geometric patterns?",
+    "tokens": [
+      "Could",
+      "you",
+      "help",
+      "me",
+      "find",
+      "a",
+      "senior",
+      "travel",
+      "tee",
+      "made",
+      "of",
+      "suede",
+      "or",
+      "velvet",
+      ",",
+      "but",
+      "not",
+      "with",
+      "any",
+      "geometric",
+      "patterns",
+      "?"
+    ],
+    "include": {
+      "age_group": [
+        "senior"
+      ],
+      "occasion": [
+        "travel"
+      ],
+      "material": [
+        "suede",
+        "velvet"
+      ],
+      "type": [
+        "short_sleeve_top"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "geometric"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "senior"
+        ],
+        "occasion": [
+          "travel"
+        ],
+        "material": [
+          "suede",
+          "velvet"
+        ],
+        "type": [
+          "tee"
+        ]
+      },
+      "exclude": {
+        "pattern": [
+          "geometric"
+        ]
+      },
+      "style": [
+        "polite request"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "B-OCCASION",
+      "B-TYPE",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "B-PATTERN-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'short_sleeve_top' is not mentioned in the query.",
+      "'geometric' pattern should be excluded but is missing from exclude."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00052",
+    "query": "I'm in the market for a preppy denim dress without abstract patterns, and no shorts please.",
+    "tokens": [
+      "I",
+      "'m",
+      "in",
+      "the",
+      "market",
+      "for",
+      "a",
+      "preppy",
+      "denim",
+      "dress",
+      "without",
+      "abstract",
+      "patterns",
+      ",",
+      "and",
+      "no",
+      "shorts",
+      "please",
+      "."
+    ],
+    "include": {
+      "material": [
+        "denim"
+      ],
+      "style": [
+        "preppy"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "abstract"
+      ],
+      "type": [
+        "shorts"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "material": [
+          "denim",
+          "satin"
+        ],
+        "style": [
+          "preppy"
+        ]
+      },
+      "exclude": {
+        "pattern": [
+          "abstract"
+        ],
+        "type": [
+          "shorts"
+        ]
+      },
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "B-MATERIAL",
+      "O",
+      "NEG",
+      "B-PATTERN-X",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-TYPE-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "Include 'satin' should be excluded.",
+      "Exclude 'shorts' is correctly negated but 'denim' in include conflicts with query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00053",
+    "query": "I need a casual belt in black with XXL or XL waist, but not denim or sweaters.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "casual",
+      "belt",
+      "in",
+      "black",
+      "with",
+      "XXL",
+      "or",
+      "XL",
+      "waist",
+      ",",
+      "but",
+      "not",
+      "denim",
+      "or",
+      "sweaters",
+      "."
+    ],
+    "include": {
+      "closure": [
+        "belt"
+      ],
+      "style": [
+        "casual"
+      ],
+      "waist": [
+        "xxl",
+        "xl"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "denim"
+      ],
+      "type": [
+        "long_sleeve_top"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "closure": [
+          "belt"
+        ],
+        "style": [
+          "casual"
+        ],
+        "waist": [
+          "xxl",
+          "xl"
+        ],
+        "color": [
+          "black"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "denim"
+        ],
+        "type": [
+          "sweater"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "B-CLOSURE",
+      "O",
+      "B-COLOR",
+      "O",
+      "B-WAIST",
+      "O",
+      "B-WAIST",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-MATERIAL-X",
+      "O",
+      "B-TYPE-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'XXL or XL waist', but the include attributes only specify 'waist: [\"xxl\", \"xl\"]'. The case sensitivity issue should be noted.",
+      "The query does not mention any brand, so it is correctly excluded from the annotations."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00054",
+    "query": "I need some longline outwear with hand warmer pockets, not short ones.",
+    "tokens": [
+      "I",
+      "need",
+      "some",
+      "longline",
+      "outwear",
+      "with",
+      "hand",
+      "warmer",
+      "pockets",
+      ",",
+      "not",
+      "short",
+      "ones",
+      "."
+    ],
+    "include": {
+      "outwear_pockets": [
+        "hand warmer pockets"
+      ],
+      "hem_style": [
+        "longline"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "outwear_pockets": [
+          "hand warmer pockets"
+        ],
+        "hem_style": [
+          "longline"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-HEM_STYLE",
+      "O",
+      "O",
+      "B-OUTWEAR_POCKETS",
+      "I-OUTWEAR_POCKETS",
+      "I-OUTWEAR_POCKETS",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00055",
+    "query": "I'm searching for a vintage style blouse to wear to a wedding, but not one with a floral pattern.",
+    "tokens": [
+      "I",
+      "'m",
+      "searching",
+      "for",
+      "a",
+      "vintage",
+      "style",
+      "blouse",
+      "to",
+      "wear",
+      "to",
+      "a",
+      "wedding",
+      ",",
+      "but",
+      "not",
+      "one",
+      "with",
+      "a",
+      "floral",
+      "pattern",
+      "."
+    ],
+    "include": {
+      "style": [
+        "vintage"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "floral"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "style": [
+          "vintage"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query excludes 'floral pattern', but the include field does not exclude it."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00056",
+    "query": "I'm in the market for a pair of pants with toggle closure, avoiding snap buttons altogether.",
+    "tokens": [
+      "I",
+      "'m",
+      "in",
+      "the",
+      "market",
+      "for",
+      "a",
+      "pair",
+      "of",
+      "pants",
+      "with",
+      "toggle",
+      "closure",
+      ",",
+      "avoiding",
+      "snap",
+      "buttons",
+      "altogether",
+      "."
+    ],
+    "include": {
+      "closure": [
+        "toggle"
+      ]
+    },
+    "exclude": {
+      "closure": [
+        "snap buttons"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "closure": [
+          "toggle",
+          "snap buttons"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-CLOSURE",
+      "O",
+      "O",
+      "O",
+      "B-CLOSURE",
+      "I-CLOSURE",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'snap buttons' should be excluded from 'include'",
+      "'pants with toggle closure' is correctly included in 'include'"
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00057",
+    "query": "I need mid-rise jeans without animal print.",
+    "tokens": [
+      "I",
+      "need",
+      "mid",
+      "-",
+      "rise",
+      "jeans",
+      "without",
+      "animal",
+      "print",
+      "."
+    ],
+    "include": {
+      "rise": [
+        "mid-rise"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "animal print"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "rise": [
+          "mid-rise"
+        ]
+      },
+      "exclude": {
+        "pattern": [
+          "animal print"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "B-RISE",
+      "O",
+      "I-RISE",
+      "O",
+      "NEG",
+      "B-PATTERN-X",
+      "I-PATTERN-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00058",
+    "query": "I'm looking for a smart casual sweater suitable for teenagers, preferably tie-dye or camouflage, not the usual everyday kind.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "smart",
+      "casual",
+      "sweater",
+      "suitable",
+      "for",
+      "teenagers",
+      ",",
+      "preferably",
+      "tie",
+      "-",
+      "dye",
+      "or",
+      "camouflage",
+      ",",
+      "not",
+      "the",
+      "usual",
+      "everyday",
+      "kind",
+      "."
+    ],
+    "include": {
+      "type": [
+        "long_sleeve_top"
+      ],
+      "style": [
+        "smart casual"
+      ],
+      "pattern": [
+        "tie-dye",
+        "camouflage"
+      ],
+      "age_group": [
+        "teenager"
+      ]
+    },
+    "exclude": {
+      "occasion": [
+        "everyday"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "teenager"
+        ],
+        "type": [
+          "sweater"
+        ],
+        "pattern": [
+          "tie-dye",
+          "camouflage"
+        ],
+        "style": [
+          "smart casual"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "I-STYLE",
+      "B-TYPE",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "I-PATTERN",
+      "O",
+      "B-PATTERN",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'smart casual' but the include does not have this in the style.",
+      "The query specifies 'teenager' for age_group which is correctly included, but 'not the usual everyday kind' implies it should be excluded from 'everyday'."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00059",
+    "query": "I need striped pants without long sleeve dresses.",
+    "tokens": [
+      "I",
+      "need",
+      "striped",
+      "pants",
+      "without",
+      "long",
+      "sleeve",
+      "dresses",
+      "."
+    ],
+    "include": {
+      "pattern": [
+        "striped"
+      ]
+    },
+    "exclude": {
+      "type": [
+        "long_sleeve_dress"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "pattern": [
+          "striped"
+        ]
+      },
+      "exclude": {
+        "type": [
+          "long sleeve dress"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'pants' but the current include only has 'striped', which is not a complete match. The exclude for 'long_sleeve_dress' is correct as it does not mention dresses at all."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00060",
+    "query": "I need a midi-length shirt with heavy insulation for summer, not a maxi length.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "midi",
+      "-",
+      "length",
+      "shirt",
+      "with",
+      "heavy",
+      "insulation",
+      "for",
+      "summer",
+      ",",
+      "not",
+      "a",
+      "maxi",
+      "length",
+      "."
+    ],
+    "include": {
+      "insulation": [
+        "heavy"
+      ],
+      "length": [
+        "midi"
+      ],
+      "season": [
+        "summer"
+      ]
+    },
+    "exclude": {
+      "length": [
+        "maxi"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "insulation": [
+          "heavy"
+        ],
+        "length": [
+          "midi"
+        ],
+        "season": [
+          "summer"
+        ]
+      },
+      "exclude": {
+        "length": [
+          "maxi"
+        ]
+      },
+      "style": [
+        "direct command"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-LENGTH",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-INSULATION",
+      "O",
+      "O",
+      "B-SEASON",
+      "O",
+      "NEG",
+      "O",
+      "B-LENGTH-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00061",
+    "query": "I need an a-line dress with raw edge hem, not wrap style or cropped length, and with patch pockets.",
+    "tokens": [
+      "I",
+      "need",
+      "an",
+      "a",
+      "-",
+      "line",
+      "dress",
+      "with",
+      "raw",
+      "edge",
+      "hem",
+      ",",
+      "not",
+      "wrap",
+      "style",
+      "or",
+      "cropped",
+      "length",
+      ",",
+      "and",
+      "with",
+      "patch",
+      "pockets",
+      "."
+    ],
+    "include": {
+      "bottom_pockets": [
+        "patch pockets"
+      ],
+      "dress_style": [
+        "a-line"
+      ],
+      "hem_style": [
+        "raw edge"
+      ]
+    },
+    "exclude": {
+      "dress_style": [
+        "wrap"
+      ],
+      "length": [
+        "cropped"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "bottom_pockets": [
+          "patch pockets"
+        ],
+        "dress_style": [
+          "a-line"
+        ],
+        "hem_style": [
+          "raw edge"
+        ]
+      },
+      "exclude": {
+        "dress_style": [
+          "wrap"
+        ],
+        "length": [
+          "cropped"
+        ]
+      },
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-DRESS_STYLE",
+      "O",
+      "I-DRESS_STYLE",
+      "O",
+      "O",
+      "B-HEM_STYLE",
+      "I-HEM_STYLE",
+      "O",
+      "O",
+      "NEG",
+      "B-DRESS_STYLE-X",
+      "O",
+      "O",
+      "B-LENGTH-X",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-BOTTOM_POCKETS",
+      "I-BOTTOM_POCKETS",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00062",
+    "query": "I'm after a young adult winter shirt with graphic and abstract patterns, fitted but not vintage.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "a",
+      "young",
+      "adult",
+      "winter",
+      "shirt",
+      "with",
+      "graphic",
+      "and",
+      "abstract",
+      "patterns",
+      ",",
+      "fitted",
+      "but",
+      "not",
+      "vintage",
+      "."
+    ],
+    "include": {
+      "age_group": [
+        "young adult"
+      ],
+      "fit": [
+        "fitted"
+      ],
+      "pattern": [
+        "graphic",
+        "abstract"
+      ],
+      "season": [
+        "winter"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "vintage"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "young adult"
+        ],
+        "fit": [
+          "fitted"
+        ],
+        "pattern": [
+          "graphic",
+          "abstract"
+        ],
+        "season": [
+          "winter"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "vintage"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "I-AGE_GROUP",
+      "B-SEASON",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "B-PATTERN",
+      "O",
+      "O",
+      "B-FIT",
+      "O",
+      "NEG",
+      "B-STYLE-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00063",
+    "query": "I need some burgundy outfits for a party, suitable for both kids and young adults, but nothing too formal.",
+    "tokens": [
+      "I",
+      "need",
+      "some",
+      "burgundy",
+      "outfits",
+      "for",
+      "a",
+      "party",
+      ",",
+      "suitable",
+      "for",
+      "both",
+      "kids",
+      "and",
+      "young",
+      "adults",
+      ",",
+      "but",
+      "nothing",
+      "too",
+      "formal",
+      "."
+    ],
+    "include": {
+      "color": [
+        "burgundy"
+      ],
+      "age_group": [
+        "child",
+        "young adult"
+      ],
+      "occasion": [
+        "party"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "color": [
+          "burgundy"
+        ],
+        "age_group": [
+          "child",
+          "young adult"
+        ],
+        "occasion": [
+          "party"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00064",
+    "query": "Could you help me find a bohemian-style olive slim fit shirt for male, without athletic or jeans types?",
+    "tokens": [
+      "Could",
+      "you",
+      "help",
+      "me",
+      "find",
+      "a",
+      "bohemian",
+      "-",
+      "style",
+      "olive",
+      "slim",
+      "fit",
+      "shirt",
+      "for",
+      "male",
+      ",",
+      "without",
+      "athletic",
+      "or",
+      "jeans",
+      "types",
+      "?"
+    ],
+    "include": {
+      "color": [
+        "olive"
+      ],
+      "fit": [
+        "slim fit"
+      ],
+      "gender": [
+        "male"
+      ],
+      "style": [
+        "bohemian"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "athletic"
+      ],
+      "type": [
+        "trousers"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "color": [
+          "olive"
+        ],
+        "fit": [
+          "slim fit"
+        ],
+        "gender": [
+          "male"
+        ],
+        "style": [
+          "bohemian"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "athletic"
+        ],
+        "type": [
+          "jeans"
+        ]
+      },
+      "style": [
+        "polite request"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-FIT",
+      "I-FIT",
+      "O",
+      "O",
+      "B-GENDER",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "B-TYPE-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00065",
+    "query": "Find me some baggy shorts for date night, not party occasions.",
+    "tokens": [
+      "Find",
+      "me",
+      "some",
+      "baggy",
+      "shorts",
+      "for",
+      "date",
+      "night",
+      ",",
+      "not",
+      "party",
+      "occasions",
+      "."
+    ],
+    "include": {
+      "type": [
+        "shorts"
+      ],
+      "occasion": [
+        "date night"
+      ],
+      "fit": [
+        "baggy"
+      ]
+    },
+    "exclude": {
+      "occasion": [
+        "party"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "type": [
+          "shorts"
+        ],
+        "occasion": [
+          "date night"
+        ],
+        "fit": [
+          "baggy",
+          "fitted"
+        ]
+      },
+      "exclude": {
+        "occasion": [
+          "party"
+        ]
+      },
+      "style": [
+        "direct command"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "B-TYPE",
+      "O",
+      "B-OCCASION",
+      "I-OCCASION",
+      "O",
+      "NEG",
+      "B-OCCASION-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'date night' for occasion, but the annotation includes both 'date night' and 'party'. The query explicitly excludes 'party', which is not reflected in the annotations.",
+      "'baggy' fit is correctly included."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00066",
+    "query": "I'm looking for some tie-dye denim shorts for travel and beach days, suitable for young adults and teenagers.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "some",
+      "tie",
+      "-",
+      "dye",
+      "denim",
+      "shorts",
+      "for",
+      "travel",
+      "and",
+      "beach",
+      "days",
+      ",",
+      "suitable",
+      "for",
+      "young",
+      "adults",
+      "and",
+      "teenagers",
+      "."
+    ],
+    "include": {
+      "occasion": [
+        "travel",
+        "beach"
+      ],
+      "pattern": [
+        "tie-dye"
+      ],
+      "age_group": [
+        "young adult",
+        "teenager"
+      ],
+      "material": [
+        "denim"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "occasion": [
+          "travel",
+          "beach"
+        ],
+        "pattern": [
+          "tie-dye"
+        ],
+        "age_group": [
+          "young adult",
+          "teenager"
+        ],
+        "material": [
+          "denim"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "I-PATTERN",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "B-OCCASION",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00067",
+    "query": "I need a midi-length skirt with elastic waist and split hem for a casual event, without cropped fit.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "midi",
+      "-",
+      "length",
+      "skirt",
+      "with",
+      "elastic",
+      "waist",
+      "and",
+      "split",
+      "hem",
+      "for",
+      "a",
+      "casual",
+      "event",
+      ",",
+      "without",
+      "cropped",
+      "fit",
+      "."
+    ],
+    "include": {
+      "waist_style": [
+        "elastic"
+      ],
+      "hem_style": [
+        "split",
+        "longline"
+      ],
+      "length": [
+        "midi"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "cropped"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "waist_style": [
+          "elastic"
+        ],
+        "hem_style": [
+          "split",
+          "longline"
+        ],
+        "length": [
+          "midi"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "cropped"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-LENGTH",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-WAIST_STYLE",
+      "O",
+      "O",
+      "B-HEM_STYLE",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00068",
+    "query": "I'm after a high-rise cuffed tee, not made of suede.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "a",
+      "high",
+      "-",
+      "rise",
+      "cuffed",
+      "tee",
+      ",",
+      "not",
+      "made",
+      "of",
+      "suede",
+      "."
+    ],
+    "include": {
+      "type": [
+        "short_sleeve_top"
+      ],
+      "rise": [
+        "high-rise"
+      ],
+      "sleeve_style": [
+        "cuffed"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "suede"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "type": [
+          "tee"
+        ],
+        "rise": [
+          "high-rise"
+        ],
+        "sleeve_style": [
+          "cuffed"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "suede"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-RISE",
+      "O",
+      "I-RISE",
+      "B-SLEEVE_STYLE",
+      "B-TYPE",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "B-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00069",
+    "query": "Looking for a polyester dress for a party, without any additional patterns.",
+    "tokens": [
+      "Looking",
+      "for",
+      "a",
+      "polyester",
+      "dress",
+      "for",
+      "a",
+      "party",
+      ",",
+      "without",
+      "any",
+      "additional",
+      "patterns",
+      "."
+    ],
+    "include": {
+      "occasion": [
+        "party"
+      ],
+      "material": [
+        "polyester"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "occasion": [
+          "party"
+        ],
+        "material": [
+          "polyester"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'pattern': No patterns mentioned or implied in the query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00070",
+    "query": "I'm after some streetwear essentials in blue and coral fleece, not avoiding smart casual styles.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "streetwear",
+      "essentials",
+      "in",
+      "blue",
+      "and",
+      "coral",
+      "fleece",
+      ",",
+      "not",
+      "avoiding",
+      "smart",
+      "casual",
+      "styles",
+      "."
+    ],
+    "include": {
+      "style": [
+        "streetwear"
+      ],
+      "color": [
+        "blue",
+        "coral"
+      ],
+      "material": [
+        "fleece"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "smart casual"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "style": [
+          "streetwear"
+        ],
+        "color": [
+          "blue",
+          "coral"
+        ],
+        "material": [
+          "fleece"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "smart casual"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "B-COLOR",
+      "B-MATERIAL",
+      "O",
+      "NEG",
+      "O",
+      "B-STYLE-X",
+      "I-STYLE-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00071",
+    "query": "I'm after a collared shirt dress for a party, but not for a formal event and with bootcut legs.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "a",
+      "collared",
+      "shirt",
+      "dress",
+      "for",
+      "a",
+      "party",
+      ",",
+      "but",
+      "not",
+      "for",
+      "a",
+      "formal",
+      "event",
+      "and",
+      "with",
+      "bootcut",
+      "legs",
+      "."
+    ],
+    "include": {
+      "dress_style": [
+        "shirt dress"
+      ],
+      "occasion": [
+        "party"
+      ],
+      "leg_style": [
+        "bootcut"
+      ],
+      "neckline": [
+        "collared"
+      ]
+    },
+    "exclude": {
+      "occasion": [
+        "formal event"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "dress_style": [
+          "shirt dress"
+        ],
+        "occasion": [
+          "party"
+        ],
+        "leg_style": [
+          "bootcut"
+        ],
+        "neckline": [
+          "collared"
+        ]
+      },
+      "exclude": {
+        "occasion": [
+          "formal event"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-NECKLINE",
+      "B-DRESS_STYLE",
+      "I-DRESS_STYLE",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "B-OCCASION-X",
+      "I-OCCASION-X",
+      "O",
+      "O",
+      "B-LEG_STYLE",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00072",
+    "query": "I'm searching for a yellow or olive short sleeve dress made of fleece with either animal print or polka dot patterns, but not one in teal or like a skirt.",
+    "tokens": [
+      "I",
+      "'m",
+      "searching",
+      "for",
+      "a",
+      "yellow",
+      "or",
+      "olive",
+      "short",
+      "sleeve",
+      "dress",
+      "made",
+      "of",
+      "fleece",
+      "with",
+      "either",
+      "animal",
+      "print",
+      "or",
+      "polka",
+      "dot",
+      "patterns",
+      ",",
+      "but",
+      "not",
+      "one",
+      "in",
+      "teal",
+      "or",
+      "like",
+      "a",
+      "skirt",
+      "."
+    ],
+    "include": {
+      "type": [
+        "short_sleeve_dress"
+      ],
+      "material": [
+        "fleece"
+      ],
+      "color": [
+        "yellow",
+        "olive"
+      ],
+      "pattern": [
+        "animal print",
+        "polka dot"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "teal"
+      ],
+      "type": [
+        "skirt"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "type": [
+          "short sleeve dress"
+        ],
+        "material": [
+          "fleece"
+        ],
+        "color": [
+          "yellow",
+          "olive"
+        ],
+        "pattern": [
+          "animal print",
+          "polka dot"
+        ]
+      },
+      "exclude": {
+        "color": [
+          "teal"
+        ],
+        "type": [
+          "skirt"
+        ]
+      },
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "B-COLOR",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "B-PATTERN",
+      "I-PATTERN",
+      "O",
+      "B-PATTERN",
+      "I-PATTERN",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "B-COLOR-X",
+      "O",
+      "O",
+      "O",
+      "B-TYPE-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'short sleeve dress' which is included but the value in include is 'short_sleeve_dress'. The correct term should be 'short_sleeve_dress'.",
+      "The query specifies 'fleece' as material, which is correctly included.",
+      "The query includes colors 'yellow or olive', both of which are present in the include section. However, 'olive' is not a valid color value and should be corrected to match the closest valid term.",
+      "The pattern 'animal print or polka dot' is mentioned but only 'polka dot' is included in the include section. 'Animal print' should also be added."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00073",
+    "query": "I'm looking for a sweater without any specific style requirements.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "sweater",
+      "without",
+      "any",
+      "specific",
+      "style",
+      "requirements",
+      "."
+    ],
+    "include": {},
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "type": [
+          "sweater"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "question form"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-TYPE",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query does not specify any specific style requirements for a long_sleeve_top. The annotation should be adjusted to reflect the lack of style constraints."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00074",
+    "query": "I'm looking for some rolled-sleeve pants with snap buttons, not cream in color or with velcro closure.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "some",
+      "rolled",
+      "-",
+      "sleeve",
+      "pants",
+      "with",
+      "snap",
+      "buttons",
+      ",",
+      "not",
+      "cream",
+      "in",
+      "color",
+      "or",
+      "with",
+      "velcro",
+      "closure",
+      "."
+    ],
+    "include": {
+      "sleeve_style": [
+        "rolled"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "cream"
+      ],
+      "closure": [
+        "velcro"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "sleeve_style": [
+          "rolled"
+        ],
+        "closure": [
+          "snap buttons"
+        ]
+      },
+      "exclude": {
+        "color": [
+          "cream"
+        ],
+        "closure": [
+          "velcro"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-SLEEVE_STYLE",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-CLOSURE",
+      "I-CLOSURE",
+      "O",
+      "NEG",
+      "B-COLOR-X",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-CLOSURE-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'rolled-sleeve pants' is not included in the include field",
+      "'velcro closure' should be excluded but is missing from exclude"
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00075",
+    "query": "I'm looking for sportswear or lounge clothes suitable for a teenager, without fitted clothing or short sleeve dresses.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "sportswear",
+      "or",
+      "lounge",
+      "clothes",
+      "suitable",
+      "for",
+      "a",
+      "teenager",
+      ",",
+      "without",
+      "fitted",
+      "clothing",
+      "or",
+      "short",
+      "sleeve",
+      "dresses",
+      "."
+    ],
+    "include": {
+      "age_group": [
+        "teenager"
+      ],
+      "occasion": [
+        "sport"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "fitted"
+      ],
+      "type": [
+        "short_sleeve_dress"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "age_group": [
+          "teenager"
+        ],
+        "occasion": [
+          "sport",
+          "lounge"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "fitted"
+        ],
+        "type": [
+          "short sleeve dress"
+        ]
+      },
+      "style": [
+        "question form"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query explicitly excludes 'short sleeve dresses', but the annotation includes 'short_sleeve_dress'.",
+      "There is no mention of 'lounge' in the query, only 'sportswear or lounge clothes', which might imply inclusion. However, since 'lounge' is not clearly implied and there are no explicit mentions, it should be excluded."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00076",
+    "query": "I need a casual, unisex pair of pants with mid-rise or low-rise waist, without polka dot patterns.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "casual",
+      ",",
+      "unisex",
+      "pair",
+      "of",
+      "pants",
+      "with",
+      "mid",
+      "-",
+      "rise",
+      "or",
+      "low",
+      "-",
+      "rise",
+      "waist",
+      ",",
+      "without",
+      "polka",
+      "dot",
+      "patterns",
+      "."
+    ],
+    "include": {
+      "style": [
+        "casual"
+      ],
+      "rise": [
+        "mid-rise",
+        "low-rise"
+      ],
+      "gender": [
+        "unisex"
+      ],
+      "waist_style": [
+        "mid-rise",
+        "low-rise"
+      ],
+      "type": [
+        "trousers"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "polka dot"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "style": [
+          "casual"
+        ],
+        "rise": [
+          "mid-rise",
+          "low-rise"
+        ],
+        "gender": [
+          "unisex"
+        ],
+        "waist_style": [
+          "low-rise"
+        ]
+      },
+      "exclude": {
+        "pattern": [
+          "polka dot"
+        ]
+      },
+      "style": [
+        "direct command"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "B-GENDER",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-RISE",
+      "O",
+      "I-RISE",
+      "O",
+      "B-RISE",
+      "O",
+      "I-RISE",
+      "O",
+      "O",
+      "NEG",
+      "B-PATTERN-X",
+      "I-PATTERN-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "Missing 'trousers' in include.",
+      "Incorrectly included 'waist_style: low-rise' when 'low-rise' is already implied by 'mid-rise or low-rise'.",
+      "Missing 'type: trousers' in include."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00077",
+    "query": "I need a casual wool sweater, not formal or made of leather.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "casual",
+      "wool",
+      "sweater",
+      ",",
+      "not",
+      "formal",
+      "or",
+      "made",
+      "of",
+      "leather",
+      "."
+    ],
+    "include": {
+      "material": [
+        "wool"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "leather"
+      ],
+      "style": [
+        "formal"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "material": [
+          "wool"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "leather"
+        ],
+        "style": [
+          "formal"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "NEG",
+      "B-STYLE-X",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions the sweater should be casual and made of wool, but 'casual' is not excluded or included. The exclude for 'formal' is correct, but 'style' should also include 'casual'. No mention of color, pattern, etc., so those are correctly excluded."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00078",
+    "query": "Could you help me find a plain or checkered baggy jacket, but not an elegant one?",
+    "tokens": [
+      "Could",
+      "you",
+      "help",
+      "me",
+      "find",
+      "a",
+      "plain",
+      "or",
+      "checkered",
+      "baggy",
+      "jacket",
+      ",",
+      "but",
+      "not",
+      "an",
+      "elegant",
+      "one",
+      "?"
+    ],
+    "include": {
+      "pattern": [
+        "plain",
+        "checkered"
+      ],
+      "fit": [
+        "baggy"
+      ],
+      "type": [
+        "long_sleeve_top"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "elegant"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "pattern": [
+          "plain",
+          "checkered"
+        ],
+        "fit": [
+          "baggy"
+        ],
+        "type": [
+          "jacket",
+          "sweater"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "elegant"
+        ]
+      },
+      "style": [
+        "polite request"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "B-PATTERN",
+      "B-FIT",
+      "B-TYPE",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-STYLE-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'long_sleeve_outwear' is included but not mentioned in the query.",
+      "'vest' is included but not mentioned in the query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00079",
+    "query": "Looking for a blouse to wear at home, not for formal occasions, suitable for lounge settings.",
+    "tokens": [
+      "Looking",
+      "for",
+      "a",
+      "blouse",
+      "to",
+      "wear",
+      "at",
+      "home",
+      ",",
+      "not",
+      "for",
+      "formal",
+      "occasions",
+      ",",
+      "suitable",
+      "for",
+      "lounge",
+      "settings",
+      "."
+    ],
+    "include": {
+      "occasion": [
+        "lounge"
+      ],
+      "type": [
+        "long_sleeve_top"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "occasion": [
+          "lounge"
+        ],
+        "type": [
+          "blouse"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-TYPE",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'long_sleeve_top' is not implied in the query. The query does not specify sleeve length."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00080",
+    "query": "I'm in the market for full-length or midi polka dot pants without organic cotton, and no low-rise or ankle-length options please. I want them to have a none hood.",
+    "tokens": [
+      "I",
+      "'m",
+      "in",
+      "the",
+      "market",
+      "for",
+      "full",
+      "-",
+      "length",
+      "or",
+      "midi",
+      "polka",
+      "dot",
+      "pants",
+      "without",
+      "organic",
+      "cotton",
+      ",",
+      "and",
+      "no",
+      "low",
+      "-",
+      "rise",
+      "or",
+      "ankle",
+      "-",
+      "length",
+      "options",
+      "please",
+      ".",
+      "I",
+      "want",
+      "them",
+      "to",
+      "have",
+      "a",
+      "none",
+      "hood",
+      "."
+    ],
+    "include": {
+      "rise": [
+        "low-rise"
+      ],
+      "pattern": [
+        "polka dot"
+      ],
+      "hood": [
+        "none"
+      ],
+      "length": [
+        "full length",
+        "midi"
+      ]
+    },
+    "exclude": {
+      "length": [
+        "ankle"
+      ],
+      "material": [
+        "organic cotton"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "rise": [
+          "low-rise"
+        ],
+        "pattern": [
+          "polka dot"
+        ],
+        "hood": [
+          "none"
+        ],
+        "length": [
+          "full length",
+          "midi"
+        ]
+      },
+      "exclude": {
+        "length": [
+          "ankle"
+        ],
+        "material": [
+          "organic cotton"
+        ]
+      },
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-LENGTH",
+      "O",
+      "I-LENGTH",
+      "O",
+      "B-LENGTH",
+      "B-PATTERN",
+      "I-PATTERN",
+      "O",
+      "NEG",
+      "B-MATERIAL-X",
+      "I-MATERIAL-X",
+      "O",
+      "O",
+      "NEG",
+      "B-RISE",
+      "O",
+      "I-RISE",
+      "O",
+      "B-LENGTH-X",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-HOOD",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "Include 'low-rise' is incorrect as the query explicitly excludes it.",
+      "Exclude 'ankle-length' is missing from the exclude list.",
+      "Exclude 'organic cotton' is missing from the exclude list."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00081",
+    "query": "I'm after some summer shorts, not in cream.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "summer",
+      "shorts",
+      ",",
+      "not",
+      "in",
+      "cream",
+      "."
+    ],
+    "include": {
+      "season": [
+        "summer"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "cream"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "season": [
+          "summer"
+        ]
+      },
+      "exclude": {
+        "color": [
+          "cream"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-SEASON",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-COLOR-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00082",
+    "query": "I’m after an abstract printed top with a raw edge hem and slim leg style, v-neck or collared, but not relaxed.",
+    "tokens": [
+      "I",
+      "’m",
+      "after",
+      "an",
+      "abstract",
+      "printed",
+      "top",
+      "with",
+      "a",
+      "raw",
+      "edge",
+      "hem",
+      "and",
+      "slim",
+      "leg",
+      "style",
+      ",",
+      "v",
+      "-",
+      "neck",
+      "or",
+      "collared",
+      ",",
+      "but",
+      "not",
+      "relaxed",
+      "."
+    ],
+    "include": {
+      "hem_style": [
+        "raw edge"
+      ],
+      "leg_style": [
+        "slim"
+      ],
+      "pattern": [
+        "abstract"
+      ],
+      "neckline": [
+        "v-neck",
+        "collared"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "relaxed"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "hem_style": [
+          "raw edge"
+        ],
+        "leg_style": [
+          "slim"
+        ],
+        "pattern": [
+          "abstract"
+        ],
+        "neckline": [
+          "v-neck",
+          "collared"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "relaxed"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-HEM_STYLE",
+      "I-HEM_STYLE",
+      "O",
+      "O",
+      "B-LEG_STYLE",
+      "O",
+      "O",
+      "O",
+      "B-NECKLINE",
+      "O",
+      "I-NECKLINE",
+      "O",
+      "B-NECKLINE",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00083",
+    "query": "I'm looking for a cream-colored, tailored and cropped unisex top, without organic cotton.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "cream",
+      "-",
+      "colored",
+      ",",
+      "tailored",
+      "and",
+      "cropped",
+      "unisex",
+      "top",
+      ",",
+      "without",
+      "organic",
+      "cotton",
+      "."
+    ],
+    "include": {
+      "color": [
+        "cream"
+      ],
+      "gender": [
+        "unisex"
+      ],
+      "fit": [
+        "tailored",
+        "cropped"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "organic cotton"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "color": [
+          "cream"
+        ],
+        "gender": [
+          "unisex"
+        ],
+        "fit": [
+          "tailored",
+          "cropped"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "organic cotton"
+        ]
+      },
+      "style": [
+        "question form"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "O",
+      "B-FIT",
+      "B-GENDER",
+      "O",
+      "O",
+      "NEG",
+      "B-MATERIAL-X",
+      "I-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'cropped' fit is included but not explicitly mentioned in the query.",
+      "'tailored' fit is included without explicit mention in the query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00084",
+    "query": "I'm after a casual unisex top with a striped, multicolor pattern, not cropped, and a fitted fit.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "a",
+      "casual",
+      "unisex",
+      "top",
+      "with",
+      "a",
+      "striped",
+      ",",
+      "multicolor",
+      "pattern",
+      ",",
+      "not",
+      "cropped",
+      ",",
+      "and",
+      "a",
+      "fitted",
+      "fit",
+      "."
+    ],
+    "include": {
+      "pattern": [
+        "striped"
+      ],
+      "color": [
+        "multicolor"
+      ],
+      "fit": [
+        "fitted"
+      ],
+      "gender": [
+        "unisex"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "cropped"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "pattern": [
+          "striped"
+        ],
+        "color": [
+          "multicolor"
+        ],
+        "fit": [
+          "fitted"
+        ],
+        "gender": [
+          "unisex"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "cropped"
+        ]
+      },
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "B-COLOR",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions the top is not cropped, but 'cropped' is included in the exclude field.",
+      "The query specifies a fitted fit, which is correctly included, but 'fitted' should be under include."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00085",
+    "query": "I'm after some casual minimalist shorts made of wool or cashmere, but not avoiding any specific material.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "casual",
+      "minimalist",
+      "shorts",
+      "made",
+      "of",
+      "wool",
+      "or",
+      "cashmere",
+      ",",
+      "but",
+      "not",
+      "avoiding",
+      "any",
+      "specific",
+      "material",
+      "."
+    ],
+    "include": {
+      "type": [
+        "shorts"
+      ],
+      "style": [
+        "minimalist"
+      ],
+      "material": [
+        "wool",
+        "cashmere"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "type": [
+          "shorts"
+        ],
+        "style": [
+          "minimalist"
+        ],
+        "material": [
+          "wool",
+          "cashmere"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "casual conversational"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "B-TYPE",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00086",
+    "query": "I'm looking for cream-colored clothes to wear to a casual dinner party, without any geometric patterns.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "cream",
+      "-",
+      "colored",
+      "clothes",
+      "to",
+      "wear",
+      "to",
+      "a",
+      "casual",
+      "dinner",
+      "party",
+      ",",
+      "without",
+      "any",
+      "geometric",
+      "patterns",
+      "."
+    ],
+    "include": {
+      "color": [
+        "cream"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "geometric"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "color": [
+          "cream"
+        ]
+      },
+      "exclude": {
+        "pattern": [
+          "geometric"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-PATTERN-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00087",
+    "query": "I need a tailored suit for a formal event, but not with spandex in it.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "tailored",
+      "suit",
+      "for",
+      "a",
+      "formal",
+      "event",
+      ",",
+      "but",
+      "not",
+      "with",
+      "spandex",
+      "in",
+      "it",
+      "."
+    ],
+    "include": {
+      "fit": [
+        "tailored"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "spandex"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "fit": [
+          "tailored"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "spandex"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-MATERIAL-X",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00088",
+    "query": "What kind of short sleeve dress in cream and red would be suitable for a wedding in spring?",
+    "tokens": [
+      "What",
+      "kind",
+      "of",
+      "short",
+      "sleeve",
+      "dress",
+      "in",
+      "cream",
+      "and",
+      "red",
+      "would",
+      "be",
+      "suitable",
+      "for",
+      "a",
+      "wedding",
+      "in",
+      "spring",
+      "?"
+    ],
+    "include": {
+      "type": [
+        "short_sleeve_dress"
+      ],
+      "color": [
+        "cream",
+        "red"
+      ],
+      "season": [
+        "spring"
+      ],
+      "occasion": [
+        "wedding"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "occasion": [
+          "wedding"
+        ],
+        "type": [
+          "short sleeve dress"
+        ],
+        "season": [
+          "spring"
+        ],
+        "color": [
+          "cream",
+          "red"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "question form"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "B-COLOR",
+      "O",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "B-SEASON",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00089",
+    "query": "I'm looking for a female burgundy tee, not fitted.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "female",
+      "burgundy",
+      "tee",
+      ",",
+      "not",
+      "fitted",
+      "."
+    ],
+    "include": {
+      "type": [
+        "short_sleeve_top"
+      ],
+      "color": [
+        "burgundy"
+      ],
+      "gender": [
+        "female"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "fitted"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "color": [
+          "burgundy"
+        ],
+        "gender": [
+          "female"
+        ],
+        "type": [
+          "tee"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "fitted"
+        ]
+      },
+      "style": [
+        "describing a situation or occasion"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "B-COLOR",
+      "B-TYPE",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00090",
+    "query": "Can you help me find a cropped athletic top without streetwear or jeans?",
+    "tokens": [
+      "Can",
+      "you",
+      "help",
+      "me",
+      "find",
+      "a",
+      "cropped",
+      "athletic",
+      "top",
+      "without",
+      "streetwear",
+      "or",
+      "jeans",
+      "?"
+    ],
+    "include": {
+      "fit": [
+        "cropped",
+        "athletic"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "streetwear"
+      ],
+      "type": [
+        "trousers"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "fit": [
+          "cropped",
+          "athletic"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "streetwear"
+        ],
+        "type": [
+          "jeans"
+        ]
+      },
+      "style": [
+        "question form"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "B-FIT",
+      "O",
+      "NEG",
+      "B-STYLE-X",
+      "O",
+      "B-TYPE-X",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00091",
+    "query": "Could you help me find a unisex autumn red shirt suitable for a child, but not one that's too relaxed or from summer?",
+    "tokens": [
+      "Could",
+      "you",
+      "help",
+      "me",
+      "find",
+      "a",
+      "unisex",
+      "autumn",
+      "red",
+      "shirt",
+      "suitable",
+      "for",
+      "a",
+      "child",
+      ",",
+      "but",
+      "not",
+      "one",
+      "that",
+      "'s",
+      "too",
+      "relaxed",
+      "or",
+      "from",
+      "summer",
+      "?"
+    ],
+    "include": {
+      "season": [
+        "autumn"
+      ],
+      "color": [
+        "red"
+      ],
+      "gender": [
+        "unisex",
+        "male"
+      ],
+      "age_group": [
+        "child"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "relaxed"
+      ],
+      "season": [
+        "summer"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "season": [
+          "autumn"
+        ],
+        "color": [
+          "red"
+        ],
+        "gender": [
+          "unisex",
+          "male"
+        ],
+        "age_group": [
+          "child"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "relaxed"
+        ],
+        "season": [
+          "summer"
+        ]
+      },
+      "style": [
+        "polite request"
+      ],
+      "rewritten": true
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "B-SEASON",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-FIT-X",
+      "O",
+      "O",
+      "B-SEASON-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions the shirt should be 'not one that's too relaxed', but 'fit': ['relaxed'] is included.",
+      "There is no mention of a specific type of top in the query, and 'type' is not included or excluded."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00092",
+    "query": "I'm looking for formal clothes suitable for travel or a formal event, without lounge wear.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "formal",
+      "clothes",
+      "suitable",
+      "for",
+      "travel",
+      "or",
+      "a",
+      "formal",
+      "event",
+      ",",
+      "without",
+      "lounge",
+      "wear",
+      "."
+    ],
+    "include": {
+      "occasion": [
+        "travel",
+        "formal event"
+      ]
+    },
+    "exclude": {
+      "occasion": [
+        "lounge"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "style": [
+          "formal"
+        ],
+        "occasion": [
+          "travel",
+          "formal event"
+        ]
+      },
+      "exclude": {
+        "occasion": [
+          "lounge"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "O",
+      "B-OCCASION",
+      "I-OCCASION",
+      "O",
+      "NEG",
+      "B-OCCASION-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00093",
+    "query": "I need a formal satin dress with a zipper closure, not casual.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "formal",
+      "satin",
+      "dress",
+      "with",
+      "a",
+      "zipper",
+      "closure",
+      ",",
+      "not",
+      "casual",
+      "."
+    ],
+    "include": {
+      "material": [
+        "satin"
+      ],
+      "closure": [
+        "zipper"
+      ],
+      "style": [
+        "formal"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "material": [
+          "satin"
+        ],
+        "closure": [
+          "zipper"
+        ],
+        "style": [
+          "formal"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "O",
+      "B-CLOSURE",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'formal' is not in the valid style values.",
+      "'satin' is correctly included but should be 'long_sleeve_dress' for better accuracy."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00094",
+    "query": "I'm after some organic cotton, multicolor spring clothes, not autumn ones.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "organic",
+      "cotton",
+      ",",
+      "multicolor",
+      "spring",
+      "clothes",
+      ",",
+      "not",
+      "autumn",
+      "ones",
+      "."
+    ],
+    "include": {
+      "material": [
+        "organic cotton"
+      ],
+      "color": [
+        "multicolor"
+      ],
+      "season": [
+        "spring"
+      ]
+    },
+    "exclude": {
+      "season": [
+        "autumn"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "material": [
+          "organic cotton"
+        ],
+        "color": [
+          "multicolor"
+        ],
+        "season": [
+          "spring"
+        ]
+      },
+      "exclude": {
+        "season": [
+          "autumn"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "I-MATERIAL",
+      "O",
+      "B-COLOR",
+      "B-SEASON",
+      "O",
+      "O",
+      "NEG",
+      "B-SEASON-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00095",
+    "query": "I need a skirt and jacket for a child, but not for formal occasions.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "skirt",
+      "and",
+      "jacket",
+      "for",
+      "a",
+      "child",
+      ",",
+      "but",
+      "not",
+      "for",
+      "formal",
+      "occasions",
+      "."
+    ],
+    "include": {
+      "type": [
+        "skirt"
+      ],
+      "age_group": [
+        "child"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "type": [
+          "skirt",
+          "jacket"
+        ],
+        "age_group": [
+          "child"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-TYPE",
+      "O",
+      "B-TYPE",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "The query mentions 'not for formal occasions', but the annotation includes 'long_sleeve_outwear' which is a value under 'type'. However, there's no explicit negation in the annotation.",
+      "The query specifies 'a child', but the annotation includes 'child' correctly. No issues with age_group."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00096",
+    "query": "I'm after some everyday Cuban collar shirts, but not regular fit.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "some",
+      "everyday",
+      "Cuban",
+      "collar",
+      "shirts",
+      ",",
+      "but",
+      "not",
+      "regular",
+      "fit",
+      "."
+    ],
+    "include": {
+      "collar": [
+        "cuban"
+      ],
+      "occasion": [
+        "everyday"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "regular"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "collar": [
+          "cuban"
+        ],
+        "occasion": [
+          "everyday"
+        ]
+      },
+      "exclude": {
+        "fit": [
+          "regular"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "B-COLLAR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'cuban collar' is not included in the include list.",
+      "'regular fit' is not excluded but 'not regular fit' is implied."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00097",
+    "query": "I'm in search of a senior-friendly, formal wool or fleece dress for date night, avoiding any smart casual styles.",
+    "tokens": [
+      "I",
+      "'m",
+      "in",
+      "search",
+      "of",
+      "a",
+      "senior",
+      "-",
+      "friendly",
+      ",",
+      "formal",
+      "wool",
+      "or",
+      "fleece",
+      "dress",
+      "for",
+      "date",
+      "night",
+      ",",
+      "avoiding",
+      "any",
+      "smart",
+      "casual",
+      "styles",
+      "."
+    ],
+    "include": {
+      "material": [
+        "wool",
+        "fleece"
+      ],
+      "style": [
+        "formal",
+        "bohemian"
+      ],
+      "age_group": [
+        "senior"
+      ],
+      "occasion": [
+        "date night"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "smart casual",
+        "casual",
+        "sporty"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "material": [
+          "wool",
+          "fleece"
+        ],
+        "occasion": [
+          "date night"
+        ],
+        "style": [
+          "formal",
+          "bohemian"
+        ],
+        "age_group": [
+          "senior"
+        ]
+      },
+      "exclude": {
+        "style": [
+          "smart casual"
+        ]
+      },
+      "style": [
+        "detailed and specific"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "B-MATERIAL",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "B-OCCASION",
+      "I-OCCASION",
+      "O",
+      "O",
+      "O",
+      "B-STYLE-X",
+      "I-STYLE-X",
+      "O",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "Include 'bohemian' in the style instead of 'formal'.",
+      "Exclude 'casual' and 'sporty' from the style as they are not explicitly negated.",
+      "Add 'long_sleeve_dress' to include as it is implied by the query."
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00098",
+    "query": "I need an oversized shirt, but not fitted.",
+    "tokens": [
+      "I",
+      "need",
+      "an",
+      "oversized",
+      "shirt",
+      ",",
+      "but",
+      "not",
+      "fitted",
+      "."
+    ],
+    "include": {
+      "fit": [
+        "oversized"
+      ]
+    },
+    "exclude": {},
+    "generation_spec": {
+      "include": {
+        "fit": [
+          "oversized"
+        ]
+      },
+      "exclude": {},
+      "style": [
+        "brief and concise"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O"
+    ],
+    "was_validated": true
+  },
+  {
+    "id": "llm_aug_00099",
+    "query": "I need a formal coral dress shirt, without trousers or chiffon.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "formal",
+      "coral",
+      "dress",
+      "shirt",
+      ",",
+      "without",
+      "trousers",
+      "or",
+      "chiffon",
+      "."
+    ],
+    "include": {
+      "style": [
+        "formal"
+      ],
+      "color": [
+        "coral"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "chiffon"
+      ],
+      "type": [
+        "trousers"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "style": [
+          "formal"
+        ],
+        "color": [
+          "coral"
+        ]
+      },
+      "exclude": {
+        "material": [
+          "chiffon"
+        ],
+        "type": [
+          "trousers"
+        ]
+      },
+      "style": [
+        "direct command"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-TYPE-X",
+      "O",
+      "B-MATERIAL-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'trousers' should be excluded but is not in exclude field",
+      "'chiffon' should be excluded but is not in exclude field"
+    ],
+    "was_corrected": true
+  },
+  {
+    "id": "llm_aug_00100",
+    "query": "I'm looking for a preppy party outfit, not a slip dress.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "preppy",
+      "party",
+      "outfit",
+      ",",
+      "not",
+      "a",
+      "slip",
+      "dress",
+      "."
+    ],
+    "include": {
+      "style": [
+        "preppy"
+      ],
+      "occasion": [
+        "party"
+      ]
+    },
+    "exclude": {
+      "type": [
+        "sling_dress"
+      ]
+    },
+    "generation_spec": {
+      "include": {
+        "style": [
+          "preppy"
+        ],
+        "occasion": [
+          "party"
+        ]
+      },
+      "exclude": {
+        "type": [
+          "slip dress"
+        ]
+      },
+      "style": [
+        "informal with contractions"
+      ],
+      "rewritten": false
+    },
+    "source": "llm_augmented",
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "B-OCCASION",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-TYPE-X",
+      "I-TYPE-X",
+      "O"
+    ],
+    "was_validated": true,
+    "validation_issues": [
+      "'sling_dress' should be excluded as per the query."
+    ],
+    "was_corrected": true
+  }
+]
