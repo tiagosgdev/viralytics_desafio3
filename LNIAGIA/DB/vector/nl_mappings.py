@@ -10,10 +10,8 @@
 TYPE_NAMES = {
     "short_sleeve_top": "short sleeve top (t-shirt, tee)",
     "long_sleeve_top": "long sleeve top (shirt, sweater, long-sleeved shirt)",
-    "short_sleeve_outwear": "short sleeve jacket (light outerwear)",
     "long_sleeve_outwear": "long sleeve jacket (coat, hoodie, outerwear)",
     "vest": "sleeveless vest (tank top, sleeveless top)",
-    "sling": "spaghetti strap top (camisole, strappy top)",
     "shorts": "shorts (short pants)",
     "trousers": "trousers (pants, jeans, slacks)",
     "skirt": "skirt",
