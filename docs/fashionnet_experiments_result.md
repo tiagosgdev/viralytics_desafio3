@@ -63,19 +63,19 @@ exp5 (heavy) at 12.35 is worse than exp4 (medium) at 8.88. With only 2000 sample
 
 - Config: exp4 winner (multi_cell + augment medium)
 - Dataset: full balanced_dataset, 52,199 training images (no sample cap)
-- Epochs: 50
+- Epochs: 100
 - Batch: 32
 - Device: CUDA (NVIDIA GPU, 16GB VRAM)
 - Training time: 612m 28s (~10h 12m)
-- Best val_loss: 3.2298
+- Best val_loss: 3.0591 (epoch 87)
 
 ### Comparison vs Original FashionNet
 
 | Metric | fashionnet_balanced_v1 | fashionnet (original) |
 |--------|----------------------|----------------------|
-| mAP@50 (overall) | **0.2286** | 0.0006 |
-| Inference (ms/img) | 3.1 | 3.2 |
-| FPS | 319.4 | 311.1 |
+| mAP@50 (overall) | **0.2756** | 0.0006 |
+| Inference (ms/img) | 3.3 | 3.2 |
+| FPS | 300.9 | 309.7 |
 | Parameters (M) | 11.74 | 11.74 |
 | Weights size (MB) | 141.2 | 141.2 |
 
@@ -83,27 +83,27 @@ exp5 (heavy) at 12.35 is worse than exp4 (medium) at 8.88. With only 2000 sample
 
 | Category | fashionnet_balanced_v1 | fashionnet (original) |
 |----------|----------------------|----------------------|
-| short_sleeve_top | 0.1461 | 0.0042 |
-| long_sleeve_top | 0.1553 | 0.0003 |
-| long_sleeve_outwear | **0.3472** | 0.0000 |
-| vest | 0.2547 | 0.0000 |
-| shorts | 0.2865 | 0.0000 |
-| trousers | 0.2476 | 0.0000 |
-| skirt | 0.1673 | 0.0019 |
-| short_sleeve_dress | 0.1934 | 0.0000 |
-| long_sleeve_dress | 0.1865 | 0.0000 |
-| vest_dress | 0.2582 | 0.0000 |
-| sling_dress | 0.2722 | 0.0000 |
+| short_sleeve_top | 0.1606 | 0.0042 |
+| long_sleeve_top | 0.1880 | 0.0003 |
+| long_sleeve_outwear | **0.3953** | 0.0000 |
+| vest | 0.3311 | 0.0000 |
+| shorts | 0.3204 | 0.0000 |
+| trousers | 0.2590 | 0.0000 |
+| skirt | 0.1859 | 0.0019 |
+| short_sleeve_dress | 0.2694 | 0.0000 |
+| long_sleeve_dress | 0.2559 | 0.0000 |
+| vest_dress | 0.3154 | 0.0000 |
+| sling_dress | 0.3501 | 0.0000 |
 
-fashionnet_balanced_v1 outperforms the original by **0.2280 mAP@50** across all classes. The improvements from fixing the pipeline (lambda_box, multi_cell, augmentation) combined with proper full training account for essentially all of this gain.
+fashionnet_balanced_v1 outperforms the original by **0.2750 mAP@50** across all classes. The improvements from fixing the pipeline (lambda_box, multi_cell, augmentation) combined with full training account for essentially all of this gain.
 
 ---
 
 ### Notes
 
-- Worst performing classes: short_sleeve_top (0.1461), long_sleeve_top (0.1553), skirt (0.1673)
+- Worst performing classes: short_sleeve_top (0.1606), long_sleeve_top (0.1880), skirt (0.1859)
 - short_sleeve_top and long_sleeve_top being the two worst is likely inter-class confusion (visually almost identical) rather than a data quantity problem
-- The jump from 20-epoch quick tests (val_loss ~8.88) to 50 full epochs (val_loss 3.23) shows training time has significant impact
+- The jump from 20-epoch quick tests (val_loss ~8.88) to 100 full epochs (val_loss 3.06) shows training time has significant impact
 
 ---
 
