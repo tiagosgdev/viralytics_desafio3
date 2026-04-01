@@ -1,0 +1,1373 @@
+[
+  {
+    "id": "template_00014",
+    "query": "I need a sling dress with cap and longline",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "sling",
+      "dress",
+      "with",
+      "cap",
+      "and",
+      "longline"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-TYPE",
+      "I-TYPE",
+      "O",
+      "B-SLEEVE_STYLE",
+      "O",
+      "B-HEM_STYLE"
+    ],
+    "include": {
+      "sleeve_style": [
+        "cap"
+      ],
+      "hem_style": [
+        "longline"
+      ],
+      "type": [
+        "sling_dress"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "llm_aug_00053",
+    "query": "I need a casual belt in black with XXL or XL waist, but not denim or sweaters.",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "casual",
+      "belt",
+      "in",
+      "black",
+      "with",
+      "XXL",
+      "or",
+      "XL",
+      "waist",
+      ",",
+      "but",
+      "not",
+      "denim",
+      "or",
+      "sweaters",
+      "."
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-STYLE",
+      "B-CLOSURE",
+      "O",
+      "B-COLOR",
+      "O",
+      "B-WAIST",
+      "O",
+      "B-WAIST",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-MATERIAL-X",
+      "O",
+      "B-TYPE-X",
+      "O"
+    ],
+    "include": {
+      "closure": [
+        "belt"
+      ],
+      "style": [
+        "casual"
+      ],
+      "waist": [
+        "xxl",
+        "xl"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "denim"
+      ],
+      "type": [
+        "long_sleeve_top"
+      ]
+    },
+    "source": "llm_augmented"
+  },
+  {
+    "id": "template_00059",
+    "query": "Looking for elegant long sleeve outwears for lounge, nothing white",
+    "tokens": [
+      "Looking",
+      "for",
+      "elegant",
+      "long",
+      "sleeve",
+      "outwears",
+      "for",
+      "lounge",
+      ",",
+      "nothing",
+      "white"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "B-STYLE",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "B-COLOR-X"
+    ],
+    "include": {
+      "style": [
+        "elegant"
+      ],
+      "occasion": [
+        "lounge"
+      ],
+      "type": [
+        "long_sleeve_outwear"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "white"
+      ]
+    },
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00019",
+    "query": "Show me purple skirts",
+    "tokens": [
+      "Show",
+      "me",
+      "purple",
+      "skirts"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "B-COLOR",
+      "B-TYPE"
+    ],
+    "include": {
+      "color": [
+        "purple"
+      ],
+      "type": [
+        "skirt"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00047",
+    "query": "I need a tie-dye skirt",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "tie",
+      "-",
+      "dye",
+      "skirt"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "I-PATTERN",
+      "B-TYPE"
+    ],
+    "include": {
+      "pattern": [
+        "tie-dye"
+      ],
+      "type": [
+        "skirt"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00017",
+    "query": "I want a yellow smart casual skirt for travel",
+    "tokens": [
+      "I",
+      "want",
+      "a",
+      "yellow",
+      "smart",
+      "casual",
+      "skirt",
+      "for",
+      "travel"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-STYLE",
+      "I-STYLE",
+      "B-TYPE",
+      "O",
+      "B-OCCASION"
+    ],
+    "include": {
+      "color": [
+        "yellow"
+      ],
+      "style": [
+        "smart casual"
+      ],
+      "occasion": [
+        "travel"
+      ],
+      "type": [
+        "skirt"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "llm_aug_00042",
+    "query": "Are you looking for a unisex cropped bohemian top suitable for travel, without any tight fits?",
+    "tokens": [
+      "Are",
+      "you",
+      "looking",
+      "for",
+      "a",
+      "unisex",
+      "cropped",
+      "bohemian",
+      "top",
+      "suitable",
+      "for",
+      "travel",
+      ",",
+      "without",
+      "any",
+      "tight",
+      "fits",
+      "?"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "B-FIT",
+      "B-STYLE",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "include": {
+      "style": [
+        "bohemian"
+      ],
+      "gender": [
+        "unisex"
+      ],
+      "occasion": [
+        "travel"
+      ],
+      "fit": [
+        "cropped"
+      ]
+    },
+    "exclude": {},
+    "source": "llm_augmented"
+  },
+  {
+    "id": "template_00034",
+    "query": "Can you show me short sleeve dress with midi",
+    "tokens": [
+      "Can",
+      "you",
+      "show",
+      "me",
+      "short",
+      "sleeve",
+      "dress",
+      "with",
+      "midi"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "B-DRESS_STYLE"
+    ],
+    "include": {
+      "dress_style": [
+        "midi"
+      ],
+      "type": [
+        "short_sleeve_dress"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00095",
+    "query": "What should I wear to a business meeting?",
+    "tokens": [
+      "What",
+      "should",
+      "I",
+      "wear",
+      "to",
+      "a",
+      "business",
+      "meeting",
+      "?"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "include": {
+      "style": [
+        "formal",
+        "smart casual"
+      ],
+      "occasion": [
+        "work"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00066",
+    "query": "I need a gray long sleeve dress, not too oversized",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "gray",
+      "long",
+      "sleeve",
+      "dress",
+      ",",
+      "not",
+      "too",
+      "oversized"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "NEG",
+      "O",
+      "B-FIT-X"
+    ],
+    "include": {
+      "color": [
+        "gray"
+      ],
+      "type": [
+        "long_sleeve_dress"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "oversized"
+      ]
+    },
+    "source": "basic_generator"
+  },
+  {
+    "id": "llm_aug_00038",
+    "query": "I'm after regular waist smart casual clothing for seniors, without high-waisted styles.",
+    "tokens": [
+      "I",
+      "'m",
+      "after",
+      "regular",
+      "waist",
+      "smart",
+      "casual",
+      "clothing",
+      "for",
+      "seniors",
+      ",",
+      "without",
+      "high",
+      "-",
+      "waisted",
+      "styles",
+      "."
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-WAIST_STYLE",
+      "O",
+      "B-STYLE",
+      "I-STYLE",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "B-WAIST_STYLE",
+      "O",
+      "I-WAIST_STYLE",
+      "O",
+      "O"
+    ],
+    "include": {
+      "age_group": [
+        "senior"
+      ],
+      "waist_style": [
+        "regular"
+      ],
+      "style": [
+        "casual",
+        "smart casual"
+      ]
+    },
+    "exclude": {},
+    "source": "llm_augmented"
+  },
+  {
+    "id": "llm_aug_00018",
+    "query": "I need everyday clothes without coats.",
+    "tokens": [
+      "I",
+      "need",
+      "everyday",
+      "clothes",
+      "without",
+      "coats",
+      "."
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "B-TYPE-X",
+      "O"
+    ],
+    "include": {
+      "occasion": [
+        "everyday"
+      ]
+    },
+    "exclude": {
+      "type": [
+        "long_sleeve_outwear"
+      ],
+      "outwear_pockets": [
+        "hand warmer pockets",
+        "multiple pockets"
+      ]
+    },
+    "source": "llm_augmented"
+  },
+  {
+    "id": "template_00076",
+    "query": "fitted long sleeve dress in coral, avoid plain",
+    "tokens": [
+      "fitted",
+      "long",
+      "sleeve",
+      "dress",
+      "in",
+      "coral",
+      ",",
+      "avoid",
+      "plain"
+    ],
+    "bio_labels": [
+      "B-FIT",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "B-COLOR",
+      "O",
+      "NEG",
+      "B-PATTERN-X"
+    ],
+    "include": {
+      "color": [
+        "coral"
+      ],
+      "fit": [
+        "fitted"
+      ],
+      "type": [
+        "long_sleeve_dress"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "plain"
+      ]
+    },
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00077",
+    "query": "Looking for long sleeve dress that are not casual",
+    "tokens": [
+      "Looking",
+      "for",
+      "long",
+      "sleeve",
+      "dress",
+      "that",
+      "are",
+      "not",
+      "casual"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "O",
+      "NEG",
+      "B-STYLE-X"
+    ],
+    "include": {
+      "type": [
+        "long_sleeve_dress"
+      ]
+    },
+    "exclude": {
+      "style": [
+        "casual"
+      ]
+    },
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00043",
+    "query": "Looking for a linen white short sleeve top that is sporty",
+    "tokens": [
+      "Looking",
+      "for",
+      "a",
+      "linen",
+      "white",
+      "short",
+      "sleeve",
+      "top",
+      "that",
+      "is",
+      "sporty"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "B-COLOR",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "O",
+      "B-STYLE"
+    ],
+    "include": {
+      "color": [
+        "white"
+      ],
+      "style": [
+        "sporty"
+      ],
+      "material": [
+        "linen"
+      ],
+      "type": [
+        "short_sleeve_top"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00056",
+    "query": "Show me shorts, no burgundy and no floral",
+    "tokens": [
+      "Show",
+      "me",
+      "shorts",
+      ",",
+      "no",
+      "burgundy",
+      "and",
+      "no",
+      "floral"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "B-TYPE",
+      "O",
+      "NEG",
+      "B-COLOR-X",
+      "O",
+      "NEG",
+      "B-PATTERN-X"
+    ],
+    "include": {
+      "type": [
+        "shorts"
+      ]
+    },
+    "exclude": {
+      "color": [
+        "burgundy"
+      ],
+      "pattern": [
+        "floral"
+      ]
+    },
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00046",
+    "query": "Do you have any olive skirts?",
+    "tokens": [
+      "Do",
+      "you",
+      "have",
+      "any",
+      "olive",
+      "skirts",
+      "?"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-TYPE",
+      "O"
+    ],
+    "include": {
+      "color": [
+        "olive"
+      ],
+      "type": [
+        "skirt"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00093",
+    "query": "I am going hiking this weekend",
+    "tokens": [
+      "I",
+      "am",
+      "going",
+      "hiking",
+      "this",
+      "weekend"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "include": {
+      "style": [
+        "sporty"
+      ],
+      "occasion": [
+        "sport"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "llm_aug_00083",
+    "query": "I'm looking for a cream-colored, tailored and cropped unisex top, without organic cotton.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "a",
+      "cream",
+      "-",
+      "colored",
+      ",",
+      "tailored",
+      "and",
+      "cropped",
+      "unisex",
+      "top",
+      ",",
+      "without",
+      "organic",
+      "cotton",
+      "."
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "B-FIT",
+      "O",
+      "B-FIT",
+      "B-GENDER",
+      "O",
+      "O",
+      "NEG",
+      "B-MATERIAL-X",
+      "I-MATERIAL-X",
+      "O"
+    ],
+    "include": {
+      "color": [
+        "cream"
+      ],
+      "gender": [
+        "unisex"
+      ],
+      "fit": [
+        "tailored",
+        "cropped"
+      ]
+    },
+    "exclude": {
+      "material": [
+        "organic cotton"
+      ]
+    },
+    "source": "llm_augmented"
+  },
+  {
+    "id": "llm_aug_00091",
+    "query": "Could you help me find a unisex autumn red shirt suitable for a child, but not one that's too relaxed or from summer?",
+    "tokens": [
+      "Could",
+      "you",
+      "help",
+      "me",
+      "find",
+      "a",
+      "unisex",
+      "autumn",
+      "red",
+      "shirt",
+      "suitable",
+      "for",
+      "a",
+      "child",
+      ",",
+      "but",
+      "not",
+      "one",
+      "that",
+      "'s",
+      "too",
+      "relaxed",
+      "or",
+      "from",
+      "summer",
+      "?"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-GENDER",
+      "B-SEASON",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-FIT-X",
+      "O",
+      "O",
+      "B-SEASON-X",
+      "O"
+    ],
+    "include": {
+      "season": [
+        "autumn"
+      ],
+      "color": [
+        "red"
+      ],
+      "gender": [
+        "unisex",
+        "male"
+      ],
+      "age_group": [
+        "child"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "relaxed"
+      ],
+      "season": [
+        "summer"
+      ]
+    },
+    "source": "llm_augmented"
+  },
+  {
+    "id": "template_00041",
+    "query": "Do you have any yellow long sleeve tops?",
+    "tokens": [
+      "Do",
+      "you",
+      "have",
+      "any",
+      "yellow",
+      "long",
+      "sleeve",
+      "tops",
+      "?"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O"
+    ],
+    "include": {
+      "color": [
+        "yellow"
+      ],
+      "type": [
+        "long_sleeve_top"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "llm_aug_00082",
+    "query": "I’m after an abstract printed top with a raw edge hem and slim leg style, v-neck or collared, but not relaxed.",
+    "tokens": [
+      "I",
+      "’m",
+      "after",
+      "an",
+      "abstract",
+      "printed",
+      "top",
+      "with",
+      "a",
+      "raw",
+      "edge",
+      "hem",
+      "and",
+      "slim",
+      "leg",
+      "style",
+      ",",
+      "v",
+      "-",
+      "neck",
+      "or",
+      "collared",
+      ",",
+      "but",
+      "not",
+      "relaxed",
+      "."
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-PATTERN",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-HEM_STYLE",
+      "I-HEM_STYLE",
+      "O",
+      "O",
+      "B-LEG_STYLE",
+      "O",
+      "O",
+      "O",
+      "B-NECKLINE",
+      "O",
+      "I-NECKLINE",
+      "O",
+      "B-NECKLINE",
+      "O",
+      "O",
+      "NEG",
+      "B-FIT-X",
+      "O"
+    ],
+    "include": {
+      "hem_style": [
+        "raw edge"
+      ],
+      "leg_style": [
+        "slim"
+      ],
+      "pattern": [
+        "abstract"
+      ],
+      "neckline": [
+        "v-neck",
+        "collared"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "relaxed"
+      ]
+    },
+    "source": "llm_augmented"
+  },
+  {
+    "id": "template_00013",
+    "query": "I would like a linen vest",
+    "tokens": [
+      "I",
+      "would",
+      "like",
+      "a",
+      "linen",
+      "vest"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "B-TYPE"
+    ],
+    "include": {
+      "material": [
+        "linen"
+      ],
+      "type": [
+        "vest"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "llm_aug_00069",
+    "query": "Looking for a polyester dress for a party, without any additional patterns.",
+    "tokens": [
+      "Looking",
+      "for",
+      "a",
+      "polyester",
+      "dress",
+      "for",
+      "a",
+      "party",
+      ",",
+      "without",
+      "any",
+      "additional",
+      "patterns",
+      "."
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "O",
+      "B-OCCASION",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "O",
+      "O"
+    ],
+    "include": {
+      "occasion": [
+        "party"
+      ],
+      "material": [
+        "polyester"
+      ]
+    },
+    "exclude": {},
+    "source": "llm_augmented"
+  },
+  {
+    "id": "template_00080",
+    "query": "I need a brown long sleeve dress, not too fitted",
+    "tokens": [
+      "I",
+      "need",
+      "a",
+      "brown",
+      "long",
+      "sleeve",
+      "dress",
+      ",",
+      "not",
+      "too",
+      "fitted"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "NEG",
+      "O",
+      "B-FIT-X"
+    ],
+    "include": {
+      "color": [
+        "brown"
+      ],
+      "type": [
+        "long_sleeve_dress"
+      ]
+    },
+    "exclude": {
+      "fit": [
+        "fitted"
+      ]
+    },
+    "source": "basic_generator"
+  },
+  {
+    "id": "llm_aug_00086",
+    "query": "I'm looking for cream-colored clothes to wear to a casual dinner party, without any geometric patterns.",
+    "tokens": [
+      "I",
+      "'m",
+      "looking",
+      "for",
+      "cream",
+      "-",
+      "colored",
+      "clothes",
+      "to",
+      "wear",
+      "to",
+      "a",
+      "casual",
+      "dinner",
+      "party",
+      ",",
+      "without",
+      "any",
+      "geometric",
+      "patterns",
+      "."
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-COLOR",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "B-PATTERN-X",
+      "O",
+      "O"
+    ],
+    "include": {
+      "color": [
+        "cream"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "geometric"
+      ]
+    },
+    "source": "llm_augmented"
+  },
+  {
+    "id": "template_00015",
+    "query": "Show me trousers with belt",
+    "tokens": [
+      "Show",
+      "me",
+      "trousers",
+      "with",
+      "belt"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "B-TYPE",
+      "O",
+      "B-CLOSURE"
+    ],
+    "include": {
+      "closure": [
+        "belt"
+      ],
+      "type": [
+        "trousers"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00073",
+    "query": "Show me long sleeve tops, not tie-dye",
+    "tokens": [
+      "Show",
+      "me",
+      "long",
+      "sleeve",
+      "tops",
+      ",",
+      "not",
+      "tie",
+      "-",
+      "dye"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "B-TYPE",
+      "I-TYPE",
+      "I-TYPE",
+      "O",
+      "NEG",
+      "B-PATTERN-X",
+      "O",
+      "I-PATTERN-X"
+    ],
+    "include": {
+      "type": [
+        "long_sleeve_top"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "tie-dye"
+      ]
+    },
+    "source": "basic_generator"
+  },
+  {
+    "id": "template_00023",
+    "query": "fitted cream camouflage trousers",
+    "tokens": [
+      "fitted",
+      "cream",
+      "camouflage",
+      "trousers"
+    ],
+    "bio_labels": [
+      "B-FIT",
+      "B-COLOR",
+      "B-PATTERN",
+      "B-TYPE"
+    ],
+    "include": {
+      "color": [
+        "cream"
+      ],
+      "pattern": [
+        "camouflage"
+      ],
+      "fit": [
+        "fitted"
+      ],
+      "type": [
+        "trousers"
+      ]
+    },
+    "exclude": {},
+    "source": "basic_generator"
+  },
+  {
+    "id": "llm_aug_00051",
+    "query": "Could you help me find a senior travel tee made of suede or velvet, but not with any geometric patterns?",
+    "tokens": [
+      "Could",
+      "you",
+      "help",
+      "me",
+      "find",
+      "a",
+      "senior",
+      "travel",
+      "tee",
+      "made",
+      "of",
+      "suede",
+      "or",
+      "velvet",
+      ",",
+      "but",
+      "not",
+      "with",
+      "any",
+      "geometric",
+      "patterns",
+      "?"
+    ],
+    "bio_labels": [
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "O",
+      "B-AGE_GROUP",
+      "B-OCCASION",
+      "B-TYPE",
+      "O",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "B-MATERIAL",
+      "O",
+      "O",
+      "NEG",
+      "O",
+      "O",
+      "B-PATTERN-X",
+      "O",
+      "O"
+    ],
+    "include": {
+      "age_group": [
+        "senior"
+      ],
+      "occasion": [
+        "travel"
+      ],
+      "material": [
+        "suede",
+        "velvet"
+      ],
+      "type": [
+        "short_sleeve_top"
+      ]
+    },
+    "exclude": {
+      "pattern": [
+        "geometric"
+      ]
+    },
+    "source": "llm_augmented"
+  }
+]
