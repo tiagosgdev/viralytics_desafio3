@@ -26,7 +26,7 @@ from DB.vector.VectorDBManager import (
     MAX_QUERY_RESULTS,
     SIMILARITY_THRESHOLD,
 )
-from llm_query_parser import parse_query, OLLAMA_MODEL
+from llm_query_parser import parse_query, refine_query, OLLAMA_MODEL
 
 
 def clear():
@@ -96,31 +96,76 @@ def main():
     model = _load_model()
 
     # ── Search loop ──
-    print("\n  Type a natural-language query, or 'exit' to quit.\n")
+    print("\n  Type a natural-language query, or 'exit' to quit.")
+    print("  Commands: 'new: <query>' to start a new query, 'reset' to clear state, 'show' to inspect state.\n")
+
+    current_query: str | None = None
+    current_filters: dict = {}
 
     while True:
-        query = input("  Query > ").strip()
-        if not query or query.lower() == "exit":
+        user_input = input("  Query > ").strip()
+        if not user_input:
+            continue
+
+        lowered = user_input.lower()
+
+        if lowered == "exit":
             print("\n  Goodbye!\n")
             break
 
-        # Step 1: Parse query with LLM
-        print("\n  Parsing query with LLM ...")
-        parsed_filters = parse_query(query, verbose=False)
+        if lowered == "reset":
+            current_query = None
+            current_filters = {}
+            print("\n  Context reset. Start with a new query.\n")
+            continue
+
+        if lowered == "show":
+            print("\n  Current semantic query:")
+            print(f"  {current_query if current_query else '(none)'}")
+            print("\n  Current filters:")
+            print(f"  {json.dumps(current_filters, indent=4)}\n")
+            continue
+
+        is_new_query = lowered.startswith("new:")
+        if is_new_query:
+            user_query = user_input[4:].strip()
+            if not user_query:
+                print("\n  Please provide text after 'new:'.\n")
+                continue
+        else:
+            user_query = user_input
+
+        if current_query is None or is_new_query:
+            print("\n  Parsing query with LLM ...")
+            current_query = user_query
+            current_filters = parse_query(current_query, verbose=False)
+        else:
+            print("\n  Refining current query + filters with LLM ...")
+            updated = refine_query(
+                previous_query=current_query,
+                previous_filters=current_filters,
+                refinement=user_query,
+                verbose=False,
+            )
+            current_query = updated["query"]
+            current_filters = updated["filters"]
+
+        print("\n  Active semantic query:")
+        print(f"  {current_query}")
 
         print("\n  Extracted filters:")
-        print(f"  {json.dumps(parsed_filters, indent=4)}")
+        print(f"  {json.dumps(current_filters, indent=4)}")
 
         # Step 2: Ask user for strictness
-        strict_ans = input("\n  Do you mind getting some results that do not match exactly your requirements? (y/n) > ").strip().lower()
+        strict_ans = input("\n  Do you want strict matching (only exact filter matches)? (y/n) > ").strip().lower()
         strict = strict_ans == 'y'
 
         # Step 3: Filtered semantic search
         print("\n  Searching ...")
-        hits = filtered_search(query, parsed_filters, model, strict=strict)
+        hits = filtered_search(current_query, current_filters, model, strict=strict)
 
         # Step 4: Display results
-        _display_results(hits, parsed_filters)
+        _display_results(hits, current_filters)
 
 
 if __name__ == "__main__":

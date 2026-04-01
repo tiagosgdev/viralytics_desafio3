@@ -1,6 +1,6 @@
 # ═══ GLOBAL ═══
 TYPE = (
-    "short_sleeve_top", "long_sleeve_top", "short_sleeve_outwear", "long_sleeve_outwear", "vest", "sling",
+    "short_sleeve_top", "long_sleeve_top", "long_sleeve_outwear", "vest",
     "shorts", "trousers", "skirt", "short_sleeve_dress", "long_sleeve_dress", "vest_dress", "sling_dress"
 )
 
@@ -155,7 +155,6 @@ GENDER_CONSTRAINTS_BY_TYPE = {
     "long_sleeve_dress": ("female", "unisex"),
     "vest_dress": ("female", "unisex"),
     "sling_dress": ("female", "unisex"),
-    "sling": ("female", "unisex"),  # Predominantly female
     # All other types allow all genders
 }
 
@@ -194,10 +193,8 @@ SEASON_TYPE_WEIGHTS = {
     "summer": {
         "short_sleeve_top": 3.0,
         "long_sleeve_top": 0.3,
-        "short_sleeve_outwear": 1.5,
         "long_sleeve_outwear": 0.2,
         "vest": 2.0,
-        "sling": 3.0,
         "shorts": 3.5,
         "trousers": 0.8,
         "skirt": 2.0,
@@ -209,10 +206,8 @@ SEASON_TYPE_WEIGHTS = {
     "winter": {
         "short_sleeve_top": 0.4,
         "long_sleeve_top": 2.5,
-        "short_sleeve_outwear": 0.2,
         "long_sleeve_outwear": 3.5,
         "vest": 2.0,
-        "sling": 0.2,
         "shorts": 0.3,
         "trousers": 3.0,
         "skirt": 1.5,
@@ -224,10 +219,8 @@ SEASON_TYPE_WEIGHTS = {
     "spring": {
         "short_sleeve_top": 2.0,
         "long_sleeve_top": 2.0,
-        "short_sleeve_outwear": 1.5,
         "long_sleeve_outwear": 2.0,
         "vest": 1.5,
-        "sling": 1.8,
         "shorts": 2.0,
         "trousers": 2.0,
         "skirt": 2.0,
@@ -239,10 +232,8 @@ SEASON_TYPE_WEIGHTS = {
     "autumn": {
         "short_sleeve_top": 1.2,
         "long_sleeve_top": 2.5,
-        "short_sleeve_outwear": 1.0,
         "long_sleeve_outwear": 3.0,
         "vest": 2.0,
-        "sling": 0.8,
         "shorts": 1.0,
         "trousers": 2.5,
         "skirt": 2.0,
@@ -255,10 +246,8 @@ SEASON_TYPE_WEIGHTS = {
         # All types equally likely for all-season
         "short_sleeve_top": 1.0,
         "long_sleeve_top": 1.0,
-        "short_sleeve_outwear": 1.0,
         "long_sleeve_outwear": 1.0,
         "vest": 1.0,
-        "sling": 1.0,
         "shorts": 1.0,
         "trousers": 1.0,
         "skirt": 1.0,
@@ -339,12 +328,12 @@ STYLE_PREFERRED_PATTERNS = {
 # Certain types don't make sense for specific occasions
 OCCASION_TYPE_CONSTRAINTS = {
     "beach": (
-        "shorts", "short_sleeve_top", "vest", "sling", 
+        "shorts", "short_sleeve_top", "vest",
         "short_sleeve_dress", "sling_dress", "skirt"
     ),
     "sport": (
         "short_sleeve_top", "long_sleeve_top", "shorts", 
-        "trousers", "short_sleeve_outwear", "long_sleeve_outwear", "vest"
+        "trousers", "long_sleeve_outwear", "vest"
     ),
     "formal event": (
         "long_sleeve_dress", "short_sleeve_dress", "vest_dress",
@@ -397,15 +386,8 @@ TYPE_FIELDS = {
     "vest": (
         "neckline", "hem_style"
     ),
-    "sling": (
-        "neckline", "hem_style"
-    ),
-    
+
     # ═══ OUTWEAR ═══
-    "short_sleeve_outwear": (
-        "closure", "hood", "insulation", "waterproof", 
-        "outwear_pockets", "collar", "sleeve_style"
-    ),
     "long_sleeve_outwear": (
         "closure", "hood", "insulation", "waterproof", 
         "outwear_pockets", "collar", "sleeve_style"
@@ -533,10 +515,8 @@ BASE_PRICE_PER_TYPE = {
     "short_sleeve_top": (15.00, 45.00),
     "long_sleeve_top": (20.00, 55.00),
     "vest": (18.00, 40.00),
-    "sling": (12.00, 35.00),
-    
+
     # ═══ OUTWEAR ═══
-    "short_sleeve_outwear": (35.00, 80.00),
     "long_sleeve_outwear": (60.00, 180.00),
     
     # ═══ BOTTOMS ═══
@@ -598,30 +578,8 @@ BRANDS_PER_TYPE = {
         # Luxury
         "Canada Goose", "Moncler"
     ),
-    "sling": (
-        # Budget
-        "H&M", "Primark", "ASOS", "Missguided", "PrettyLittleThing",
-        "Boohoo", "Shein",
-        # Mid
-        "Zara", "Mango", "Topshop", "& Other Stories",
-        # Premium
-        "Free People", "Reformation", "Anthropologie",
-        "Sandro", "Maje",
-        # Luxury
-        "Zimmermann", "Self-Portrait"
-    ),
-    
+
     # ═══ OUTWEAR ═══
-    "short_sleeve_outwear": (
-        # Budget
-        "H&M", "Primark", "ASOS",
-        # Mid
-        "Zara", "Mango", "Levi's", "Wrangler", "Carhartt", "Dickies",
-        # Premium
-        "COS", "& Other Stories", "AllSaints",
-        # Luxury
-        "Armani Exchange"
-    ),
     "long_sleeve_outwear": (
         # Budget
         "H&M", "Primark", "ASOS", "Boohoo",

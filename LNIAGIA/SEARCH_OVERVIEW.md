@@ -120,7 +120,7 @@ Defined mainly in `LNIAGIA/DB/vector/VectorDBManager.py`:
 - `COLLECTION_NAME = "clothing_search"`
 
 LLM model config:
-- `OLLAMA_MODEL = "qwen2.5:3b-instruct"` in `LNIAGIA/llm_query_parser.py`
+- `OLLAMA_MODEL = "qwen2.5:7b-instruct-q3_K_M"` in `LNIAGIA/llm_query_parser.py`
 
 ---
 
