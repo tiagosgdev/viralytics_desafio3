@@ -270,6 +270,38 @@ async def search_conversation(payload: ConversationRequest):
     return result
 
 
+@app.post("/api/search/conversation")
+async def search_conversation(payload: ConversationRequest):
+    """
+    HTTP conversation step for the LNIAGIA search flow.
+
+    The frontend should send `state` from the previous response to keep context.
+    """
+    try:
+        from LNIAGIA.search_app import run_conversation_model
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not import conversation search module: {exc}",
+        ) from exc
+
+    result = await run_in_threadpool(
+        run_conversation_model,
+        detected_type=payload.detected_type,
+        user_input=payload.message,
+        conversation_state=payload.state,
+        strict=payload.strict,
+    )
+
+    if not result.get("ok", False):
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("error", "Conversation search failed."),
+        )
+
+    return result
+
+
 
 @app.get("/api/conf")
 async def get_conf():
