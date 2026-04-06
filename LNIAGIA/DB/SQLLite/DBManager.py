@@ -36,6 +36,53 @@ def db_exists():
         return False
 
 
+def get_items_by_ids(item_ids):
+    """Fetch items from SQLite by id while preserving the input order."""
+    if not item_ids:
+        return []
+
+    normalized_ids = []
+    for item_id in item_ids:
+        try:
+            normalized_ids.append(int(item_id))
+        except (TypeError, ValueError):
+            continue
+
+    if not normalized_ids or not db_exists():
+        return []
+
+    placeholders = ",".join("?" for _ in normalized_ids)
+    query = f"SELECT * FROM items WHERE id IN ({placeholders})"
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(query, normalized_ids)
+        rows = [dict(row) for row in cursor.fetchall()]
+    except sqlite3.Error:
+        conn.close()
+        return []
+
+    conn.close()
+
+    rows_by_id = {}
+    for row in rows:
+        row_id = row.get("id")
+        if row_id is None:
+            continue
+        rows_by_id[int(row_id)] = row
+
+    ordered_rows = []
+    for item_id in normalized_ids:
+        row = rows_by_id.get(item_id)
+        if row is not None:
+            ordered_rows.append(row)
+
+    return ordered_rows
+
+
 def list_json_files():
     return glob.glob(os.path.join(DATA_SOURCES_PATH, '*.json'))
 
