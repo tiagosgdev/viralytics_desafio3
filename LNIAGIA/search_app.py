@@ -9,6 +9,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
@@ -26,11 +27,22 @@ from DB.vector.VectorDBManager import (
     MAX_QUERY_RESULTS,
     SIMILARITY_THRESHOLD,
 )
+from DB.SQLLite.DBManager import get_items_by_ids
 from llm_query_parser import parse_query, refine_query, OLLAMA_MODEL
+
+
+_CONVERSATION_MODEL = None
 
 
 def clear():
     os.system("cls" if os.name == "nt" else "clear")
+
+
+def _to_int_or_none(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def _display_results(hits: list, parsed_filters: dict):
@@ -167,6 +179,112 @@ def main():
         # Step 4: Display results
         _display_results(hits, current_filters)
 
+
+def run_conversation_model(
+    detected_type: str,
+    user_input: str | None = None,
+    conversation_state: dict | None = None,
+    strict: bool = False,
+) -> dict[str, Any]:
+    """
+    Single HTTP-friendly conversation step.
+
+    Expected request flow:
+    - First request: send only detected_type.
+    - Next requests: send user_input and previous state.
+
+    Returns JSON-serializable state + ranked results.
+    """
+
+    if not isinstance(detected_type, str) or not detected_type.strip():
+        return {"ok": False, "error": "detected_type is required."}
+
+    base_query = f"I want {detected_type.strip()}"
+    base_filters = {
+        "include": {
+            "type": [detected_type.strip()],
+        },
+        "exclude": {},
+    }
+
+    # Pre-flight: vector DB must exist
+    client = _get_client()
+    if not _collection_exists(client):
+        client.close()
+        return {
+            "ok": False,
+            "error": "Vector DB not found. Run VectorDBManager.py first to create it.",
+        }
+    client.close()
+
+    global _CONVERSATION_MODEL
+    if _CONVERSATION_MODEL is None:
+        _CONVERSATION_MODEL = _load_model()
+
+    state = conversation_state if isinstance(conversation_state, dict) else {}
+    current_query = state.get("query") if isinstance(state.get("query"), str) else base_query
+    current_filters = state.get("filters") if isinstance(state.get("filters"), dict) else base_filters
+
+    message = (user_input or "").strip()
+
+    if message:
+        if message.upper() == "NEW":
+            current_query = base_query
+            current_filters = base_filters
+        else:
+            updated = refine_query(
+                previous_query=current_query,
+                previous_filters=current_filters,
+                refinement=message,
+                verbose=False,
+            )
+            current_query = updated["query"]
+            current_filters = updated["filters"]
+
+    hits = filtered_search(current_query, current_filters, _CONVERSATION_MODEL, strict=strict)
+
+    ranked_item_ids = []
+    for hit in hits:
+        payload = hit.payload or {}
+        item_id = _to_int_or_none(payload.get("item_id"))
+        if item_id is not None:
+            ranked_item_ids.append(item_id)
+
+    sqlite_items = get_items_by_ids(ranked_item_ids)
+    sqlite_items_by_id = {}
+    for item in sqlite_items:
+        row_id = _to_int_or_none(item.get("id"))
+        if row_id is not None:
+            sqlite_items_by_id[row_id] = item
+
+    ranked_results = []
+    for rank, hit in enumerate(hits, 1):
+        payload = hit.payload or {}
+        raw_item_id = payload.get("item_id")
+        item_id = _to_int_or_none(raw_item_id)
+
+        item_data = sqlite_items_by_id.get(item_id)
+        if item_data is None:
+            item_data = {"id": raw_item_id, **payload}
+
+        ranked_results.append(
+            {
+                "rank": rank,
+                "score": float(hit.score),
+                "item_id": raw_item_id,
+                "item": item_data,
+            }
+        )
+
+    return {
+        "ok": True,
+        "results": ranked_results,
+        "state": {
+            "query": current_query,
+            "filters": current_filters,
+            "strict": bool(strict),
+        },
+    }
 
 if __name__ == "__main__":
     main()

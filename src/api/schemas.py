@@ -35,3 +35,10 @@ class DetectionResponse(BaseModel):
     recommendations: List[Dict[str, Any]]
     inference_ms:    float
     annotated_frame: Optional[str] = None   # base64 JPEG
+
+
+class ConversationRequest(BaseModel):
+    detected_type: str
+    message: Optional[str] = None
+    strict: bool = False
+    state: Optional[Dict[str, Any]] = None

@@ -22,12 +22,13 @@ from typing import List
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.api.schemas import DetectionResponse, HealthResponse, RecommendationItem
+from src.api.schemas import ConversationRequest, DetectionResponse, HealthResponse, RecommendationItem
 from src.detection.camera import CameraStream
 from src.detection.detector import BaseDetector, FashionDetector
 from src.detection.yolo_world import YOLOWorldDetector
@@ -174,6 +175,38 @@ async def detect_image(file: UploadFile = File(...)):
         inference_ms    = round(result.inference_ms, 1),
         annotated_frame = b64_frame,
     )
+
+
+@app.post("/api/search/conversation")
+async def search_conversation(payload: ConversationRequest):
+    """
+    HTTP conversation step for the LNIAGIA search flow.
+
+    The frontend should send `state` from the previous response to keep context.
+    """
+    try:
+        from LNIAGIA.search_app import run_conversation_model
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not import conversation search module: {exc}",
+        ) from exc
+
+    result = await run_in_threadpool(
+        run_conversation_model,
+        detected_type=payload.detected_type,
+        user_input=payload.message,
+        conversation_state=payload.state,
+        strict=payload.strict,
+    )
+
+    if not result.get("ok", False):
+        raise HTTPException(
+            status_code=400,
+            detail=result.get("error", "Conversation search failed."),
+        )
+
+    return result
 
 
 
