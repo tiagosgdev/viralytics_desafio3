@@ -5,178 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>FashionSense — Outfit Scanner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg:#09090d; --surf:#111116; --surf2:#1a1a22; --border:#272733;
-  --accent:#e8ff47; --green:#6bffb8; --red:#ff6b6b;
-  --text:#eeeef5; --muted:#62637a;
-}
-body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
-header { display:flex; align-items:center; justify-content:space-between; padding:14px 28px; border-bottom:1px solid var(--border); background:var(--surf); flex-shrink:0; }
-.logo { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:.06em; color:var(--accent); }
-.logo span { font-family:'DM Sans',sans-serif; font-size:.75rem; color:var(--muted); letter-spacing:.18em; margin-left:10px; font-weight:300; }
-.pill { display:flex; align-items:center; gap:8px; background:var(--surf2); border:1px solid var(--border); border-radius:100px; padding:5px 14px; font-family:'DM Mono',monospace; font-size:.72rem; color:var(--muted); }
-.dot { width:7px; height:7px; border-radius:50%; background:var(--border); transition:all .3s; }
-.dot.live     { background:var(--green); box-shadow:0 0 8px var(--green); animation:blink 2s infinite; }
-.dot.scanning { background:var(--accent); box-shadow:0 0 8px var(--accent); animation:blink .8s infinite; }
-.dot.error    { background:var(--red); }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-main { flex:1; display:grid; grid-template-columns:1fr 360px; min-height:0; }
-
-/* ── Camera ── */
-.cam { position:relative; background:#000; display:flex; align-items:center; justify-content:center; border-right:1px solid var(--border); overflow:hidden; }
-#feed { width:100%; height:100%; object-fit:contain; display:none; }
-
-/* Corner brackets */
-.brk { position:absolute; width:36px; height:36px; opacity:0; transition:opacity .4s; }
-.brk.tl{top:16px;left:16px;  border-top:2px solid var(--accent);border-left:2px solid var(--accent);}
-.brk.tr{top:16px;right:16px; border-top:2px solid var(--accent);border-right:2px solid var(--accent);}
-.brk.bl{bottom:16px;left:16px;  border-bottom:2px solid var(--accent);border-left:2px solid var(--accent);}
-.brk.br{bottom:16px;right:16px; border-bottom:2px solid var(--accent);border-right:2px solid var(--accent);}
-.cam.active .brk { opacity:.5; }
-
-/* Flash overlay — sits on top of everything in the camera area */
-#flash {
-  position:absolute; inset:0; background:#fff;
-  opacity:0; pointer-events:none; z-index:20;
-  border-radius:0;
-}
-#flash.go {
-  animation:flashAnim 0.55s ease-out forwards;
-}
-@keyframes flashAnim {
-  0%   { opacity: 0.95; }
-  30%  { opacity: 0.7;  }
-  100% { opacity: 0;    }
-}
-
-/* Frozen-frame label shown after flash */
-#frozen-label {
-  position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
-  background:rgba(9,9,13,.75); border:1px solid var(--accent);
-  color:var(--accent); font-family:'DM Mono',monospace; font-size:.7rem;
-  letter-spacing:.14em; padding:5px 14px; border-radius:100px;
-  opacity:0; pointer-events:none; z-index:15; transition:opacity .3s;
-  white-space:nowrap;
-}
-#frozen-label.show { opacity:1; }
-
-.idle { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:rgba(9,9,13,.92); transition:opacity .4s; z-index:10; }
-.idle.hidden { opacity:0; pointer-events:none; }
-.idle-icon  { font-size:3.5rem; opacity:.2; }
-.idle-title { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:.14em; color:var(--muted); }
-.idle-sub   { font-size:.8rem; color:var(--muted); opacity:.5; }
-
-/* ── Panel ── */
-.panel { background:var(--surf); display:flex; flex-direction:column; overflow:hidden; }
-.psec { padding:20px 22px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.plbl { font-family:'DM Mono',monospace; font-size:.62rem; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; margin-bottom:14px; }
-.steps { display:flex; gap:6px; margin-bottom:14px; }
-.step { flex:1; height:3px; border-radius:2px; background:var(--border); transition:background .4s; }
-.step.done   { background:var(--green); }
-.step.active { background:var(--accent); animation:sa 1s infinite alternate; }
-@keyframes sa { from{opacity:.4} to{opacity:1} }
-.phase-lbl { font-family:'DM Mono',monospace; font-size:.7rem; color:var(--muted); margin-bottom:14px; }
-.phase-lbl em { color:var(--accent); font-style:normal; font-weight:500; }
-#btn-start { width:100%; padding:12px; background:var(--accent); color:#000; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:700; cursor:pointer; letter-spacing:.04em; transition:filter .2s,transform .1s; }
-#btn-start:hover  { filter:brightness(.9); }
-#btn-start:active { transform:scale(.98); }
-#btn-start:disabled { opacity:.35; cursor:not-allowed; filter:none; }
-.actions { display:none; gap:10px; margin-top:12px; }
-.actions.show { display:flex; }
-.abtn { flex:1; padding:11px 8px; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; cursor:pointer; transition:all .2s; }
-.abtn-retry { background:transparent; border:1px solid var(--accent); color:var(--accent); }
-.abtn-retry:hover { background:rgba(232,255,71,.08); }
-.abtn-more  { background:var(--surf2); border:1px solid var(--border); color:var(--text); }
-.abtn-more:hover  { border-color:var(--muted); }
-.tags { display:flex; flex-wrap:wrap; gap:7px; min-height:36px; }
-.tag { display:flex; align-items:center; gap:6px; background:var(--surf2); border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:.75rem; font-weight:500; animation:ti .2s ease; }
-@keyframes ti { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
-.tdot  { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-.tconf { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); }
-.notag { color:var(--muted); font-size:.8rem; font-style:italic; }
-.recs-hdr  { padding:16px 22px 0; flex-shrink:0; }
-.recs-list { flex:1; overflow-y:auto; padding:12px 22px 20px; display:flex; flex-direction:column; gap:10px; }
-.recs-list::-webkit-scrollbar { width:4px; }
-.recs-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-.card { background:var(--surf2); border:1px solid var(--border); border-radius:10px; padding:13px 14px; display:flex; align-items:flex-start; gap:12px; cursor:pointer; transition:border-color .2s,background .2s; animation:ci .25s ease; }
-@keyframes ci { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:none} }
-.card:hover { border-color:var(--accent); background:rgba(232,255,71,.03); }
-.cthumb { width:44px; height:56px; border-radius:7px; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
-.cinfo  { flex:1; min-width:0; }
-.cname  { font-weight:600; font-size:.85rem; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.ccat   { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); margin-bottom:5px; }
-.cwhy   { font-size:.7rem; color:var(--green); opacity:.85; margin-bottom:5px; }
-.cprice { font-family:'DM Mono',monospace; font-size:.82rem; color:var(--accent); font-weight:500; }
-.ph     { color:var(--muted); font-size:.8rem; font-style:italic; text-align:center; padding:28px 0; }
-
-/* ── Header right section ── */
-.hdr-right { display:flex; align-items:center; gap:14px; }
-.view-toggle { display:flex; background:var(--surf2); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
-.vtab { background:none; border:none; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:.78rem; font-weight:500; padding:6px 16px; cursor:pointer; transition:all .2s; white-space:nowrap; }
-.vtab:hover { color:var(--text); }
-.vtab.active { background:var(--accent); color:#000; font-weight:600; }
-
-/* ── Chat View ── */
-.chat-view { display:none; flex-direction:column; background:var(--bg); border-right:1px solid var(--border); }
-.chat-view.active { display:flex; }
-.cam.active-view { display:flex; }
-.cam.hidden-view { display:none; }
-
-.chat-messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; }
-.chat-messages::-webkit-scrollbar { width:4px; }
-.chat-messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-
-.chat-welcome { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; flex:1; opacity:.6; }
-.chat-welcome-icon { font-size:3rem; }
-.chat-welcome-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:.12em; color:var(--muted); }
-.chat-welcome-sub { font-size:.8rem; color:var(--muted); text-align:center; max-width:280px; line-height:1.5; }
-
-.chat-bubble { max-width:80%; padding:10px 14px; border-radius:12px; font-size:.85rem; line-height:1.5; word-wrap:break-word; animation:ci .2s ease; }
-.chat-bubble.user { align-self:flex-end; background:var(--accent); color:#000; border-bottom-right-radius:4px; }
-.chat-bubble.bot { align-self:flex-start; background:var(--surf2); border:1px solid var(--border); color:var(--text); border-bottom-left-radius:4px; }
-.chat-bubble.bot .typing-dots { display:inline-flex; gap:4px; }
-.chat-bubble.bot .typing-dots span { width:6px; height:6px; border-radius:50%; background:var(--muted); animation:blink 1.4s infinite; }
-.chat-bubble.bot .typing-dots span:nth-child(2) { animation-delay:.2s; }
-.chat-bubble.bot .typing-dots span:nth-child(3) { animation-delay:.4s; }
-
-.chat-input-bar { display:flex; align-items:center; gap:8px; padding:12px 16px; border-top:1px solid var(--border); background:var(--surf); flex-shrink:0; }
-.chat-input { flex:1; background:var(--surf2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.85rem; outline:none; transition:border-color .2s; }
-.chat-input:focus { border-color:var(--accent); }
-.chat-input::placeholder { color:var(--muted); }
-.send-btn { width:38px; height:38px; border-radius:8px; background:var(--accent); color:#000; border:none; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:filter .2s,transform .1s; flex-shrink:0; }
-.send-btn:hover { filter:brightness(.9); }
-.send-btn:active { transform:scale(.94); }
-.mic-btn { width:38px; height:38px; border-radius:8px; background:var(--surf2); border:1px solid var(--border); color:var(--muted); cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:all .2s; flex-shrink:0; }
-.mic-btn:hover { border-color:var(--muted); color:var(--text); }
-.mic-btn.listening { background:var(--red); border-color:var(--red); color:#fff; animation:blink 1s infinite; }
-.mic-select { background:var(--surf2); border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:'DM Mono',monospace; font-size:.65rem; padding:4px 6px; max-width:120px; cursor:pointer; outline:none; }
-.mic-select:focus { border-color:var(--accent); }
-
-/* Confidence slider */
-.conf-row {
-  display:flex; align-items:center; gap:10px; margin-top:14px;
-  padding-top:14px; border-top:1px solid var(--border);
-}
-.conf-row label { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); letter-spacing:.1em; white-space:nowrap; }
-.conf-row input[type=range] {
-  flex:1; accent-color:var(--accent); height:4px; cursor:pointer;
-}
-.conf-val {
-  font-family:'DM Mono',monospace; font-size:.78rem;
-  color:var(--accent); font-weight:500; min-width:36px; text-align:right;
-}
-</style>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" as="style" onload="this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"></noscript>
+<!-- Font Awesome 6 for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVJkEZSMUkrQ6usKnu8D8wyCXiK3x4AEVoRxoktEGQdeL9QcPqQ94MCWoMvsSeZSAo司" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- supplemental stylesheet for extended components -->
+<link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+  <a href="#cam" class="skip-link">Skip to camera</a>
 <header>
   <span class="logo">FashionSense <span>OUTFIT SCANNER</span></span>
   <div class="hdr-right">
     <div class="view-toggle">
-      <button class="vtab active" id="tab-cam" onclick="switchView('camera')">&#128247; Camera</button>
-      <button class="vtab" id="tab-chat" onclick="switchView('chat')">&#128172; Chat</button>
+      <button class="vtab active" id="tab-cam" onclick="switchView('camera')"><i class="fas fa-camera"></i> Camera</button>
+      <button class="vtab" id="tab-chat" onclick="switchView('chat')"><i class="fas fa-message"></i> Chat</button>
     </div>
     <div class="pill"><div class="dot" id="dot"></div><span id="status">Ready</span></div>
   </div>
@@ -189,9 +33,9 @@ main { flex:1; display:grid; grid-template-columns:1fr 360px; min-height:0; }
     <!-- Flash overlay -->
     <div id="flash"></div>
     <!-- Frozen frame label -->
-    <div id="frozen-label">&#128247; OUTFIT CAPTURED</div>
+    <div id="frozen-label"><i class="fas fa-camera"></i> OUTFIT CAPTURED</div>
     <div class="idle" id="idle">
-      <div class="idle-icon">&#x1F457;</div>
+      <div class="idle-icon"><i class="fas fa-shirt"></i></div>
       <div class="idle-title">READY TO SCAN</div>
       <div class="idle-sub">Press "Start Scan" to detect your outfit</div>
     </div>
@@ -201,17 +45,17 @@ main { flex:1; display:grid; grid-template-columns:1fr 360px; min-height:0; }
   <div class="chat-view" id="chat-view">
     <div class="chat-messages" id="chat-messages">
       <div class="chat-welcome">
-        <div class="chat-welcome-icon">&#128172;</div>
+        <div class="chat-welcome-icon"><i class="fas fa-message"></i></div>
         <div class="chat-welcome-title">FashionSense Assistant</div>
         <div class="chat-welcome-sub">Ask me anything about fashion, outfit recommendations, or styling tips.</div>
       </div>
     </div>
     <div class="chat-input-bar">
-      <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Voice input">&#127908;</button>
+      <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Voice input"><i class="fas fa-microphone"></i></button>
       <select class="mic-select" id="mic-select" title="Choose microphone"></select>
       <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." autocomplete="off"
              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"/>
-      <button class="send-btn" id="send-btn" onclick="sendChat()">&#10148;</button>
+      <button class="send-btn" id="send-btn" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
     </div>
   </div>
 
@@ -220,10 +64,10 @@ main { flex:1; display:grid; grid-template-columns:1fr 360px; min-height:0; }
       <div class="plbl">Scan Controls</div>
       <div class="steps"><div class="step" id="s1"></div><div class="step" id="s2"></div><div class="step" id="s3"></div></div>
       <div class="phase-lbl" id="plbl">Press start to begin</div>
-      <button id="btn-start" onclick="startScan()">&#9654; Start Scan</button>
+      <button id="btn-start" style="font-family: 'DM Mono', monospace;" onclick="startScan()"><i class="fas fa-play"></i> Start Scan</button>
       <div class="actions" id="actions">
-        <button class="abtn abtn-retry" onclick="sendCmd('retry')">&#x1F504; Retry Scan</button>
-        <button class="abtn abtn-more"  onclick="sendCmd('more_recs')">&#x2728; More Suggestions</button>
+        <button class="abtn abtn-retry" onclick="sendCmd('retry')"><i class="fas fa-rotate-right"></i> Retry Scan</button>
+        <button class="abtn abtn-more"  onclick="sendCmd('more_recs')"><i class="fas fa-sparkles"></i> More Suggestions</button>
       </div>
 
       <!-- Confidence threshold slider -->
@@ -239,13 +83,98 @@ main { flex:1; display:grid; grid-template-columns:1fr 360px; min-height:0; }
       <div class="tags" id="tags"><span class="notag">Nothing detected yet</span></div>
     </div>
     <div class="recs-hdr"><div class="plbl">Store Recommendations</div></div>
-    <div class="recs-list" id="recs"><div class="ph">Recommendations appear after scanning</div></div>
+    <div class="recs-list" id="recs">
+      <!-- example recommendation card (will be replaced by real results) -->
+      <div class="card">
+        <picture>
+          <source type="image/avif" data-srcset="static/images/example-product.avif">
+          <source type="image/webp" data-srcset="static/images/example-product.webp">
+          <img data-src="static/images/example-product.jpg" alt="Example product" class="rec-img" />
+        </picture>
+        <div class="cinfo">
+          <div class="cname">Sample Linen Shirt</div>
+          <div class="ccat">short sleeve top</div>
+          <div class="cwhy">Editorial match • light beige</div>
+          <div class="cprice">R$ 349</div>
+        </div>
+      </div>
+    </div>
   </aside>
 </main>
+  <!-- sticky CTA for mobile/quick access -->
+  <div class="sticky-cta" id="sticky-cta" aria-hidden="true">
+    <div class="label">Ready to scan?</div>
+    <button class="start" id="sticky-start">Start Scan</button>
+  </div>
 <script>
 const WS_URL='ws://'+location.host+'/ws/camera';
+
+// Helpers: lazy-load images (data-src/data-srcset) and sticky CTA behavior
+function initHelpers(){
+  const lazyTargets = document.querySelectorAll('img[data-src], source[data-srcset]');
+  if('IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(en=>{
+        if(!en.isIntersecting) return;
+        const el = en.target;
+        if(el.dataset.src) { el.src = el.dataset.src; el.removeAttribute('data-src'); }
+        if(el.dataset.srcset) { el.srcset = el.dataset.srcset; el.removeAttribute('data-srcset'); }
+        obs.unobserve(el);
+      });
+    }, { rootMargin: '200px 0px' });
+    lazyTargets.forEach(t => io.observe(t));
+  } else {
+    lazyTargets.forEach(el=>{ if(el.dataset.src) el.src = el.dataset.src; if(el.dataset.srcset) el.srcset = el.dataset.srcset; });
+  }
+
+  const sticky = document.getElementById('sticky-cta');
+  const stickyBtn = document.getElementById('sticky-start');
+  if(stickyBtn) stickyBtn.addEventListener('click', ()=> startScan());
+
+  if(sticky){
+    let last = window.scrollY;
+    const show = ()=> sticky.classList.add('show');
+    const hide = ()=> sticky.classList.remove('show');
+    window.addEventListener('scroll', ()=>{
+      const cur = window.scrollY;
+      if(cur < last || (window.innerHeight + cur) > (document.body.offsetHeight - 300)) show(); else hide();
+      last = cur;
+    }, { passive: true });
+    if(window.innerWidth < 820) setTimeout(show, 700);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initHelpers);
+
+// reveal-on-scroll initializer
+function initReveal(){
+  const els = document.querySelectorAll('.reveal');
+  if(!els.length) return;
+  if('IntersectionObserver' in window){
+    const o = new IntersectionObserver((entries, obs)=>{
+      entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('visible'); obs.unobserve(en.target); } });
+    }, { threshold: 0.12 });
+    els.forEach(e => o.observe(e));
+  } else els.forEach(e => e.classList.add('visible'));
+}
+
+// subtle 3D tilt on card hover (lightweight)
+function initCardTilt(){
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(card => {
+    card.addEventListener('pointermove', (e)=>{
+      const r = card.getBoundingClientRect();
+      const cx = r.left + r.width/2; const cy = r.top + r.height/2;
+      const dx = (e.clientX - cx) / r.width; const dy = (e.clientY - cy) / r.height;
+      card.style.transform = `perspective(900px) translateZ(0) rotateX(${(-dy*6).toFixed(2)}deg) rotateY(${(dx*6).toFixed(2)}deg) translateY(-6px)`;
+    });
+    card.addEventListener('pointerleave', ()=>{ card.style.transform = ''; });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{ initReveal(); initCardTilt(); });
 const COLORS={short_sleeve_top:'#ff6464',long_sleeve_top:'#ffa03c',short_sleeve_outwear:'#50c878',long_sleeve_outwear:'#28b4c8',vest:'#b450ff',sling:'#ff50b4',shorts:'#64b4ff',trousers:'#3c50c8',skirt:'#dcb428',short_sleeve_dress:'#ff7850',long_sleeve_dress:'#8c3cc8',vest_dress:'#c86496',sling_dress:'#64c8b4'};
-const EMOJI={short_sleeve_top:'👕',long_sleeve_top:'👔',short_sleeve_outwear:'🧥',long_sleeve_outwear:'🧥',vest:'🦺',sling:'👗',shorts:'🩳',trousers:'👖',skirt:'👗',short_sleeve_dress:'👗',long_sleeve_dress:'👗',vest_dress:'👗',sling_dress:'👗'};
+const EMOJI={short_sleeve_top:'<i class="fas fa-shirt"></i>',long_sleeve_top:'<i class="fas fa-shirt"></i>',short_sleeve_outwear:'<i class="fas fa-vest"></i>',long_sleeve_outwear:'<i class="fas fa-vest"></i>',vest:'<i class="fas fa-vest"></i>',sling:'<i class="fas fa-dress"></i>',shorts:'<i class="fas fa-person-hiking"></i>',trousers:'<i class="fas fa-person"></i>',skirt:'<i class="fas fa-dress"></i>',short_sleeve_dress:'<i class="fas fa-dress"></i>',long_sleeve_dress:'<i class="fas fa-dress"></i>',vest_dress:'<i class="fas fa-dress"></i>',sling_dress:'<i class="fas fa-dress"></i>'};
 
 let ws = null;
 let frozen = false;   // true while showing the captured still frame
@@ -372,6 +301,8 @@ function renderTags(dets) {
     const conf = Math.round(d.confidence * 100);
     return '<div class="tag"><div class="tdot" style="background:' + col + '"></div><span>' + lbl + '</span><span class="tconf">' + conf + '%</span></div>';
   }).join('');
+  // animate tags with a small stagger
+  animateStagger('#tags', '.tag');
 }
 
 function renderRecs(recs) {
@@ -383,6 +314,23 @@ function renderRecs(recs) {
     '<div class="cwhy">' + esc(r.reason) + '</div>' +
     '<div class="cprice">' + esc(r.price) + '</div></div></div>'
   ).join('');
+  // animate recommendation cards
+  animateStagger('#recs', '.card');
+}
+
+// small utility: add staggered animation delays to newly inserted children
+function animateStagger(containerSelector, childSelector, opts={delay:80, start:0}){
+  const container = document.querySelector(containerSelector);
+  if(!container) return;
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const children = container.querySelectorAll(childSelector);
+  children.forEach((ch, i)=>{
+    ch.classList.remove('stagger');
+    ch.style.animationDelay = (opts.start + i * opts.delay) + 'ms';
+    // force reflow then add class to start animation
+    void ch.offsetWidth;
+    ch.classList.add('stagger');
+  });
 }
 
 function setSteps(p) {
