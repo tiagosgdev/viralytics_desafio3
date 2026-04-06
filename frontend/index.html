@@ -178,6 +178,9 @@ const EMOJI={short_sleeve_top:'<i class="fas fa-shirt"></i>',long_sleeve_top:'<i
 
 let ws = null;
 let frozen = false;   // true while showing the captured still frame
+let currentSessionId = null;
+let currentDetectedCategories = [];
+let currentRecommendations = [];
 
 const feed       = document.getElementById('feed');
 const idle       = document.getElementById('idle');
@@ -212,6 +215,10 @@ function hideFrozenLabel() {
 function startScan() {
   if (ws) { ws.close(); ws = null; }
   frozen = false;
+  currentSessionId = null;
+  currentDetectedCategories = [];
+  currentRecommendations = [];
+  chatHistory = [];
   hideFrozenLabel();
 
   setSt('scanning', 'Connecting...');
@@ -258,6 +265,9 @@ function startScan() {
       setSteps('results');
       renderTags(m.detections || []);
       renderRecs(m.recommendations || []);
+      currentDetectedCategories = m.dominant || (m.detections || []).map(d => d.class_name);
+      currentRecommendations = m.recommendations || [];
+      initializeSearchSession(currentDetectedCategories, currentRecommendations);
       actions.classList.add('show');
       plbl.textContent = 'Choose an action below';
 
@@ -277,6 +287,10 @@ function sendCmd(cmd) {
 
   if (cmd === 'retry') {
     frozen = false;
+    currentSessionId = null;
+    currentDetectedCategories = [];
+    currentRecommendations = [];
+    chatHistory = [];
     hideFrozenLabel();
     actions.classList.remove('show');
     tagsEl.innerHTML = '<span class="notag">Scanning...</span>';
@@ -445,14 +459,22 @@ function sendChat() {
   fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: text, history: chatHistory })
+    body: JSON.stringify({
+      message: text,
+      history: chatHistory,
+      session_id: currentSessionId,
+      detected_categories: currentDetectedCategories,
+      recommendations: currentRecommendations
+    })
   })
     .then(r => r.json())
     .then(d => {
       removeTypingIndicator();
       const reply = d.reply || d.message || d.response || 'Sorry, I could not process that.';
+      if (d.session_id) currentSessionId = d.session_id;
       addChatBubble(reply, 'bot');
       chatHistory.push({ role: 'assistant', content: reply });
+      if (Array.isArray(d.results) && d.results.length) renderRecs(d.results);
     })
     .catch(() => {
       removeTypingIndicator();
@@ -580,14 +602,22 @@ async function toggleVoice() {
                 fetch('/api/chat', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ message: text, history: chatHistory })
+                  body: JSON.stringify({
+                    message: text,
+                    history: chatHistory,
+                    session_id: currentSessionId,
+                    detected_categories: currentDetectedCategories,
+                    recommendations: currentRecommendations
+                  })
                 })
                   .then(r => r.json())
                   .then(c => {
                     removeTypingIndicator();
                     const reply = c.reply || c.message || c.response || 'Sorry, I could not process that.';
+                    if (c.session_id) currentSessionId = c.session_id;
                     addChatBubble(reply, 'bot');
                     chatHistory.push({ role: 'assistant', content: reply });
+                    if (Array.isArray(c.results) && c.results.length) renderRecs(c.results);
                   })
                   .catch(() => {
                     removeTypingIndicator();
@@ -627,6 +657,22 @@ fetch('/api/conf')
     document.getElementById('conf-val').textContent = pct + '%';
   })
   .catch(() => {});
+
+function initializeSearchSession(detectedCategories, recommendations) {
+  fetch('/api/session/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      detected_categories: detectedCategories || [],
+      recommendations: recommendations || []
+    })
+  })
+    .then(r => r.json())
+    .then(d => {
+      if (d.session_id) currentSessionId = d.session_id;
+    })
+    .catch(() => {});
+}
 
 </script>
 </body>

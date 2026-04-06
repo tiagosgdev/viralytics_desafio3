@@ -27,7 +27,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.api.schemas import DetectionResponse, HealthResponse, RecommendationItem
+from src.api.schemas import (
+    ChatRequest,
+    ChatResponse,
+    DetectionResponse,
+    HealthResponse,
+    SessionResponse,
+    SessionStartRequest,
+)
+from src.api.search_service import UnifiedSearchService
 from src.detection.camera import CameraStream
 from src.detection.detector import BaseDetector, FashionDetector
 from src.detection.yolo_world import YOLOWorldDetector
@@ -93,6 +101,7 @@ detector    : BaseDetector        = None
 recommender : RecommendationEngine = None
 camera      : CameraStream       = None
 whisper_model = None
+search_service: UnifiedSearchService = None
 
 
 DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "yolov8").lower()
@@ -100,7 +109,7 @@ DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "yolov8").lower()
 
 @app.on_event("startup")
 async def startup():
-    global detector, recommender, camera, whisper_model
+    global detector, recommender, camera, whisper_model, search_service
 
     if DETECTOR_BACKEND == "yolo_world":
         print("\n🚀  Starting with YOLO-World zero-shot detector")
@@ -111,6 +120,7 @@ async def startup():
         detector = FashionDetector(weights=weights, conf_thres=0.60)
 
     recommender = RecommendationEngine(top_k=5)
+    search_service = UnifiedSearchService(recommender)
     camera      = CameraStream(detector, recommender, source=0)
 
     # Load Whisper for voice transcription in a background thread
@@ -153,6 +163,40 @@ async def health():
     return HealthResponse(status="ok", model_loaded=detector is not None)
 
 
+@app.post("/api/session/start", response_model=SessionResponse)
+async def start_session(payload: SessionStartRequest):
+    session = search_service.create_session(
+        detected_categories=payload.detected_categories,
+        recommendations=payload.recommendations,
+    )
+    return SessionResponse(
+        session_id=session.id,
+        mode=session.mode,
+        detected_categories=session.detected_categories,
+        seed_categories=session.seed_categories,
+        active_filters=session.active_filters,
+        results=session.last_results,
+    )
+
+
+@app.get("/api/session/{session_id}", response_model=SessionResponse)
+async def get_session(session_id: str):
+    from fastapi import HTTPException
+
+    session = search_service.get_session(session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return SessionResponse(
+        session_id=session.id,
+        mode=session.mode,
+        detected_categories=session.detected_categories,
+        seed_categories=session.seed_categories,
+        active_filters=session.active_filters,
+        results=session.last_results,
+    )
+
+
 @app.post("/api/detect/image", response_model=DetectionResponse)
 async def detect_image(file: UploadFile = File(...)):
     """
@@ -169,6 +213,7 @@ async def detect_image(file: UploadFile = File(...)):
     result = detector.detect(frame)
     cats   = list({d.class_name for d in result.detections})
     recs   = recommender.recommend(cats)
+    session = search_service.create_session(cats, recs)
 
     # Encode annotated frame
     annotated = detector.draw(frame, result)
@@ -188,6 +233,7 @@ async def detect_image(file: UploadFile = File(...)):
         recommendations = recs,
         inference_ms    = round(result.inference_ms, 1),
         annotated_frame = b64_frame,
+        session_id      = session.id,
     )
 
 
@@ -270,6 +316,31 @@ async def transcribe_audio(audio: UploadFile = File(...)):
         os.unlink(wav_path)
 
     return {"text": text}
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(payload: ChatRequest):
+    from fastapi import HTTPException
+
+    session_id = payload.session_id
+    if not session_id:
+        session = search_service.create_session(
+            detected_categories=payload.detected_categories,
+            recommendations=payload.recommendations,
+        )
+        session_id = session.id
+
+    try:
+        result = search_service.refine(
+            session_id=session_id,
+            message=payload.message,
+            history=[msg.model_dump() for msg in payload.history],
+            replace_vision=payload.replace_vision,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return ChatResponse(**result)
 
 
 @app.websocket("/ws/camera")
