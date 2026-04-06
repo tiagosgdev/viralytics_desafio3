@@ -177,11 +177,14 @@ def evaluate_fashionnet(weights_path, data_dir, device, img_size=640, batch=8):
     """Run FashionNet on validation set, collect predictions and ground truths."""
     ckpt = torch.load(weights_path, map_location=device)
 
-    # Resolve num_classes: prefer config.json, then infer from checkpoint head shape, then dataset.yaml
+    # Resolve num_classes and model_scale: prefer config.json, then infer from checkpoint
     config_path = Path(weights_path).parent / "config.json"
+    scale = "s"
     if config_path.exists():
         with open(config_path) as f:
-            num_classes = json.load(f).get("num_classes_resolved", 13)
+            cfg = json.load(f)
+        num_classes = cfg.get("num_classes_resolved", 13)
+        scale = cfg.get("model_scale", "s")
     else:
         head_weight = ckpt['model'].get('head_p3.pred.weight')
         if head_weight is not None:
@@ -189,7 +192,7 @@ def evaluate_fashionnet(weights_path, data_dir, device, img_size=640, batch=8):
         else:
             num_classes = len(load_category_names(data_dir))
 
-    model = FashionNet(num_classes=num_classes)
+    model = FashionNet(num_classes=num_classes, scale=scale)
     model.load_state_dict(ckpt['model'])
     model.to(device).eval()
 

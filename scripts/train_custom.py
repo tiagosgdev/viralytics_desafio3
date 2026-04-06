@@ -80,6 +80,8 @@ def parse_args():
                    help="Optimizer: adamw (default) or sgd (momentum=0.937)")
     p.add_argument("--ema", action="store_true",
                    help="Exponential Moving Average of model weights (used for val/inference)")
+    p.add_argument("--model_scale", default="s", choices=["s", "m", "l"],
+                   help="Model scale: s (~11.7M), m (~25M), l (~43M)")
     return p.parse_args()
 
 
@@ -240,7 +242,9 @@ def main():
         model = TinyFashionNet(num_classes=num_classes).to(device)
         print(f"  Mode: FAST (TinyFashionNet — reduced channels)")
     else:
-        model = FashionNet(num_classes=num_classes, dropout=args.dropout).to(device)
+        model = FashionNet(num_classes=num_classes, dropout=args.dropout,
+                           scale=args.model_scale).to(device)
+        print(f"  Model scale: {args.model_scale}")
     print(f"  Parameters: {model.count_parameters():,}")
 
     # ── Loss ──────────────────────────────────────────────────────────────
