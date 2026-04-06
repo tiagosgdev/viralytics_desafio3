@@ -8,14 +8,17 @@ Architecture overview:
   Input (3 × 640 × 640)
       │
   [Backbone]  — custom CNN with residual blocks, 4 downsampling stages
-      │  P3 (128ch, 80×80)
-      │  P4 (256ch, 40×40)
-      │  P5 (512ch, 20×20)
-  [Neck]      — simple Feature Pyramid: upsample + concat + fuse
+      │  P3, P4, P5 at strides 8, 16, 32
+  [Neck]      — bidirectional FPN: upsample + concat + fuse
       │  fused_p3, fused_p4, fused_p5
   [Head]      — per-scale prediction: objectness + class + bbox
       │
   Output: list of raw prediction tensors (decoded in loss / postprocess)
+
+Model scales (--model_scale flag):
+  s:  ~11.7M params   (64→128→256→512,  CSP n=1,2,3,2)
+  m:  ~25M  params   (96→192→384→768,  CSP n=2,3,4,3)
+  l:  ~43M  params   (128→256→512→1024, CSP n=3,4,6,3)
 """
 
 import torch
@@ -26,10 +29,35 @@ from typing import List, Tuple
 
 NUM_CLASSES = 13   # DeepFashion2 categories
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Scale configurations — controls model width and depth
+# ────────��─────────────���──────────────────────────────────────────────────────
 
-# ─────────────────────────────────────────────────────────────────────────────
+SCALE_CONFIGS = {
+    "s": {
+        "stem":       (32, 64),
+        "stages":     (64, 128, 256, 512),
+        "csp_depths": (1, 2, 3, 2),
+        "neck_depth": 1,
+    },
+    "m": {
+        "stem":       (48, 96),
+        "stages":     (96, 192, 384, 768),
+        "csp_depths": (2, 3, 4, 3),
+        "neck_depth": 2,
+    },
+    "l": {
+        "stem":       (64, 128),
+        "stages":     (128, 256, 512, 1024),
+        "csp_depths": (3, 4, 6, 3),
+        "neck_depth": 2,
+    },
+}
+
+
+# ───────���──────────────────────────��──────────────────────────────��───────────
 # Building blocks
-# ─────────────────────────────────────────────────────────────────────────────
+# ─────��───────────────────────────────────────────────��───────────────────────
 
 class ConvBnRelu(nn.Module):
     """Conv2d → BatchNorm2d → LeakyReLU — the basic unit used everywhere."""
@@ -48,8 +76,8 @@ class ConvBnRelu(nn.Module):
 
 class ResBlock(nn.Module):
     """
-    Residual block: two 3×3 convs + skip connection.
-    Skip uses 1×1 conv projection when channel count changes.
+    Residual block: two 3x3 convs + skip connection.
+    Skip uses 1x1 conv projection when channel count changes.
     These are critical when training from scratch — they prevent
     vanishing gradients in deeper stages.
     """
@@ -91,52 +119,54 @@ class CSPBlock(nn.Module):
         return self.fuse(torch.cat([b1, b2], dim=1))
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# ──────────���────────────────────────��────────────────────────────────────��────
 # Backbone
-# ─────────────────────────────────────────────────────────────────────────────
+# ────────────────���─────────────────────────────────��──────────────────────────
 
 class FashionBackbone(nn.Module):
     """
     4-stage CNN backbone outputting multi-scale feature maps.
 
     Input:  (B, 3, 640, 640)
-    Output: P3 (B, 128, 80, 80)   ← small objects / accessories
-            P4 (B, 256, 40, 40)   ← medium clothing items
-            P5 (B, 512, 20, 20)   ← large garments, full outfits
+    Output: P3, P4, P5 at strides 8, 16, 32
 
-    ~2.4M parameters total.
+    Channel widths and CSP depths are controlled by the scale config.
     """
-    def __init__(self):
+    def __init__(self, scale: str = "s"):
         super().__init__()
+        cfg = SCALE_CONFIGS[scale]
+        s1_ch, s2_ch = cfg["stem"]
+        c1, c2, c3, c4 = cfg["stages"]
+        n1, n2, n3, n4 = cfg["csp_depths"]
 
-        # Stem: 640 → 320
+        # Stem: 640 -> 320
         self.stem = nn.Sequential(
-            ConvBnRelu(3,  32, k=3, s=2, p=1),
-            ConvBnRelu(32, 64, k=3, s=1, p=1),
+            ConvBnRelu(3,     s1_ch, k=3, s=2, p=1),
+            ConvBnRelu(s1_ch, s2_ch, k=3, s=1, p=1),
         )
 
-        # Stage 1: 320 → 160  (64 → 64)
+        # Stage 1: 320 -> 160
         self.stage1 = nn.Sequential(
-            ConvBnRelu(64, 64, k=3, s=2, p=1),
-            CSPBlock(64, 64, n=1),
+            ConvBnRelu(s2_ch, c1, k=3, s=2, p=1),
+            CSPBlock(c1, c1, n=n1),
         )
 
-        # Stage 2: 160 → 80   (64 → 128)   → P3
+        # Stage 2: 160 -> 80  -> P3
         self.stage2 = nn.Sequential(
-            ConvBnRelu(64, 128, k=3, s=2, p=1),
-            CSPBlock(128, 128, n=2),
+            ConvBnRelu(c1, c2, k=3, s=2, p=1),
+            CSPBlock(c2, c2, n=n2),
         )
 
-        # Stage 3: 80 → 40    (128 → 256)  → P4
+        # Stage 3: 80 -> 40   -> P4
         self.stage3 = nn.Sequential(
-            ConvBnRelu(128, 256, k=3, s=2, p=1),
-            CSPBlock(256, 256, n=3),
+            ConvBnRelu(c2, c3, k=3, s=2, p=1),
+            CSPBlock(c3, c3, n=n3),
         )
 
-        # Stage 4: 40 → 20    (256 → 512)  → P5
+        # Stage 4: 40 -> 20   -> P5
         self.stage4 = nn.Sequential(
-            ConvBnRelu(256, 512, k=3, s=2, p=1),
-            CSPBlock(512, 512, n=2),
+            ConvBnRelu(c3, c4, k=3, s=2, p=1),
+            CSPBlock(c4, c4, n=n4),
         )
 
         self._init_weights()
@@ -152,71 +182,74 @@ class FashionBackbone(nn.Module):
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         x  = self.stem(x)
         x  = self.stage1(x)
-        p3 = self.stage2(x)   # 80×80
-        p4 = self.stage3(p3)  # 40×40
-        p5 = self.stage4(p4)  # 20×20
+        p3 = self.stage2(x)   # 80x80
+        p4 = self.stage3(p3)  # 40x40
+        p5 = self.stage4(p4)  # 20x20
         return p3, p4, p5
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# ───────────────────────────────────���────────────────────────────���────────────
 # Neck (Feature Pyramid Network)
-# ─────────────────────────────────────────────────────────────────────────────
+# ──────��──────────────────────────────────────────────────────────────────────
 
 class FashionNeck(nn.Module):
     """
-    Top-down FPN neck: fuses deep semantic features (P5) with
-    shallower spatial features (P4, P3) via upsampling + concatenation.
+    Bidirectional FPN neck: top-down fusion followed by bottom-up refinement.
 
-    This gives the detection head rich features at every scale without
-    needing separate deep networks per scale.
+    Fuses deep semantic features (P5) with shallower spatial features (P4, P3)
+    via upsampling + concatenation. Channel widths and CSP depth are controlled
+    by the scale config.
     """
-    def __init__(self):
+    def __init__(self, scale: str = "s"):
         super().__init__()
+        cfg = SCALE_CONFIGS[scale]
+        _, c2, c3, c4 = cfg["stages"]   # P3=c2, P4=c3, P5=c4
+        nd = cfg["neck_depth"]
 
-        # P5 → fuse with P4
-        self.lat_p5  = ConvBnRelu(512, 256, k=1, s=1, p=0)
-        self.fuse_p4 = CSPBlock(256 + 256, 256, n=1)
+        # Top-down: P5 -> fuse with P4
+        self.lat_p5  = ConvBnRelu(c4, c3, k=1, s=1, p=0)
+        self.fuse_p4 = CSPBlock(c3 + c3, c3, n=nd)
 
-        # P4 (fused) → fuse with P3
-        self.lat_p4  = ConvBnRelu(256, 128, k=1, s=1, p=0)
-        self.fuse_p3 = CSPBlock(128 + 128, 128, n=1)
+        # Top-down: P4 (fused) -> fuse with P3
+        self.lat_p4  = ConvBnRelu(c3, c2, k=1, s=1, p=0)
+        self.fuse_p3 = CSPBlock(c2 + c2, c2, n=nd)
 
-        # Bottom-up path: refine P4 and P5 after top-down pass
-        self.down_p3 = ConvBnRelu(128, 128, k=3, s=2, p=1)
-        self.ref_p4  = CSPBlock(128 + 256, 256, n=1)
+        # Bottom-up: refine P4 and P5 after top-down pass
+        self.down_p3 = ConvBnRelu(c2, c2, k=3, s=2, p=1)
+        self.ref_p4  = CSPBlock(c2 + c3, c3, n=nd)
 
-        self.down_p4 = ConvBnRelu(256, 256, k=3, s=2, p=1)
-        self.ref_p5  = CSPBlock(256 + 256, 512, n=1)
+        self.down_p4 = ConvBnRelu(c3, c3, k=3, s=2, p=1)
+        self.ref_p5  = CSPBlock(c3 + c3, c4, n=nd)
 
     def forward(
         self, p3: torch.Tensor, p4: torch.Tensor, p5: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
 
         # Top-down
-        p5_lat  = self.lat_p5(p5)                                        # 20×20, 256ch
-        p4_td   = self.fuse_p4(torch.cat([F.interpolate(p5_lat, scale_factor=2, mode='nearest'), p4], 1))  # 40×40, 256ch
-        p3_td   = self.fuse_p3(torch.cat([F.interpolate(self.lat_p4(p4_td), scale_factor=2, mode='nearest'), p3], 1))  # 80×80, 128ch
+        p5_lat = self.lat_p5(p5)
+        p4_td  = self.fuse_p4(torch.cat([F.interpolate(p5_lat, scale_factor=2, mode='nearest'), p4], 1))
+        p3_td  = self.fuse_p3(torch.cat([F.interpolate(self.lat_p4(p4_td), scale_factor=2, mode='nearest'), p3], 1))
 
         # Bottom-up (refines features after top-down enrichment)
-        p4_out  = self.ref_p4(torch.cat([self.down_p3(p3_td), p4_td], 1))   # 40×40, 256ch
-        p5_out  = self.ref_p5(torch.cat([self.down_p4(p4_out), p5_lat], 1)) # 20×20, 512ch
+        p4_out = self.ref_p4(torch.cat([self.down_p3(p3_td), p4_td], 1))
+        p5_out = self.ref_p5(torch.cat([self.down_p4(p4_out), p5_lat], 1))
 
         return p3_td, p4_out, p5_out
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Detection Head
-# ─────────────────────────────────────────────────────────────────────────────
+# ──────��─────────────────────���────────────────────────────���───────────────────
 
 class DetectionHead(nn.Module):
     """
     Anchor-free detection head — predicts per grid cell:
-      • (x, y)      — center offset within cell (sigmoid → 0..1)
-      • (w, h)      — box size as log-space offsets from anchor priors
-      • objectness  — is there an object here? (sigmoid → 0..1)
-      • classes     — one score per class (sigmoid, multi-label friendly)
+      - (x, y)      — center offset within cell (sigmoid -> 0..1)
+      - (w, h)      — box size in grid units
+      - objectness  — is there an object here? (sigmoid -> 0..1)
+      - classes     — one score per class (sigmoid, multi-label friendly)
 
-    Total output per scale: grid_h × grid_w × (5 + NUM_CLASSES)
+    Total output per scale: grid_h x grid_w x (5 + NUM_CLASSES)
     """
     def __init__(self, in_channels: int, num_classes: int = NUM_CLASSES,
                  dropout: float = 0.0):
@@ -238,35 +271,43 @@ class DetectionHead(nn.Module):
         return self.pred(self.pre(x))
 
 
-# ─────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────��──────────────────────────────────
 # Full Model
-# ─────────────────────────────────────────────────────────────────────────────
+# ────────��────────────────��─────────────────────────────────��─────────────────
 
 class FashionNet(nn.Module):
     """
     FashionNet — complete from-scratch detector.
 
     Usage:
-        model = FashionNet()
+        model = FashionNet()                          # scale "s" (default, ~11.7M)
+        model = FashionNet(scale="m")                 # scale "m" (~25M)
+        model = FashionNet(scale="l")                 # scale "l" (~43M)
         preds = model(images)   # list of 3 tensors, one per scale
 
     The 3 output tensors have shape:
-        (B, 5+NC, 80, 80)   — large objects detected at this scale are smaller
+        (B, 5+NC, 80, 80)
         (B, 5+NC, 40, 40)
         (B, 5+NC, 20, 20)
     """
-    def __init__(self, num_classes: int = NUM_CLASSES, dropout: float = 0.0):
+    def __init__(self, num_classes: int = NUM_CLASSES, dropout: float = 0.0,
+                 scale: str = "s"):
         super().__init__()
         self.num_classes = num_classes
-        self.backbone    = FashionBackbone()
-        self.neck        = FashionNeck()
-        self.head_p3     = DetectionHead(128,  num_classes, dropout=dropout)
-        self.head_p4     = DetectionHead(256,  num_classes, dropout=dropout)
-        self.head_p5     = DetectionHead(512,  num_classes, dropout=dropout)
+        self.scale = scale
+
+        cfg = SCALE_CONFIGS[scale]
+        _, c2, c3, c4 = cfg["stages"]   # P3=c2, P4=c3, P5=c4
+
+        self.backbone = FashionBackbone(scale=scale)
+        self.neck     = FashionNeck(scale=scale)
+        self.head_p3  = DetectionHead(c2, num_classes, dropout=dropout)
+        self.head_p4  = DetectionHead(c3, num_classes, dropout=dropout)
+        self.head_p5  = DetectionHead(c4, num_classes, dropout=dropout)
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
-        p3, p4, p5             = self.backbone(x)
-        fp3, fp4, fp5          = self.neck(p3, p4, p5)
+        p3, p4, p5    = self.backbone(x)
+        fp3, fp4, fp5 = self.neck(p3, p4, p5)
         return [
             self.head_p3(fp3),  # (B, 5+NC, 80, 80)
             self.head_p4(fp4),  # (B, 5+NC, 40, 40)
@@ -277,11 +318,9 @@ class FashionNet(nn.Module):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
 
-
-
-# ─────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────��──────────────────────────────────��───────────
 # Tiny variant — for fast CPU testing only
-# ─────────────────────────────────────────────────────────────────────────────
+# ───────���──────────────��─────────────────────────────────���────────────────────
 
 class TinyFashionNet(nn.Module):
     """
@@ -297,9 +336,9 @@ class TinyFashionNet(nn.Module):
 
         # Minimal backbone — 4 downsampling convs, no residual blocks
         self.b1 = ConvBnRelu(3,   16, k=3, s=2, p=1)   # /2
-        self.b2 = ConvBnRelu(16,  32, k=3, s=2, p=1)   # /4  → P3
-        self.b3 = ConvBnRelu(32,  64, k=3, s=2, p=1)   # /8  → P4
-        self.b4 = ConvBnRelu(64, 128, k=3, s=2, p=1)   # /16 → P5
+        self.b2 = ConvBnRelu(16,  32, k=3, s=2, p=1)   # /4  -> P3
+        self.b3 = ConvBnRelu(32,  64, k=3, s=2, p=1)   # /8  -> P4
+        self.b4 = ConvBnRelu(64, 128, k=3, s=2, p=1)   # /16 -> P5
 
         # Minimal neck — single lateral connection
         self.lat = ConvBnRelu(128, 64, k=1, s=1, p=0)
@@ -311,36 +350,37 @@ class TinyFashionNet(nn.Module):
         nn.init.constant_(self.head.bias, 0)
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
-        p2 = self.b2(self.b1(x))          # 160×160, 32ch
-        p3 = self.b3(p2)                   # 80×80,   64ch
-        p4 = self.b4(p3)                   # 40×40,  128ch
+        p2 = self.b2(self.b1(x))          # 160x160, 32ch
+        p3 = self.b3(p2)                   # 80x80,   64ch
+        p4 = self.b4(p3)                   # 40x40,  128ch
 
-        # Simple FPN: upsample P4 → fuse with P3
-        lat = self.lat(p4)                 # 40×40, 64ch
-        up  = F.interpolate(lat, scale_factor=2, mode='nearest')  # 80×80
-        fused = self.fuse(torch.cat([up, p3], dim=1))             # 80×80, 64ch
+        # Simple FPN: upsample P4 -> fuse with P3
+        lat = self.lat(p4)                 # 40x40, 64ch
+        up  = F.interpolate(lat, scale_factor=2, mode='nearest')  # 80x80
+        fused = self.fuse(torch.cat([up, p3], dim=1))             # 80x80, 64ch
 
         # Return 3 scales (head runs on fused only; other two are copies for
         # loss compatibility — they produce near-zero predictions by design)
         pred = self.head(fused)
         return [pred,
-                self.head(F.avg_pool2d(fused, 2)),   # 40×40
-                self.head(F.avg_pool2d(fused, 4))]   # 20×20
+                self.head(F.avg_pool2d(fused, 2)),   # 40x40
+                self.head(F.avg_pool2d(fused, 4))]   # 20x20
 
     def count_parameters(self) -> int:
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
 if __name__ == "__main__":
-    print("--- FashionNet ---")
-    model  = FashionNet()
-    dummy  = torch.zeros(1, 3, 640, 640)
-    outs   = model(dummy)
-    params = model.count_parameters()
-    print(f"FashionNet parameter count: {params:,}")
-    for i, o in enumerate(outs):
-        print(f"  Scale {i+1} output shape: {tuple(o.shape)}")
+    dummy = torch.zeros(1, 3, 640, 640)
 
-    print("\n--- TinyFashionNet ---")
+    for scale in ("s", "m", "l"):
+        model = FashionNet(scale=scale)
+        outs  = model(dummy)
+        print(f"FashionNet-{scale}: {model.count_parameters():,} params")
+        for i, o in enumerate(outs):
+            print(f"  Scale {i+1} output shape: {tuple(o.shape)}")
+        print()
+
+    print("--- TinyFashionNet ---")
     tiny   = TinyFashionNet()
     outs_t = tiny(dummy)
     print(f"TinyFashionNet parameter count: {tiny.count_parameters():,}")
