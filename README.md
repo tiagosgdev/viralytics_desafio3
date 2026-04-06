@@ -69,6 +69,8 @@ fashion-detector/
 
 ## Quick Start
 
+- `.\scripts\start_full_app.ps1`
+
 ```bash
 # 1. Install dependencies
 pip install -r requirements.txt

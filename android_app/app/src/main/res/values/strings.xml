@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Viralytics Mobile</string>
+    <string name="server_url_hint">http://192.168.1.100:8000</string>
+    <string name="capture_outfit">Capture Outfit</string>
+    <string name="send_refinement">Send Refinement</string>
+    <string name="replace_vision">Replace vision result</string>
+    <string name="status_idle">Status: Ready</string>
+</resources>

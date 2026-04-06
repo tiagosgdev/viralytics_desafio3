@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Viralytics Mobile"
+            android:textColor="@color/brand_accent"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Point this app to your PC server, capture an outfit, then refine the results with chat."
+            android:textColor="@color/brand_text"
+            android:textSize="14sp" />
+
+        <EditText
+            android:id="@+id/serverUrlInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/brand_accent"
+            android:hint="@string/server_url_hint"
+            android:inputType="textUri"
+            android:textColor="@color/brand_text"
+            android:textColorHint="#9AA4AE" />
+
+        <Button
+            android:id="@+id/captureButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/capture_outfit" />
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/status_idle"
+            android:textColor="@color/brand_text" />
+
+        <ImageView
+            android:id="@+id/resultImage"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:layout_marginTop="12dp"
+            android:adjustViewBounds="true"
+            android:background="@color/brand_surface"
+            android:contentDescription="Annotated scan result"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/detectionsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Detections will appear here."
+            android:textColor="@color/brand_text" />
+
+        <TextView
+            android:id="@+id/recommendationsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Recommendations will appear here."
+            android:textColor="@color/brand_text" />
+
+        <Switch
+            android:id="@+id/replaceVisionSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/replace_vision"
+            android:textColor="@color/brand_text" />
+
+        <EditText
+            android:id="@+id/chatInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="@color/brand_accent"
+            android:hint="Ask for something more formal, black, less floral..."
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:textColor="@color/brand_text"
+            android:textColorHint="#9AA4AE" />
+
+        <Button
+            android:id="@+id/sendChatButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/send_refinement" />
+
+        <TextView
+            android:id="@+id/chatReplyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:paddingBottom="24dp"
+            android:text="Assistant replies will appear here."
+            android:textColor="@color/brand_text" />
+
+    </LinearLayout>
+</ScrollView>

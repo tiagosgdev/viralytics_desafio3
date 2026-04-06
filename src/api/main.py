@@ -198,11 +198,8 @@ async def get_session(session_id: str):
     )
 
 
-@app.post("/api/detect/image", response_model=DetectionResponse)
-async def detect_image(file: UploadFile = File(...)):
-    """
-    Accepts an uploaded image, runs detection, returns detections + recommendations.
-    """
+async def _detect_image_impl(file: UploadFile) -> DetectionResponse:
+    """Shared implementation for image/mobile scan uploads."""
     contents = await file.read()
     arr   = np.frombuffer(contents, np.uint8)
     frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
@@ -300,6 +297,20 @@ async def search_conversation(payload: ConversationRequest):
         )
 
     return result
+@app.post("/api/detect/image", response_model=DetectionResponse)
+async def detect_image(file: UploadFile = File(...)):
+    """
+    Accepts an uploaded image, runs detection, returns detections + recommendations.
+    """
+    return await _detect_image_impl(file)
+
+
+@app.post("/api/mobile/scan", response_model=DetectionResponse)
+async def mobile_scan(file: UploadFile = File(...)):
+    """
+    Mobile-friendly alias for image scan uploads from native clients.
+    """
+    return await _detect_image_impl(file)
 
 
 
