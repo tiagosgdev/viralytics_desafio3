@@ -109,18 +109,7 @@ fashionnet_balanced_v1 outperforms the original by **0.2750 mAP@50** across all 
 
 ## Considerations for v2
 
-### Option A — Train for 100 epochs (recommended first step)
-Same config, double the epochs. The 20→50 epoch jump was large; 50→100 may push mAP significantly further before any data changes are needed.
-
-```bash
-python scripts/train_custom.py \
-  --data data/balanced_dataset \
-  --multi_cell --augment medium \
-  --batch 32 --device cuda --epochs 100 \
-  --output models/weights/fashionnet_balanced_v2
-```
-
-### Option B — Merge similar classes
+### Option A — Merge similar classes
 Reduces problem difficulty and increases examples per class. Proposed merges:
 
 | New class | Merged from |
@@ -135,7 +124,7 @@ Reduces problem difficulty and increases examples per class. Proposed merges:
 
 Reduces from 11 → 7 classes. Requires rebuilding labels and dataset.yaml.
 
-### Option C — Add images to weakest classes
+### Option B — Add images to weakest classes
 Only useful if classes are visually distinct but underrepresented. Less likely to help for short/long sleeve top confusion since the model already has 52K images to learn from.
 
 ---
