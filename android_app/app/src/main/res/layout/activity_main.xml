@@ -1,118 +1,285 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/brand_bg">
+    android:background="@color/brand_bg"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Viralytics Mobile"
             android:textColor="@color/brand_accent"
-            android:textSize="26sp"
+            android:textSize="30sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="Point this app to your PC server, capture an outfit, then refine the results with chat."
-            android:textColor="@color/brand_text"
-            android:textSize="14sp" />
+            android:text="@string/tagline"
+            android:textColor="@color/brand_muted"
+            android:textSize="15sp" />
 
-        <EditText
-            android:id="@+id/serverUrlInput"
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            app:cardBackgroundColor="@color/brand_surface"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/brand_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/connection_title"
+                    android:textColor="@color/brand_text"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/connection_help"
+                    android:textColor="@color/brand_muted"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    app:boxBackgroundColor="@color/brand_bg"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxStrokeColor="@color/brand_border"
+                    app:hintTextColor="@color/brand_muted">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/serverUrlInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/server_url_hint"
+                        android:inputType="textUri"
+                        android:textColor="@color/brand_text"
+                        android:textColorHint="@color/brand_muted" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/statusText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/status_idle"
+                    android:textColor="@color/brand_text"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/sessionText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/session_waiting"
+                    android:textColor="@color/brand_muted" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:backgroundTint="@color/brand_accent"
-            android:hint="@string/server_url_hint"
-            android:inputType="textUri"
-            android:textColor="@color/brand_text"
-            android:textColorHint="#9AA4AE" />
+            app:cardBackgroundColor="@color/brand_surface"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/brand_border"
+            app:strokeWidth="1dp">
 
-        <Button
-            android:id="@+id/captureButton"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/scan_title"
+                    android:textColor="@color/brand_text"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/scan_help"
+                    android:textColor="@color/brand_muted"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/captureButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:minHeight="56dp"
+                    android:text="@string/capture_outfit"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/brand_accent"
+                    app:cornerRadius="16dp" />
+
+                <ImageView
+                    android:id="@+id/resultImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="260dp"
+                    android:layout_marginTop="14dp"
+                    android:adjustViewBounds="true"
+                    android:background="@color/brand_bg"
+                    android:contentDescription="Annotated scan result"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/capture_outfit" />
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/brand_surface"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/brand_border"
+            app:strokeWidth="1dp">
 
-        <TextView
-            android:id="@+id/statusText"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/results_title"
+                    android:textColor="@color/brand_text"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/detectionsText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Detections will appear here."
+                    android:textColor="@color/brand_text"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/recommendationsText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="Recommendations will appear here."
+                    android:textColor="@color/brand_text"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/status_idle"
-            android:textColor="@color/brand_text" />
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="@color/brand_surface"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/brand_border"
+            app:strokeWidth="1dp">
 
-        <ImageView
-            android:id="@+id/resultImage"
-            android:layout_width="match_parent"
-            android:layout_height="240dp"
-            android:layout_marginTop="12dp"
-            android:adjustViewBounds="true"
-            android:background="@color/brand_surface"
-            android:contentDescription="Annotated scan result"
-            android:scaleType="fitCenter" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
 
-        <TextView
-            android:id="@+id/detectionsText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Detections will appear here."
-            android:textColor="@color/brand_text" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/refine_title"
+                    android:textColor="@color/brand_text"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/recommendationsText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Recommendations will appear here."
-            android:textColor="@color/brand_text" />
+                <Switch
+                    android:id="@+id/replaceVisionSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/replace_vision"
+                    android:textColor="@color/brand_text" />
 
-        <Switch
-            android:id="@+id/replaceVisionSwitch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/replace_vision"
-            android:textColor="@color/brand_text" />
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:boxBackgroundColor="@color/brand_bg"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxStrokeColor="@color/brand_border"
+                    app:hintTextColor="@color/brand_muted">
 
-        <EditText
-            android:id="@+id/chatInput"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="@color/brand_accent"
-            android:hint="Ask for something more formal, black, less floral..."
-            android:inputType="textMultiLine"
-            android:minLines="3"
-            android:textColor="@color/brand_text"
-            android:textColorHint="#9AA4AE" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/chatInput"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Ask for something more formal, black, less floral..."
+                        android:inputType="textMultiLine"
+                        android:minLines="4"
+                        android:textColor="@color/brand_text"
+                        android:textColorHint="@color/brand_muted" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-        <Button
-            android:id="@+id/sendChatButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/send_refinement" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/sendChatButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:minHeight="56dp"
+                    android:text="@string/send_refinement"
+                    android:textColor="@color/black"
+                    app:backgroundTint="@color/brand_accent"
+                    app:cornerRadius="16dp" />
 
-        <TextView
-            android:id="@+id/chatReplyText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:paddingBottom="24dp"
-            android:text="Assistant replies will appear here."
-            android:textColor="@color/brand_text" />
+                <TextView
+                    android:id="@+id/chatReplyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:text="Assistant replies will appear here."
+                    android:textColor="@color/brand_text"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 </ScrollView>

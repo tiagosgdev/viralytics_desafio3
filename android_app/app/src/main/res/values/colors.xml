@@ -6,4 +6,6 @@
     <color name="brand_surface">#181B20</color>
     <color name="brand_text">#F4F6F8</color>
     <color name="brand_accent">#D2F24C</color>
+    <color name="brand_muted">#A3ADB8</color>
+    <color name="brand_border">#2B313A</color>
 </resources>

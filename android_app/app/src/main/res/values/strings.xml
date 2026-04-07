@@ -6,4 +6,12 @@
     <string name="send_refinement">Send Refinement</string>
     <string name="replace_vision">Replace vision result</string>
     <string name="status_idle">Status: Ready</string>
+    <string name="tagline">Scan with the tablet camera, then refine results with search-aware chat.</string>
+    <string name="connection_title">Connection</string>
+    <string name="connection_help">Enter the PC server URL reachable on your local network.</string>
+    <string name="scan_title">Outfit Scan</string>
+    <string name="scan_help">Take a photo on the tablet and send it to the PC for detection.</string>
+    <string name="results_title">Results</string>
+    <string name="refine_title">Refine Search</string>
+    <string name="session_waiting">Session: waiting for scan</string>
 </resources>

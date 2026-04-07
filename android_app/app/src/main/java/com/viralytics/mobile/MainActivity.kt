@@ -20,7 +20,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,6 +53,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.serverUrlInput.setText(loadServerUrl())
         setStatus("Ready.")
+        updateSessionLabel()
 
         binding.captureButton.setOnClickListener {
             saveServerUrl(binding.serverUrlInput.text.toString())
@@ -109,6 +109,7 @@ class MainActivity : AppCompatActivity() {
                     updateAnnotatedImage(json.optString("annotated_frame"))
 
                     runOnUiThread {
+                        updateSessionLabel("Vision-led")
                         binding.chatReplyText.text = "Scan complete. You can now refine the search in chat."
                         setStatus("Scan complete.")
                     }
@@ -163,8 +164,11 @@ class MainActivity : AppCompatActivity() {
                     updateRecommendations(json.optJSONArray("results"))
 
                     runOnUiThread {
+                        val mode = if (binding.replaceVisionSwitch.isChecked) "Search-led override" else "Vision + search"
+                        updateSessionLabel(mode)
                         binding.chatReplyText.text = json.optString("reply", "No reply returned.")
                         setStatus("Refinement complete.")
+                        binding.chatInput.text?.clear()
                     }
                 }
             } catch (exc: Exception) {
@@ -180,7 +184,7 @@ class MainActivity : AppCompatActivity() {
         detectedCategories.clear()
         if (detections == null || detections.length() == 0) {
             runOnUiThread {
-                binding.detectionsText.text = "No detections returned."
+                binding.detectionsText.text = "No clothing detections came back from the server yet."
             }
             return
         }
@@ -195,14 +199,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         runOnUiThread {
-            binding.detectionsText.text = "Detections:\n" + lines.joinToString("\n")
+            binding.detectionsText.text = "Detected pieces\n" + lines.joinToString("\n")
         }
     }
 
     private fun updateRecommendations(items: JSONArray?) {
         if (items == null || items.length() == 0) {
             runOnUiThread {
-                binding.recommendationsText.text = "No recommendations returned."
+                binding.recommendationsText.text = "No recommendations yet. Run a scan or refine with chat."
             }
             return
         }
@@ -214,11 +218,22 @@ class MainActivity : AppCompatActivity() {
             val category = item.optString("category", "item")
             val price = item.optString("price", "N/A")
             val reason = item.optString("reason", "")
-            lines += "- $name | ${category.replace("_", " ")} | $price\n  $reason"
+            val detailLine = buildString {
+                append(name)
+                append("\n")
+                append(category.replace("_", " ").replaceFirstChar { it.uppercase() })
+                append(" | ")
+                append(price)
+                if (reason.isNotBlank()) {
+                    append("\n")
+                    append(reason)
+                }
+            }
+            lines += detailLine
         }
 
         runOnUiThread {
-            binding.recommendationsText.text = "Results:\n" + lines.joinToString("\n\n")
+            binding.recommendationsText.text = "Recommended next steps\n" + lines.joinToString("\n\n")
         }
     }
 
@@ -250,6 +265,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun setStatus(message: String) {
         binding.statusText.text = "Status: $message"
+    }
+
+    private fun updateSessionLabel(mode: String? = null) {
+        val sessionId = currentSessionId
+        binding.sessionText.text = if (sessionId.isNullOrBlank()) {
+            "Session: waiting for scan"
+        } else {
+            val modeSuffix = if (mode.isNullOrBlank()) "" else " | $mode"
+            "Session: ${sessionId.take(8)}$modeSuffix"
+        }
     }
 
     private fun toast(message: String) {
