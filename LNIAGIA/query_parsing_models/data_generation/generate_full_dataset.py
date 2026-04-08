@@ -15,7 +15,7 @@ from llm_validator import LLMValidator
 
 
 # Output configuration
-OUTPUT_FOLDER = "LNIAGIA/query_parsing_models/data_generation/full_outputs/10000(5000-5000)"
+OUTPUT_FOLDER = "LNIAGIA/query_parsing_models/data_generation/full_outputs/8000(4000-4000)"
 TRAIN_OUTPUT_NAME = "train.json"
 VAL_OUTPUT_NAME = "val.json"
 TEST_OUTPUT_NAME = "test.json"
@@ -29,8 +29,8 @@ LLM_RAW_OUTPUT_NAME = "llm_raw.json"
 LLM_VALIDATED_OUTPUT_NAME = "llm_validated.json"
 
 # Generation sizes
-BASIC_GENERATOR_QUERIES = 5000
-LLM_GENERATOR_QUERIES = 5000
+BASIC_GENERATOR_QUERIES = 4000
+LLM_GENERATOR_QUERIES = 4000
 
 # Template split (must sum to 1.0)
 BASIC_SIMPLE_RATIO = 0.5
