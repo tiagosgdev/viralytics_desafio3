@@ -43,8 +43,7 @@ fashion-detector/
 ├── frontend/
 │   ├── index.html                  # Main dashboard UI
 │   └── static/
-│       ├── css/style.css
-│       └── js/app.js
+│       └── css/style.css
 │
 ├── scripts/
 │   ├── sample_dataset.py           # Stratified dataset sampler

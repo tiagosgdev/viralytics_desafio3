@@ -195,6 +195,26 @@ class UnifiedSearchService:
             "import_error": str(_IMPORT_ERROR) if _IMPORT_ERROR else None,
         }
 
+    def warmup(self) -> dict:
+        info = self.availability()
+        embedding_loaded = self._get_embedding_model() is not None
+        parser_warmed = False
+        parser_warning = None
+
+        if parse_query is not None:
+            try:
+                parse_query("show me neutral smart casual options", verbose=False)
+                parser_warmed = True
+            except Exception as exc:  # pragma: no cover - external dependency
+                parser_warning = str(exc)
+
+        return {
+            **info,
+            "embedding_loaded": embedding_loaded,
+            "parser_warmed": parser_warmed,
+            "parser_warning": parser_warning,
+        }
+
     def create_session(
         self,
         detected_categories: List[str],

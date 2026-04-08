@@ -1,210 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FashionSense — Outfit Scanner</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FashionSense - Outfit Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" as="style" onload="this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"></noscript>
-<!-- Font Awesome 6 for icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVJkEZSMUkrQ6usKnu8D8wyCXiK3x4AEVoRxoktEGQdeL9QcPqQ94MCWoMvsSeZSAo司" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<!-- supplemental stylesheet for extended components -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
 <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
   <a href="#cam" class="skip-link">Skip to camera</a>
-<header>
-  <span class="logo">FashionSense <span>OUTFIT SCANNER</span></span>
-  <div class="hdr-right">
-    <div class="view-toggle">
-      <button class="vtab active" id="tab-cam" onclick="switchView('camera')"><i class="fas fa-camera"></i> Camera</button>
-      <button class="vtab" id="tab-chat" onclick="switchView('chat')"><i class="fas fa-message"></i> Chat</button>
-    </div>
-    <div class="pill"><div class="dot" id="dot"></div><span id="status">Ready</span></div>
-  </div>
-</header>
-<main>
-  <div class="cam" id="cam">
-    <div class="brk tl"></div><div class="brk tr"></div>
-    <div class="brk bl"></div><div class="brk br"></div>
-    <img id="feed" alt="Camera"/>
-    <!-- Flash overlay -->
-    <div id="flash"></div>
-    <!-- Frozen frame label -->
-    <div id="frozen-label"><i class="fas fa-camera"></i> OUTFIT CAPTURED</div>
-    <div class="idle" id="idle">
-      <div class="idle-icon"><i class="fas fa-shirt"></i></div>
-      <div class="idle-title">READY TO SCAN</div>
-      <div class="idle-sub">Press "Start Scan" to detect your outfit</div>
-    </div>
-  </div>
 
-  <!-- ── Chat View ── -->
-  <div class="chat-view" id="chat-view">
-    <div class="chat-messages" id="chat-messages">
-      <div class="chat-welcome">
-        <div class="chat-welcome-icon"><i class="fas fa-message"></i></div>
-        <div class="chat-welcome-title">FashionSense Assistant</div>
-        <div class="chat-welcome-sub">Ask me anything about fashion, outfit recommendations, or styling tips.</div>
+  <header>
+    <span class="logo">FashionSense <span>OUTFIT SCANNER</span></span>
+    <div class="hdr-right">
+      <div class="view-toggle">
+        <button class="vtab active" id="tab-cam" onclick="switchView('camera')"><i class="fas fa-camera"></i> Camera</button>
+        <button class="vtab" id="tab-chat" onclick="switchView('chat')"><i class="fas fa-message"></i> Chat</button>
+      </div>
+      <div class="pill"><div class="dot" id="dot"></div><span id="status">Ready</span></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="cam" id="cam">
+      <div class="brk tl"></div>
+      <div class="brk tr"></div>
+      <div class="brk bl"></div>
+      <div class="brk br"></div>
+      <img id="feed" alt="Camera feed">
+      <div id="flash"></div>
+      <div id="frozen-label"><i class="fas fa-camera"></i> OUTFIT CAPTURED</div>
+      <div class="idle" id="idle">
+        <div class="idle-icon"><i class="fas fa-shirt"></i></div>
+        <div class="idle-title">READY TO SCAN</div>
+        <div class="idle-sub">Press "Start Scan" to detect your outfit</div>
       </div>
     </div>
-    <div class="chat-input-bar">
-      <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Voice input"><i class="fas fa-microphone"></i></button>
-      <select class="mic-select" id="mic-select" title="Choose microphone"></select>
-      <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." autocomplete="off"
-             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"/>
-      <button class="send-btn" id="send-btn" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
-    </div>
-  </div>
 
-  <aside class="panel">
-    <div class="psec">
-      <div class="plbl">Scan Controls</div>
-      <div class="steps"><div class="step" id="s1"></div><div class="step" id="s2"></div><div class="step" id="s3"></div></div>
-      <div class="phase-lbl" id="plbl">Press start to begin</div>
-      <button id="btn-start" style="font-family: 'DM Mono', monospace;" onclick="startScan()"><i class="fas fa-play"></i> Start Scan</button>
-      <div class="actions" id="actions">
-        <button class="abtn abtn-retry" onclick="sendCmd('retry')"><i class="fas fa-rotate-right"></i> Retry Scan</button>
-        <button class="abtn abtn-more"  onclick="sendCmd('more_recs')"><i class="fas fa-sparkles"></i> More Suggestions</button>
-      </div>
-
-      <!-- Confidence threshold slider -->
-      <div class="conf-row">
-        <label>MIN CONF</label>
-        <input type="range" id="conf-slider" min="10" max="95" value="60"
-               oninput="updateConf(this.value)"/>
-        <span class="conf-val" id="conf-val">60%</span>
-      </div>
-    </div>
-    <div class="psec">
-      <div class="plbl">Detected Clothing</div>
-      <div class="tags" id="tags"><span class="notag">Nothing detected yet</span></div>
-    </div>
-    <div class="recs-hdr"><div class="plbl">Store Recommendations</div></div>
-    <div class="recs-list" id="recs">
-      <!-- example recommendation card (will be replaced by real results) -->
-      <div class="card">
-        <picture>
-          <source type="image/avif" data-srcset="static/images/example-product.avif">
-          <source type="image/webp" data-srcset="static/images/example-product.webp">
-          <img data-src="static/images/example-product.jpg" alt="Example product" class="rec-img" />
-        </picture>
-        <div class="cinfo">
-          <div class="cname">Sample Linen Shirt</div>
-          <div class="ccat">short sleeve top</div>
-          <div class="cwhy">Editorial match • light beige</div>
-          <div class="cprice">R$ 349</div>
+    <div class="chat-view" id="chat-view">
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-welcome">
+          <div class="chat-welcome-icon"><i class="fas fa-message"></i></div>
+          <div class="chat-welcome-title">FashionSense Assistant</div>
+          <div class="chat-welcome-sub">Ask for different colors, styles, formality, or tell it to ignore the scan entirely.</div>
         </div>
       </div>
+      <div class="chat-input-bar">
+        <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Voice input"><i class="fas fa-microphone"></i></button>
+        <select class="mic-select" id="mic-select" title="Choose microphone"></select>
+        <input
+          type="text"
+          class="chat-input"
+          id="chat-input"
+          placeholder="Type a message..."
+          autocomplete="off"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"
+        >
+        <button class="send-btn" id="send-btn" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+      </div>
     </div>
-  </aside>
-</main>
-  <!-- sticky CTA for mobile/quick access -->
-  <div class="sticky-cta" id="sticky-cta" aria-hidden="true">
-    <div class="label">Ready to scan?</div>
-    <button class="start" id="sticky-start">Start Scan</button>
-  </div>
-<script>
-const WS_URL='ws://'+location.host+'/ws/camera';
 
-// Helpers: lazy-load images (data-src/data-srcset) and sticky CTA behavior
-function initHelpers(){
+    <aside class="panel">
+      <div class="psec">
+        <div class="plbl">Scan Controls</div>
+        <div class="steps"><div class="step" id="s1"></div><div class="step" id="s2"></div><div class="step" id="s3"></div></div>
+        <div class="phase-lbl" id="plbl">Press start to begin</div>
+        <button id="btn-start" onclick="startScan()"><i class="fas fa-play"></i> Start Scan</button>
+        <div class="actions" id="actions">
+          <button class="abtn abtn-retry" onclick="sendCmd('retry')"><i class="fas fa-rotate-right"></i> Retry Scan</button>
+          <button class="abtn abtn-more" onclick="sendCmd('more_recs')"><i class="fas fa-sparkles"></i> More Suggestions</button>
+        </div>
+
+        <div class="conf-row">
+          <label for="conf-slider">MIN CONF</label>
+          <input type="range" id="conf-slider" min="10" max="95" value="60" oninput="updateConf(this.value)">
+          <span class="conf-val" id="conf-val">60%</span>
+        </div>
+      </div>
+
+      <div class="psec">
+        <div class="plbl">Detected Clothing</div>
+        <div class="tags" id="tags"><span class="notag">Nothing detected yet</span></div>
+      </div>
+
+      <div class="recs-hdr"><div class="plbl">Store Recommendations</div></div>
+      <div class="recs-list" id="recs">
+        <div class="card">
+          <picture>
+            <source type="image/avif" data-srcset="static/images/example-product.avif">
+            <source type="image/webp" data-srcset="static/images/example-product.webp">
+            <img data-src="static/images/example-product.jpg" alt="Example product" class="rec-img">
+          </picture>
+          <div class="cinfo">
+            <div class="cname">Sample Linen Shirt</div>
+            <div class="ccat">short sleeve top</div>
+            <div class="cwhy">Editorial match | light beige</div>
+            <div class="cprice">R$ 349</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+<script>
+const WS_URL = 'ws://' + location.host + '/ws/camera';
+
+function initHelpers() {
   const lazyTargets = document.querySelectorAll('img[data-src], source[data-srcset]');
-  if('IntersectionObserver' in window){
-    const io = new IntersectionObserver((entries, obs)=>{
-      entries.forEach(en=>{
-        if(!en.isIntersecting) return;
-        const el = en.target;
-        if(el.dataset.src) { el.src = el.dataset.src; el.removeAttribute('data-src'); }
-        if(el.dataset.srcset) { el.srcset = el.dataset.srcset; el.removeAttribute('data-srcset'); }
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        if (el.dataset.src) {
+          el.src = el.dataset.src;
+          el.removeAttribute('data-src');
+        }
+        if (el.dataset.srcset) {
+          el.srcset = el.dataset.srcset;
+          el.removeAttribute('data-srcset');
+        }
         obs.unobserve(el);
       });
     }, { rootMargin: '200px 0px' });
-    lazyTargets.forEach(t => io.observe(t));
+    lazyTargets.forEach((target) => io.observe(target));
   } else {
-    lazyTargets.forEach(el=>{ if(el.dataset.src) el.src = el.dataset.src; if(el.dataset.srcset) el.srcset = el.dataset.srcset; });
-  }
-
-  const sticky = document.getElementById('sticky-cta');
-  const stickyBtn = document.getElementById('sticky-start');
-  if(stickyBtn) stickyBtn.addEventListener('click', ()=> startScan());
-
-  if(sticky){
-    let last = window.scrollY;
-    const show = ()=> sticky.classList.add('show');
-    const hide = ()=> sticky.classList.remove('show');
-    window.addEventListener('scroll', ()=>{
-      const cur = window.scrollY;
-      if(cur < last || (window.innerHeight + cur) > (document.body.offsetHeight - 300)) show(); else hide();
-      last = cur;
-    }, { passive: true });
-    if(window.innerWidth < 820) setTimeout(show, 700);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', initHelpers);
-
-// reveal-on-scroll initializer
-function initReveal(){
-  const els = document.querySelectorAll('.reveal');
-  if(!els.length) return;
-  if('IntersectionObserver' in window){
-    const o = new IntersectionObserver((entries, obs)=>{
-      entries.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add('visible'); obs.unobserve(en.target); } });
-    }, { threshold: 0.12 });
-    els.forEach(e => o.observe(e));
-  } else els.forEach(e => e.classList.add('visible'));
-}
-
-// subtle 3D tilt on card hover (lightweight)
-function initCardTilt(){
-  const cards = document.querySelectorAll('.card');
-  cards.forEach(card => {
-    card.addEventListener('pointermove', (e)=>{
-      const r = card.getBoundingClientRect();
-      const cx = r.left + r.width/2; const cy = r.top + r.height/2;
-      const dx = (e.clientX - cx) / r.width; const dy = (e.clientY - cy) / r.height;
-      card.style.transform = `perspective(900px) translateZ(0) rotateX(${(-dy*6).toFixed(2)}deg) rotateY(${(dx*6).toFixed(2)}deg) translateY(-6px)`;
+    lazyTargets.forEach((el) => {
+      if (el.dataset.src) el.src = el.dataset.src;
+      if (el.dataset.srcset) el.srcset = el.dataset.srcset;
     });
-    card.addEventListener('pointerleave', ()=>{ card.style.transform = ''; });
+  }
+
+  warmupChat();
+  connectCamera();
+}
+
+function initReveal() {
+  const els = document.querySelectorAll('.reveal');
+  if (!els.length) return;
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    els.forEach((el) => observer.observe(el));
+  } else {
+    els.forEach((el) => el.classList.add('visible'));
+  }
+}
+
+function initCardTilt() {
+  const cards = document.querySelectorAll('.card');
+  cards.forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
+      const rect = card.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (event.clientX - cx) / rect.width;
+      const dy = (event.clientY - cy) / rect.height;
+      card.style.transform =
+        `perspective(900px) translateZ(0) rotateX(${(-dy * 6).toFixed(2)}deg) rotateY(${(dx * 6).toFixed(2)}deg) translateY(-6px)`;
+    });
+    card.addEventListener('pointerleave', () => {
+      card.style.transform = '';
+    });
   });
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{ initReveal(); initCardTilt(); });
-const COLORS={short_sleeve_top:'#ff6464',long_sleeve_top:'#ffa03c',short_sleeve_outwear:'#50c878',long_sleeve_outwear:'#28b4c8',vest:'#b450ff',sling:'#ff50b4',shorts:'#64b4ff',trousers:'#3c50c8',skirt:'#dcb428',short_sleeve_dress:'#ff7850',long_sleeve_dress:'#8c3cc8',vest_dress:'#c86496',sling_dress:'#64c8b4'};
-const EMOJI={short_sleeve_top:'<i class="fas fa-shirt"></i>',long_sleeve_top:'<i class="fas fa-shirt"></i>',short_sleeve_outwear:'<i class="fas fa-vest"></i>',long_sleeve_outwear:'<i class="fas fa-vest"></i>',vest:'<i class="fas fa-vest"></i>',sling:'<i class="fas fa-dress"></i>',shorts:'<i class="fas fa-person-hiking"></i>',trousers:'<i class="fas fa-person"></i>',skirt:'<i class="fas fa-dress"></i>',short_sleeve_dress:'<i class="fas fa-dress"></i>',long_sleeve_dress:'<i class="fas fa-dress"></i>',vest_dress:'<i class="fas fa-dress"></i>',sling_dress:'<i class="fas fa-dress"></i>'};
+document.addEventListener('DOMContentLoaded', () => {
+  initHelpers();
+  initReveal();
+  initCardTilt();
+});
+
+const COLORS = {
+  short_sleeve_top: '#ff6464',
+  long_sleeve_top: '#ffa03c',
+  short_sleeve_outwear: '#50c878',
+  long_sleeve_outwear: '#28b4c8',
+  vest: '#b450ff',
+  sling: '#ff50b4',
+  shorts: '#64b4ff',
+  trousers: '#3c50c8',
+  skirt: '#dcb428',
+  short_sleeve_dress: '#ff7850',
+  long_sleeve_dress: '#8c3cc8',
+  vest_dress: '#c86496',
+  sling_dress: '#64c8b4'
+};
+
+const EMOJI = {
+  short_sleeve_top: '<i class="fas fa-shirt"></i>',
+  long_sleeve_top: '<i class="fas fa-shirt"></i>',
+  short_sleeve_outwear: '<i class="fas fa-vest"></i>',
+  long_sleeve_outwear: '<i class="fas fa-vest"></i>',
+  vest: '<i class="fas fa-vest"></i>',
+  sling: '<i class="fas fa-dress"></i>',
+  shorts: '<i class="fas fa-person-hiking"></i>',
+  trousers: '<i class="fas fa-person"></i>',
+  skirt: '<i class="fas fa-dress"></i>',
+  short_sleeve_dress: '<i class="fas fa-dress"></i>',
+  long_sleeve_dress: '<i class="fas fa-dress"></i>',
+  vest_dress: '<i class="fas fa-dress"></i>',
+  sling_dress: '<i class="fas fa-dress"></i>'
+};
 
 let ws = null;
-let frozen = false;   // true while showing the captured still frame
+let frozen = false;
 let currentSessionId = null;
 let currentDetectedCategories = [];
 let currentRecommendations = [];
+let chatHistory = [];
+let cameraReady = false;
+let pendingStart = false;
+let cameraSuspended = false;
 
-const feed       = document.getElementById('feed');
-const idle       = document.getElementById('idle');
-const cam        = document.getElementById('cam');
-const dot        = document.getElementById('dot');
-const statusEl   = document.getElementById('status');
-const s1         = document.getElementById('s1');
-const s2         = document.getElementById('s2');
-const s3         = document.getElementById('s3');
-const plbl       = document.getElementById('plbl');
-const btnStart   = document.getElementById('btn-start');
-const actions    = document.getElementById('actions');
-const tagsEl     = document.getElementById('tags');
-const recsEl     = document.getElementById('recs');
-const flashEl    = document.getElementById('flash');
-const frozenLbl  = document.getElementById('frozen-label');
+const feed = document.getElementById('feed');
+const idle = document.getElementById('idle');
+const cam = document.getElementById('cam');
+const dot = document.getElementById('dot');
+const statusEl = document.getElementById('status');
+const s1 = document.getElementById('s1');
+const s2 = document.getElementById('s2');
+const s3 = document.getElementById('s3');
+const plbl = document.getElementById('plbl');
+const btnStart = document.getElementById('btn-start');
+const actions = document.getElementById('actions');
+const tagsEl = document.getElementById('tags');
+const recsEl = document.getElementById('recs');
+const flashEl = document.getElementById('flash');
+const frozenLbl = document.getElementById('frozen-label');
+const camEl = document.getElementById('cam');
+const chatView = document.getElementById('chat-view');
+const tabCam = document.getElementById('tab-cam');
+const tabChat = document.getElementById('tab-chat');
+const chatMsgs = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const micBtn = document.getElementById('mic-btn');
+const micSelect = document.getElementById('mic-select');
+
+let currentView = 'camera';
+let mediaRecorder = null;
+let audioChunks = [];
+let isListening = false;
+let micDevicesLoaded = false;
+let currentAudioMimeType = '';
+const SILENCE_TIMEOUT_MS = 2500;
+const SPEECH_START_THRESHOLD = 0.03;
+const SPEECH_CONTINUE_THRESHOLD = 0.018;
 
 function triggerFlash() {
-  // Remove class first so re-triggering works (e.g. on retry)
   flashEl.classList.remove('go');
-  // Force reflow so the animation restarts cleanly
   void flashEl.offsetWidth;
   flashEl.classList.add('go');
-  // Show frozen label alongside flash
   frozenLbl.classList.add('show');
 }
 
@@ -212,77 +268,171 @@ function hideFrozenLabel() {
   frozenLbl.classList.remove('show');
 }
 
+function connectCamera() {
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+    return;
+  }
+
+  cameraSuspended = false;
+  setSt('scanning', 'Connecting camera...');
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    setSt('scanning', 'Camera handshake...');
+  };
+
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+
+    if (msg.type === 'ready') {
+      cameraReady = true;
+      if (!pendingStart && !actions.classList.contains('show')) {
+        setSt('idle', 'Camera ready');
+      }
+      if (pendingStart) {
+        ws.send(JSON.stringify({ cmd: 'start' }));
+        pendingStart = false;
+        beginCaptureUi();
+      }
+      return;
+    }
+
+    handleCameraMessage(msg);
+  };
+
+  ws.onerror = () => {
+    cameraReady = false;
+    if (cameraSuspended) {
+      return;
+    }
+    setSt('error', 'Camera failed');
+    resetIdle();
+  };
+
+  ws.onclose = () => {
+    cameraReady = false;
+    ws = null;
+    if (cameraSuspended) {
+      return;
+    }
+    if (!actions.classList.contains('show')) {
+      setSt('error', 'Camera offline');
+      resetIdle();
+    }
+  };
+}
+
+function disconnectCamera() {
+  cameraSuspended = true;
+  cameraReady = false;
+  pendingStart = false;
+  frozen = false;
+  hideFrozenLabel();
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+    ws.close();
+  } else {
+    ws = null;
+  }
+  feed.removeAttribute('src');
+  feed.style.display = 'none';
+  idle.classList.remove('hidden');
+  cam.classList.remove('active');
+  btnStart.disabled = false;
+  actions.classList.remove('show');
+  s1.className = 'step';
+  s2.className = 'step';
+  s3.className = 'step';
+  plbl.textContent = 'Press start to begin';
+  setSt('idle', 'Camera paused');
+}
+
+function beginCaptureUi() {
+  feed.style.display = 'block';
+  idle.classList.add('hidden');
+  cam.classList.add('active');
+  btnStart.disabled = true;
+  actions.classList.remove('show');
+  setSteps('capturing');
+  setSt('scanning', 'Starting scan...');
+}
+
+function handleCameraMessage(msg) {
+  if (msg.type === 'frame') {
+    if (msg.phase === 'preview') {
+      if (!frozen) {
+        feed.style.display = 'block';
+        feed.src = 'data:image/jpeg;base64,' + msg.frame;
+        idle.classList.add('hidden');
+        cam.classList.remove('active');
+      }
+      return;
+    }
+
+    if (msg.phase === 'capturing') {
+      if (msg.flash) {
+        feed.src = 'data:image/jpeg;base64,' + msg.frame;
+        frozen = true;
+        triggerFlash();
+        setSt('scanning', 'Captured!');
+        setSteps('analysing');
+      } else if (!frozen) {
+        feed.src = 'data:image/jpeg;base64,' + msg.frame;
+        setSt('scanning', 'Scanning... ' + msg.countdown + 's');
+        setSteps('capturing');
+      }
+    } else if (msg.phase === 'analysing') {
+      setSt('scanning', 'Analysing...');
+      setSteps('analysing');
+    }
+  } else if (msg.type === 'results') {
+    frozen = false;
+    hideFrozenLabel();
+    if (msg.annotated_frame) {
+      feed.style.display = 'block';
+      feed.src = 'data:image/jpeg;base64,' + msg.annotated_frame;
+    }
+    setSt('live', 'Done');
+    setSteps('results');
+    renderTags(msg.detections || []);
+    renderRecs(msg.recommendations || []);
+    currentDetectedCategories = msg.dominant || (msg.detections || []).map((d) => d.class_name);
+    currentRecommendations = msg.recommendations || [];
+    initializeSearchSession(currentDetectedCategories, currentRecommendations);
+    actions.classList.add('show');
+    plbl.textContent = 'Choose an action below';
+  } else if (msg.type === 'error') {
+    setSt('error', 'Error');
+    resetIdle();
+  }
+}
+
 function startScan() {
-  if (ws) { ws.close(); ws = null; }
   frozen = false;
   currentSessionId = null;
   currentDetectedCategories = [];
   currentRecommendations = [];
   chatHistory = [];
   hideFrozenLabel();
-
-  setSt('scanning', 'Connecting...');
-  ws = new WebSocket(WS_URL);
-
-  ws.onopen = () => {
-    setSt('live', 'Connected');
-    feed.style.display = 'block';
-    idle.classList.add('hidden');
-    cam.classList.add('active');
-    btnStart.disabled = true;
-    actions.classList.remove('show');
-    setSteps('capturing');
-  };
-
-  ws.onmessage = (e) => {
-    const m = JSON.parse(e.data);
-
-    if (m.type === 'frame') {
-      if (m.phase === 'capturing') {
-        if (m.flash) {
-          // This is the LAST frame before analysing — freeze it and flash
-          feed.src = 'data:image/jpeg;base64,' + m.frame;
-          frozen = true;
-          triggerFlash();
-          setSt('scanning', 'Captured!');
-          setSteps('analysing');
-        } else if (!frozen) {
-          // Normal live frame — only update if not frozen
-          feed.src = 'data:image/jpeg;base64,' + m.frame;
-          setSt('scanning', 'Scanning... ' + m.countdown + 's');
-          setSteps('capturing');
-        }
-      } else if (m.phase === 'analysing') {
-        // Keep the frozen frame visible during analysing — don't update feed.src
-        setSt('scanning', 'Analysing...');
-        setSteps('analysing');
-      }
-
-    } else if (m.type === 'results') {
-      frozen = false;
-      hideFrozenLabel();
-      setSt('live', 'Done');
-      setSteps('results');
-      renderTags(m.detections || []);
-      renderRecs(m.recommendations || []);
-      currentDetectedCategories = m.dominant || (m.detections || []).map(d => d.class_name);
-      currentRecommendations = m.recommendations || [];
-      initializeSearchSession(currentDetectedCategories, currentRecommendations);
-      actions.classList.add('show');
-      plbl.textContent = 'Choose an action below';
-
-    } else if (m.type === 'error') {
-      setSt('error', 'Error');
-      resetIdle();
-    }
-  };
-
-  ws.onerror = () => { setSt('error', 'Failed'); resetIdle(); };
-  ws.onclose = () => { if (!actions.classList.contains('show')) resetIdle(); };
+  pendingStart = true;
+  if (!ws || ws.readyState === WebSocket.CLOSED) {
+    connectCamera();
+    return;
+  }
+  if (cameraReady && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ cmd: 'start' }));
+    pendingStart = false;
+    beginCaptureUi();
+  } else {
+    setSt('scanning', 'Preparing camera...');
+  }
 }
 
 function sendCmd(cmd) {
-  if (!ws || ws.readyState !== 1) { startScan(); return; }
+  if (!ws || ws.readyState !== 1) {
+    startScan();
+    return;
+  }
+
   ws.send(JSON.stringify({ cmd }));
 
   if (cmd === 'retry') {
@@ -295,8 +445,7 @@ function sendCmd(cmd) {
     actions.classList.remove('show');
     tagsEl.innerHTML = '<span class="notag">Scanning...</span>';
     recsEl.innerHTML = '<div class="ph">Scanning your outfit...</div>';
-    setSteps('capturing');
-    setSt('scanning', 'Starting...');
+    beginCaptureUi();
   } else {
     recsEl.innerHTML = '<div class="ph">Finding new suggestions...</div>';
     setSt('live', 'Loading...');
@@ -304,97 +453,110 @@ function sendCmd(cmd) {
 }
 
 function renderTags(dets) {
-  if (!dets.length) { tagsEl.innerHTML = '<span class="notag">No clothing detected</span>'; return; }
+  if (!dets.length) {
+    tagsEl.innerHTML = '<span class="notag">No clothing detected</span>';
+    return;
+  }
+
   const seen = {};
-  dets.forEach(d => {
-    if (!seen[d.class_name] || seen[d.class_name].confidence < d.confidence) seen[d.class_name] = d;
+  dets.forEach((d) => {
+    if (!seen[d.class_name] || seen[d.class_name].confidence < d.confidence) {
+      seen[d.class_name] = d;
+    }
   });
-  tagsEl.innerHTML = Object.values(seen).map(d => {
+
+  tagsEl.innerHTML = Object.values(seen).map((d) => {
     const col = COLORS[d.class_name] || '#888';
     const lbl = d.class_name.replace(/_/g, ' ');
     const conf = Math.round(d.confidence * 100);
     return '<div class="tag"><div class="tdot" style="background:' + col + '"></div><span>' + lbl + '</span><span class="tconf">' + conf + '%</span></div>';
   }).join('');
-  // animate tags with a small stagger
+
   animateStagger('#tags', '.tag');
 }
 
 function renderRecs(recs) {
-  if (!recs.length) { recsEl.innerHTML = '<div class="ph">No matches - try retrying</div>'; return; }
-  recsEl.innerHTML = recs.map(r =>
-    '<div class="card"><div class="cthumb">' + (EMOJI[r.category] || '👔') + '</div>' +
+  if (!recs.length) {
+    recsEl.innerHTML = '<div class="ph">No matches - try retrying</div>';
+    return;
+  }
+
+  recsEl.innerHTML = recs.map((r) =>
+    '<div class="card"><div class="cthumb">' + (EMOJI[r.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
     '<div class="cinfo"><div class="cname">' + esc(r.name) + '</div>' +
     '<div class="ccat">' + (r.category || '').replace(/_/g, ' ') + '</div>' +
     '<div class="cwhy">' + esc(r.reason) + '</div>' +
     '<div class="cprice">' + esc(r.price) + '</div></div></div>'
   ).join('');
-  // animate recommendation cards
+
   animateStagger('#recs', '.card');
 }
 
-// small utility: add staggered animation delays to newly inserted children
-function animateStagger(containerSelector, childSelector, opts={delay:80, start:0}){
+function animateStagger(containerSelector, childSelector, opts = { delay: 80, start: 0 }) {
   const container = document.querySelector(containerSelector);
-  if(!container) return;
-  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!container) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
   const children = container.querySelectorAll(childSelector);
-  children.forEach((ch, i)=>{
-    ch.classList.remove('stagger');
-    ch.style.animationDelay = (opts.start + i * opts.delay) + 'ms';
-    // force reflow then add class to start animation
-    void ch.offsetWidth;
-    ch.classList.add('stagger');
+  children.forEach((child, index) => {
+    child.classList.remove('stagger');
+    child.style.animationDelay = (opts.start + index * opts.delay) + 'ms';
+    void child.offsetWidth;
+    child.classList.add('stagger');
   });
 }
 
-function setSteps(p) {
-  s1.className = s2.className = s3.className = 'step';
-  if (p === 'capturing') { s1.classList.add('active'); plbl.innerHTML = '<em>Scanning</em> your outfit...'; }
-  else if (p === 'analysing') { s1.classList.add('done'); s2.classList.add('active'); plbl.innerHTML = '<em>Analysing</em> detections...'; }
-  else if (p === 'results')   { s1.classList.add('done'); s2.classList.add('done'); s3.classList.add('done'); }
+function setSteps(phase) {
+  s1.className = 'step';
+  s2.className = 'step';
+  s3.className = 'step';
+
+  if (phase === 'capturing') {
+    s1.classList.add('active');
+    plbl.innerHTML = '<em>Scanning</em> your outfit...';
+  } else if (phase === 'analysing') {
+    s1.classList.add('done');
+    s2.classList.add('active');
+    plbl.innerHTML = '<em>Analysing</em> detections...';
+  } else if (phase === 'results') {
+    s1.classList.add('done');
+    s2.classList.add('done');
+    s3.classList.add('done');
+  }
 }
 
 function setSt(state, text) {
   dot.className = 'dot';
-  if (state === 'live')     dot.classList.add('live');
+  if (state === 'live') dot.classList.add('live');
   if (state === 'scanning') dot.classList.add('scanning');
-  if (state === 'error')    dot.classList.add('error');
+  if (state === 'error') dot.classList.add('error');
   statusEl.textContent = text;
 }
 
 function resetIdle() {
   frozen = false;
+  pendingStart = false;
   hideFrozenLabel();
-  feed.style.display = 'none';
-  idle.classList.remove('hidden');
+  feed.style.display = 'block';
+  idle.classList.add('hidden');
   cam.classList.remove('active');
   btnStart.disabled = false;
   actions.classList.remove('show');
-  s1.className = s2.className = s3.className = 'step';
+  s1.className = 'step';
+  s2.className = 'step';
+  s3.className = 'step';
   plbl.textContent = 'Press start to begin';
   setSt('idle', 'Ready');
 }
 
-function esc(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function esc(value) {
+  return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function updateConf(val) {
   document.getElementById('conf-val').textContent = val + '%';
-  // Push new threshold to the backend immediately
-  fetch('/api/conf/' + (val / 100), { method: 'POST' })
-    .catch(() => {});  // silently ignore if server not ready
+  fetch('/api/conf/' + (val / 100), { method: 'POST' }).catch(() => {});
 }
-
-/* ── View switching ── */
-const camEl      = document.getElementById('cam');
-const chatView   = document.getElementById('chat-view');
-const tabCam     = document.getElementById('tab-cam');
-const tabChat    = document.getElementById('tab-chat');
-const chatMsgs   = document.getElementById('chat-messages');
-const chatInput  = document.getElementById('chat-input');
-const micBtn     = document.getElementById('mic-btn');
-let currentView  = 'camera';
 
 function switchView(view) {
   currentView = view;
@@ -403,7 +565,9 @@ function switchView(view) {
     chatView.classList.remove('active');
     tabCam.classList.add('active');
     tabChat.classList.remove('active');
+    connectCamera();
   } else {
+    disconnectCamera();
     camEl.style.display = 'none';
     chatView.classList.add('active');
     tabCam.classList.remove('active');
@@ -412,11 +576,7 @@ function switchView(view) {
   }
 }
 
-/* ── Chat ── */
-let chatHistory = []; // {role, content}
-
 function addChatBubble(text, sender) {
-  // Remove welcome message on first real message
   const welcome = chatMsgs.querySelector('.chat-welcome');
   if (welcome) welcome.remove();
 
@@ -446,6 +606,27 @@ function removeTypingIndicator() {
   if (el) el.remove();
 }
 
+function pickSupportedAudioMimeType() {
+  const candidates = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/ogg;codecs=opus',
+    'audio/mp4',
+    ''
+  ];
+  return candidates.find((candidate) => !candidate || MediaRecorder.isTypeSupported(candidate)) || '';
+}
+
+function computeRmsLevel(analyser, buffer) {
+  analyser.getByteTimeDomainData(buffer);
+  let sumSquares = 0;
+  for (let i = 0; i < buffer.length; i += 1) {
+    const normalized = (buffer[i] - 128) / 128;
+    sumSquares += normalized * normalized;
+  }
+  return Math.sqrt(sumSquares / buffer.length);
+}
+
 function sendChat() {
   const text = chatInput.value.trim();
   if (!text) return;
@@ -467,14 +648,14 @@ function sendChat() {
       recommendations: currentRecommendations
     })
   })
-    .then(r => r.json())
-    .then(d => {
+    .then((response) => response.json())
+    .then((data) => {
       removeTypingIndicator();
-      const reply = d.reply || d.message || d.response || 'Sorry, I could not process that.';
-      if (d.session_id) currentSessionId = d.session_id;
+      const reply = data.reply || data.message || data.response || 'Sorry, I could not process that.';
+      if (data.session_id) currentSessionId = data.session_id;
       addChatBubble(reply, 'bot');
       chatHistory.push({ role: 'assistant', content: reply });
-      if (Array.isArray(d.results) && d.results.length) renderRecs(d.results);
+      if (Array.isArray(data.results) && data.results.length) renderRecs(data.results);
     })
     .catch(() => {
       removeTypingIndicator();
@@ -482,164 +663,204 @@ function sendChat() {
     });
 }
 
-/* ── Voice input (MediaRecorder → backend transcription) ── */
-let mediaRecorder = null;
-let audioChunks = [];
-let isListening = false;
-const micSelect = document.getElementById('mic-select');
-
-// Populate mic device list
 async function loadMicDevices() {
-  // Need a brief getUserMedia call first to get permission, then enumerate
   try {
     const tmp = await navigator.mediaDevices.getUserMedia({ audio: true });
-    tmp.getTracks().forEach(t => t.stop());
-  } catch(_) {}
+    tmp.getTracks().forEach((track) => track.stop());
+  } catch (_) {}
+
   const devices = await navigator.mediaDevices.enumerateDevices();
-  const mics = devices.filter(d => d.kind === 'audioinput');
+  const mics = devices.filter((device) => device.kind === 'audioinput');
   micSelect.innerHTML = '';
-  mics.forEach(d => {
+
+  mics.forEach((device) => {
     const opt = document.createElement('option');
-    opt.value = d.deviceId;
-    // Filter out virtual devices by default — put real ones first
-    const label = d.label || ('Mic ' + (micSelect.length + 1));
-    opt.textContent = label.length > 30 ? label.slice(0, 28) + '…' : label;
+    opt.value = device.deviceId;
+    const label = device.label || ('Mic ' + (micSelect.length + 1));
+    opt.textContent = label.length > 30 ? label.slice(0, 28) + '...' : label;
     opt.title = label;
     micSelect.appendChild(opt);
   });
-  // Try to select a non-virtual device by default
-  const real = mics.find(d => !d.label.toLowerCase().includes('virtual'));
+
+  const real = mics.find((device) => !device.label.toLowerCase().includes('virtual'));
   if (real) micSelect.value = real.deviceId;
-  console.log('[Voice] Mics found:', mics.map(d => d.label));
+  console.log('[Voice] Mics found:', mics.map((device) => device.label));
 }
-let micDevicesLoaded = false;
 
 async function toggleVoice() {
   if (!micDevicesLoaded) {
     await loadMicDevices();
     micDevicesLoaded = true;
   }
+
   if (isListening) {
-    // Stop recording → send to backend
     mediaRecorder.stop();
-  } else {
-    if (currentView !== 'chat') switchView('chat');
-    const deviceId = micSelect.value;
-    navigator.mediaDevices.getUserMedia({
-      audio: { deviceId: deviceId ? { exact: deviceId } : undefined, echoCancellation: true, noiseSuppression: true, sampleRate: 16000 }
-    })
-      .then(stream => {
-        // Log which mic device we got
-        const track = stream.getAudioTracks()[0];
-        console.log('[Voice] Mic track:', track.label, track.getSettings());
-
-        // Monitor audio levels to verify mic is working
-        const actx = new AudioContext();
-        const src = actx.createMediaStreamSource(stream);
-        const analyser = actx.createAnalyser();
-        analyser.fftSize = 256;
-        src.connect(analyser);
-        const buf = new Uint8Array(analyser.frequencyBinCount);
-        const levelCheck = setInterval(() => {
-          analyser.getByteFrequencyData(buf);
-          const avg = buf.reduce((a,b) => a+b, 0) / buf.length;
-          console.log('[Voice] Audio level:', Math.round(avg));
-        }, 500);
-
-        isListening = true;
-        micBtn.classList.add('listening');
-        micBtn.title = 'Listening... click to stop';
-        chatInput.value = '';
-        chatInput.placeholder = 'Listening...';
-        audioChunks = [];
-
-        // Pick a supported mime type
-        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
-        const opts = mimeType ? { mimeType, audioBitsPerSecond: 128000 } : { audioBitsPerSecond: 128000 };
-        mediaRecorder = new MediaRecorder(stream, opts);
-        console.log('[Voice] MediaRecorder mimeType:', mediaRecorder.mimeType, 'state:', mediaRecorder.state);
-
-        mediaRecorder.ondataavailable = (e) => {
-          console.log('[Voice] Chunk received:', e.data.size, 'bytes');
-          if (e.data.size > 0) audioChunks.push(e.data);
-        };
-        mediaRecorder.onstop = () => {
-          clearInterval(levelCheck);
-          actx.close();
-          console.log('[Voice] Recording stopped, chunks:', audioChunks.length, 'total:', audioChunks.reduce((a,b)=>a+b.size, 0), 'bytes');
-          // Stop all mic tracks so the browser indicator goes away
-          stream.getTracks().forEach(t => t.stop());
-          stopVoiceUI();
-
-          const blob = new Blob(audioChunks, { type: 'audio/webm' });
-          if (blob.size < 1000) return; // too short, ignore
-
-          chatInput.placeholder = 'Transcribing...';
-          const form = new FormData();
-          form.append('audio', blob, 'voice.webm');
-
-          fetch('/api/transcribe', { method: 'POST', body: form })
-            .then(r => {
-              if (r.status === 503) throw new Error('Voice model is still loading. Please wait a moment and try again.');
-              if (!r.ok) throw new Error('Transcription failed (HTTP ' + r.status + ')');
-              return r.json();
-            })
-            .then(d => {
-              console.log('[Voice] Transcribe response:', d);
-              chatInput.placeholder = 'Type a message...';
-              // Accept text from common response shapes
-              const text = (d.text || d.transcript || d.transcription || d.message || '').trim();
-              if (text) {
-                // Put text in input and send as chat message
-                chatInput.value = text;
-                addChatBubble(text, 'user');
-                chatHistory.push({ role: 'user', content: text });
-                chatInput.value = '';
-
-                addTypingIndicator();
-                fetch('/api/chat', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    message: text,
-                    history: chatHistory,
-                    session_id: currentSessionId,
-                    detected_categories: currentDetectedCategories,
-                    recommendations: currentRecommendations
-                  })
-                })
-                  .then(r => r.json())
-                  .then(c => {
-                    removeTypingIndicator();
-                    const reply = c.reply || c.message || c.response || 'Sorry, I could not process that.';
-                    if (c.session_id) currentSessionId = c.session_id;
-                    addChatBubble(reply, 'bot');
-                    chatHistory.push({ role: 'assistant', content: reply });
-                    if (Array.isArray(c.results) && c.results.length) renderRecs(c.results);
-                  })
-                  .catch(() => {
-                    removeTypingIndicator();
-                    addChatBubble('Connection error. Please try again.', 'bot');
-                  });
-              } else {
-                addChatBubble('Could not understand audio. Try again.', 'bot');
-              }
-            })
-            .catch((err) => {
-              console.error('[Voice] Transcribe failed:', err);
-              chatInput.placeholder = 'Type a message...';
-              addChatBubble('Transcription failed. Is the /api/transcribe endpoint running?', 'bot');
-            });
-        };
-        // timeslice=250ms forces ondataavailable every 250ms instead of only on stop
-        mediaRecorder.start(250);
-      })
-      .catch(() => {
-        addChatBubble('Microphone access denied. Please allow mic permissions.', 'bot');
-      });
+    return;
   }
+
+  if (currentView !== 'chat') switchView('chat');
+
+  const deviceId = micSelect.value;
+  navigator.mediaDevices.getUserMedia({
+    audio: {
+      deviceId: deviceId ? { exact: deviceId } : undefined,
+      echoCancellation: true,
+      noiseSuppression: true,
+      sampleRate: 16000
+    }
+  })
+    .then((stream) => {
+      const track = stream.getAudioTracks()[0];
+      console.log('[Voice] Mic track:', track.label, track.getSettings());
+
+      const actx = new AudioContext();
+      const src = actx.createMediaStreamSource(stream);
+      const analyser = actx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.2;
+      src.connect(analyser);
+      const buf = new Uint8Array(analyser.fftSize);
+      let speechDetected = false;
+      let lastSoundAt = null;
+      const levelCheck = setInterval(() => {
+        const rms = computeRmsLevel(analyser, buf);
+        console.log('[Voice] Audio level:', rms.toFixed(4));
+
+        if (!speechDetected && rms >= SPEECH_START_THRESHOLD) {
+          speechDetected = true;
+          lastSoundAt = Date.now();
+          chatInput.placeholder = 'Listening... speech detected';
+          return;
+        }
+
+        if (!speechDetected) {
+          return;
+        }
+
+        if (rms >= SPEECH_CONTINUE_THRESHOLD) {
+          lastSoundAt = Date.now();
+          return;
+        }
+
+        if (
+          isListening &&
+          mediaRecorder &&
+          mediaRecorder.state === 'recording' &&
+          lastSoundAt !== null &&
+          Date.now() - lastSoundAt >= SILENCE_TIMEOUT_MS
+        ) {
+          chatInput.placeholder = 'Silence detected, sending...';
+          mediaRecorder.stop();
+        }
+      }, 500);
+
+      isListening = true;
+      micBtn.classList.add('listening');
+      micBtn.title = 'Listening... click to stop';
+      chatInput.value = '';
+      chatInput.placeholder = 'Listening... starts auto-send after speech + 5s silence';
+      audioChunks = [];
+
+      const mimeType = pickSupportedAudioMimeType();
+      currentAudioMimeType = mimeType || 'audio/webm';
+      const opts = mimeType ? { mimeType, audioBitsPerSecond: 128000 } : { audioBitsPerSecond: 128000 };
+      mediaRecorder = new MediaRecorder(stream, opts);
+      console.log('[Voice] MediaRecorder mimeType:', mediaRecorder.mimeType, 'state:', mediaRecorder.state);
+
+      mediaRecorder.ondataavailable = (event) => {
+        console.log('[Voice] Chunk received:', event.data.size, 'bytes');
+        if (event.data.size > 0) audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        clearInterval(levelCheck);
+        actx.close();
+        console.log('[Voice] Recording stopped, chunks:', audioChunks.length, 'total:', audioChunks.reduce((a, b) => a + b.size, 0), 'bytes');
+        stream.getTracks().forEach((streamTrack) => streamTrack.stop());
+        stopVoiceUI();
+
+        const blob = new Blob(audioChunks, { type: currentAudioMimeType || 'audio/webm' });
+        if (blob.size < 1000) {
+          chatInput.placeholder = 'Type a message...';
+          addChatBubble('The recording was too short. Please hold the microphone a bit longer.', 'bot');
+          return;
+        }
+
+        chatInput.placeholder = 'Transcribing...';
+        const form = new FormData();
+        const extension =
+          currentAudioMimeType.includes('ogg') ? 'ogg' :
+          currentAudioMimeType.includes('mp4') ? 'm4a' :
+          'webm';
+        form.append('audio', blob, 'voice.' + extension);
+
+        fetch('/api/transcribe', { method: 'POST', body: form })
+          .then((response) => {
+            return response.json().then((data) => ({ ok: response.ok, status: response.status, data }));
+          })
+          .then(({ ok, status, data }) => {
+            if (!ok) {
+              const detail = data && (data.detail || data.message);
+              if (status === 503) {
+                throw new Error(detail || 'Voice model is still loading. Please wait a moment and try again.');
+              }
+              throw new Error(detail || ('Transcription failed (HTTP ' + status + ')'));
+            }
+            return data;
+          })
+          .then((data) => {
+            console.log('[Voice] Transcribe response:', data);
+            chatInput.placeholder = 'Type a message...';
+            const text = (data.text || data.transcript || data.transcription || data.message || '').trim();
+
+            if (!text) {
+              addChatBubble('Could not understand audio. Try again.', 'bot');
+              return;
+            }
+
+            chatInput.value = text;
+            addChatBubble(text, 'user');
+            chatHistory.push({ role: 'user', content: text });
+            chatInput.value = '';
+
+            addTypingIndicator();
+            fetch('/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                message: text,
+                history: chatHistory,
+                session_id: currentSessionId,
+                detected_categories: currentDetectedCategories,
+                recommendations: currentRecommendations
+              })
+            })
+              .then((response) => response.json())
+              .then((chatData) => {
+                removeTypingIndicator();
+                const reply = chatData.reply || chatData.message || chatData.response || 'Sorry, I could not process that.';
+                if (chatData.session_id) currentSessionId = chatData.session_id;
+                addChatBubble(reply, 'bot');
+                chatHistory.push({ role: 'assistant', content: reply });
+                if (Array.isArray(chatData.results) && chatData.results.length) renderRecs(chatData.results);
+              })
+              .catch(() => {
+                removeTypingIndicator();
+                addChatBubble('Connection error. Please try again.', 'bot');
+              });
+          })
+          .catch((err) => {
+            console.error('[Voice] Transcribe failed:', err);
+            chatInput.placeholder = 'Type a message...';
+            addChatBubble('Transcription failed: ' + (err.message || 'unknown error'), 'bot');
+          });
+      };
+
+      mediaRecorder.start(250);
+    })
+    .catch(() => {
+      addChatBubble('Microphone access denied. Please allow mic permissions.', 'bot');
+    });
 }
 
 function stopVoiceUI() {
@@ -648,11 +869,10 @@ function stopVoiceUI() {
   micBtn.title = 'Voice input';
 }
 
-// On page load, sync slider to whatever the server currently has
 fetch('/api/conf')
-  .then(r => r.json())
-  .then(d => {
-    const pct = Math.round(d.conf_thres * 100);
+  .then((response) => response.json())
+  .then((data) => {
+    const pct = Math.round(data.conf_thres * 100);
     document.getElementById('conf-slider').value = pct;
     document.getElementById('conf-val').textContent = pct + '%';
   })
@@ -667,13 +887,16 @@ function initializeSearchSession(detectedCategories, recommendations) {
       recommendations: recommendations || []
     })
   })
-    .then(r => r.json())
-    .then(d => {
-      if (d.session_id) currentSessionId = d.session_id;
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.session_id) currentSessionId = data.session_id;
     })
     .catch(() => {});
 }
 
+function warmupChat() {
+  fetch('/api/chat/warmup', { method: 'POST' }).catch(() => {});
+}
 </script>
 </body>
 </html>

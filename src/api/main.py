@@ -16,6 +16,7 @@ Run:
 import asyncio
 import base64
 import os
+import shutil
 import tempfile
 from pathlib import Path
 from typing import List
@@ -108,6 +109,27 @@ search_service: UnifiedSearchService = None
 DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "yolov8").lower()
 
 
+def _find_ffmpeg_exe() -> str | None:
+    exe = shutil.which("ffmpeg")
+    if exe:
+        return exe
+
+    local_appdata = Path(os.environ.get("LOCALAPPDATA", ""))
+    candidates = [
+        local_appdata / "Microsoft" / "WinGet" / "Links" / "ffmpeg.exe",
+        local_appdata / "Programs" / "ffmpeg" / "bin" / "ffmpeg.exe",
+        Path("C:/ffmpeg/bin/ffmpeg.exe"),
+        Path("C:/ffmpeg/ffmpeg.exe"),
+        Path("C:/Program Files/ffmpeg/bin/ffmpeg.exe"),
+        Path("C:/Program Files (x86)/ffmpeg/bin/ffmpeg.exe"),
+    ]
+
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
+    return None
+
+
 @app.on_event("startup")
 async def startup():
     global detector, recommender, camera, whisper_model, search_service
@@ -123,6 +145,11 @@ async def startup():
     recommender = RecommendationEngine(top_k=5)
     search_service = UnifiedSearchService(recommender)
     camera      = CameraStream(detector, recommender, source=0)
+    try:
+        camera.warmup()
+        print("📷  Camera warmed and ready")
+    except Exception as e:
+        print(f"⚠️  Camera warmup failed: {e}")
 
     # Load Whisper for voice transcription in a background thread
     # (can be slow on first run — downloads model weights)
@@ -147,6 +174,13 @@ async def startup():
     asyncio.create_task(_load_whisper())
 
     print("✅  API ready\n")
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    global camera
+    if camera is not None:
+        camera.shutdown()
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────
@@ -196,6 +230,11 @@ async def get_session(session_id: str):
         active_filters=session.active_filters,
         results=session.last_results,
     )
+
+
+@app.post("/api/chat/warmup")
+async def warmup_chat():
+    return search_service.warmup()
 
 
 async def _detect_image_impl(file: UploadFile) -> DetectionResponse:
@@ -352,23 +391,36 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 
     data = await audio.read()
     print(f"🎙️  Received audio: {len(data)} bytes, type: {audio.content_type}")
+    if not data:
+        raise HTTPException(status_code=400, detail="No audio data received")
 
-    # Write browser webm to temp file, then convert to WAV for Whisper
-    with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
+    ffmpeg_path = _find_ffmpeg_exe()
+    if ffmpeg_path is None:
+        raise HTTPException(status_code=503, detail="ffmpeg is not installed or not available on PATH")
+
+    suffix = Path(audio.filename or "voice.webm").suffix.lower() or ".webm"
+    if suffix not in {".webm", ".wav", ".ogg", ".mp3", ".m4a", ".mp4"}:
+        suffix = ".webm"
+
+    # Write browser audio to a temp file, then convert to WAV for Whisper.
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(data)
-        webm_path = tmp.name
+        source_path = tmp.name
 
-    wav_path = webm_path.replace(".webm", ".wav")
+    wav_path = source_path.rsplit(".", 1)[0] + ".wav"
     import subprocess
     result = subprocess.run(
-        ["ffmpeg", "-y", "-i", webm_path, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wav_path],
+        [ffmpeg_path, "-y", "-i", source_path, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wav_path],
         capture_output=True, text=True, timeout=10,
     )
     if result.returncode != 0:
         print(f"🎙️  ffmpeg stderr: {result.stderr}")
+        if os.path.exists(source_path):
+            os.unlink(source_path)
+        raise HTTPException(status_code=400, detail="Could not decode uploaded audio")
     wav_size = os.path.getsize(wav_path) if os.path.exists(wav_path) else 0
     print(f"🎙️  Converted to WAV: {wav_size} bytes")
-    os.unlink(webm_path)
+    os.unlink(source_path)
 
     try:
         segments, info = whisper_model.transcribe(wav_path, beam_size=5, language="en")
@@ -389,7 +441,8 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 
         print(f"🎙️  Final text: {text!r}")
     finally:
-        os.unlink(wav_path)
+        if os.path.exists(wav_path):
+            os.unlink(wav_path)
 
     return {"text": text}
 
