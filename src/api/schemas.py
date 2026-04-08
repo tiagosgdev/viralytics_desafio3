@@ -68,6 +68,13 @@ class ChatRequest(BaseModel):
     recommendations: List[Dict[str, Any]] = Field(default_factory=list)
 
 
+class ConversationRequest(BaseModel):
+    detected_type: str
+    message: Optional[str] = None
+    strict: bool = False
+    state: Optional[Dict[str, Any]] = None
+
+
 class ChatResponse(BaseModel):
     reply: str
     session_id: str
