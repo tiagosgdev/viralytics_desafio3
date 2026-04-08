@@ -140,3 +140,59 @@ python scripts/compare_models.py \
   --data data/balanced_dataset \
   --out docs/compare_fashionnet_v1_vs_yolov8l.json
 ```
+
+----------------------
+-------  EDNA --------
+----------------------
+
+## Full Training — edna_1m_balanced_100
+
+### Setup
+
+- Config: no explicit flags (default settings)
+- Dataset: full balanced_dataset, 52,199 training images (no sample cap)
+- Epochs: 100
+- Batch: 32 (3263 batches/epoch)
+- Device: CUDA (NVIDIA GPU, 16GB VRAM)
+- Training time: 2064m 44s (~34h 24m)
+- Best val_loss: 2.6953 (epoch 63)
+- Weights: `models/weights/edna_1m_balanced_100/best.pt`
+
+### Evaluation — fashionnet_balanced_v1 vs edna_1m_balanced_100
+
+Evaluated with `scripts/evaluate_custom.py`, val split (11,186 images), conf=0.25, NMS IoU=0.45.
+
+| Metric | fashionnet_balanced_v1 | edna_1m_balanced_100 |
+|--------|----------------------|----------------------|
+| mAP@50 | **0.1930** | 0.1869 |
+| Precision | 0.3356 | **0.3479** |
+| Recall | **0.3870** | 0.3723 |
+| F1 | 0.3594 | **0.3597** |
+| Best val_loss | 3.0591 | **2.6953** |
+| Best epoch | 87 | 63 |
+| Key flags | aug=medium, multi_cell | — |
+
+### Per-class breakdown
+
+| Category | fashionnet_balanced_v1 | edna_1m_balanced_100 |
+|----------|----------------------|----------------------|
+| short_sleeve_top | AP=0.0860  P=0.227  R=0.303  F1=0.260 | AP=0.0877  P=0.225  R=0.324  F1=0.266 |
+| long_sleeve_top | AP=0.0999  P=0.324  R=0.216  F1=0.259 | AP=0.0709  P=0.340  R=0.178  F1=0.234 |
+| long_sleeve_outwear | AP=0.2823  P=0.526  R=0.425  F1=0.470 | AP=0.2862  P=0.534  R=0.422  F1=0.472 |
+| vest | AP=0.2712  P=0.338  R=0.482  F1=0.398 | AP=0.2727  P=0.376  R=0.504  F1=0.431 |
+| shorts | AP=0.2624  P=0.369  R=0.510  F1=0.429 | AP=0.2781  P=0.381  R=0.519  F1=0.439 |
+| trousers | AP=0.2111  P=0.322  R=0.548  F1=0.405 | AP=0.1950  P=0.327  R=0.471  F1=0.386 |
+| skirt | AP=0.1380  P=0.224  R=0.443  F1=0.298 | AP=0.1179  P=0.216  R=0.377  F1=0.275 |
+| short_sleeve_dress | AP=0.1636  P=0.392  R=0.297  F1=0.338 | AP=0.1620  P=0.352  R=0.329  F1=0.340 |
+| long_sleeve_dress | AP=0.1361  P=0.422  R=0.242  F1=0.307 | AP=0.1304  P=0.420  R=0.234  F1=0.300 |
+| vest_dress | AP=0.2163  P=0.404  R=0.395  F1=0.399 | AP=0.1792  P=0.417  R=0.354  F1=0.383 |
+| sling_dress | AP=0.2555  P=0.367  R=0.373  F1=0.370 | AP=0.2756  P=0.488  R=0.363  F1=0.416 |
+
+### Analysis
+
+The two models are effectively tied on F1 (0.3594 vs 0.3597), despite edna_1m_balanced_100 training 3x longer and achieving a better val_loss (2.6953 vs 3.0591). fashionnet_balanced_v1 edges out on mAP@50 (0.1930 vs 0.1869) and recall.
+
+edna_1m_balanced_100 wins on: long_sleeve_outwear, vest, shorts, sling_dress (slightly better AP/F1).  
+fashionnet_balanced_v1 wins on: long_sleeve_top (AP 0.0999 vs 0.0709), trousers, skirt, overall mAP.
+
+The aug=medium + multi_cell flags in fashionnet_balanced_v1 appear to provide marginal but real benefit for mAP, particularly for harder long-tail classes. The significantly lower val_loss of edna_1m_balanced_100 does not translate into better detection metrics, suggesting val_loss and mAP@50 are not tightly coupled at this scale.
