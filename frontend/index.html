@@ -87,24 +87,49 @@
         <div class="tags" id="tags"><span class="notag">Nothing detected yet</span></div>
       </div>
 
-      <div class="recs-hdr"><div class="plbl">Store Recommendations</div></div>
-      <div class="recs-list" id="recs">
-        <div class="card">
-          <picture>
-            <source type="image/avif" data-srcset="static/images/example-product.avif">
-            <source type="image/webp" data-srcset="static/images/example-product.webp">
-            <img data-src="static/images/example-product.jpg" alt="Example product" class="rec-img">
-          </picture>
-          <div class="cinfo">
-            <div class="cname">Sample Linen Shirt</div>
-            <div class="ccat">short sleeve top</div>
-            <div class="cwhy">Editorial match | light beige</div>
-            <div class="cprice">R$ 349</div>
+      <div class="recs-hdr">
+        <div class="recs-headline">
+          <div class="plbl">Store Recommendations</div>
+          <div class="recs-actions">
+            <button class="recs-scroll-btn" id="recs-scroll-left" type="button" onclick="scrollRecommendations(-1)" disabled aria-label="Scroll recommendations left">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="recs-scroll-btn" id="recs-scroll-right" type="button" onclick="scrollRecommendations(1)" disabled aria-label="Scroll recommendations right">
+              <i class="fas fa-chevron-right"></i>
+            </button>
           </div>
         </div>
       </div>
+      <div class="recs-carousel">
+        <div class="recs-list" id="recs">
+          <div class="ph">Recommendations will appear here after a scan or chat refinement.</div>
+        </div>
+      </div>
+      </div>
     </aside>
   </main>
+
+  <div class="modal-shell" id="recommendations-modal" aria-hidden="true">
+    <div class="modal-backdrop" onclick="toggleRecommendationsModal(false)"></div>
+    <section class="rec-modal" role="dialog" aria-modal="true" aria-labelledby="rec-modal-title">
+      <button class="modal-close" type="button" onclick="toggleRecommendationsModal(false)" aria-label="Close recommendations window">
+        <i class="fas fa-xmark"></i>
+      </button>
+      <div class="rec-modal-header">
+        <div>
+          <div class="plbl">Store Recommendations</div>
+          <h2 id="rec-modal-title">Your Recommended Pieces</h2>
+        </div>
+        <p id="rec-modal-subtitle">Select an item to inspect its details.</p>
+      </div>
+      <div class="rec-modal-body">
+        <div class="rec-modal-list" id="rec-modal-list"></div>
+        <div class="rec-detail" id="rec-detail">
+          <div class="ph">Recommendation details will appear here.</div>
+        </div>
+      </div>
+    </section>
+  </div>
 
 <script>
 const WS_URL = 'ws://' + location.host + '/ws/camera';
@@ -179,6 +204,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initHelpers();
   initReveal();
   initCardTilt();
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && recsModal.classList.contains('open')) {
+      toggleRecommendationsModal(false);
+    }
+  });
 });
 
 const COLORS = {
@@ -220,9 +250,12 @@ let currentDetectedCategories = [];
 let currentRecommendations = [];
 let chatHistory = [];
 let chatConversationState = null;
+let currentActiveFilters = {};
 let cameraReady = false;
 let pendingStart = false;
 let cameraSuspended = false;
+let hasShownInitialRecommendationsModal = false;
+let recommendationDetailIndex = 0;
 
 const feed = document.getElementById('feed');
 const idle = document.getElementById('idle');
@@ -247,6 +280,12 @@ const chatMsgs = document.getElementById('chat-messages');
 const chatInput = document.getElementById('chat-input');
 const micBtn = document.getElementById('mic-btn');
 const micSelect = document.getElementById('mic-select');
+const recsModal = document.getElementById('recommendations-modal');
+const recsScrollLeftBtn = document.getElementById('recs-scroll-left');
+const recsScrollRightBtn = document.getElementById('recs-scroll-right');
+const recsModalList = document.getElementById('rec-modal-list');
+const recDetail = document.getElementById('rec-detail');
+const recModalSubtitle = document.getElementById('rec-modal-subtitle');
 
 let currentView = 'camera';
 let mediaRecorder = null;
@@ -389,6 +428,7 @@ function handleCameraMessage(msg) {
     frozen = false;
     hideFrozenLabel();
     chatConversationState = null;
+    currentActiveFilters = {};
     if (msg.annotated_frame) {
       feed.style.display = 'block';
       feed.src = 'data:image/jpeg;base64,' + msg.annotated_frame;
@@ -396,7 +436,7 @@ function handleCameraMessage(msg) {
     setSt('live', 'Done');
     setSteps('results');
     renderTags(msg.detections || []);
-    renderRecs(msg.recommendations || []);
+    renderRecs(msg.recommendations || [], { autoOpen: !hasShownInitialRecommendationsModal });
     currentDetectedCategories = msg.dominant || (msg.detections || []).map((d) => d.class_name);
     currentRecommendations = msg.recommendations || [];
     initializeSearchSession(currentDetectedCategories, currentRecommendations);
@@ -415,6 +455,10 @@ function startScan() {
   currentRecommendations = [];
   chatHistory = [];
   chatConversationState = null;
+  currentActiveFilters = {};
+  hasShownInitialRecommendationsModal = false;
+  recommendationDetailIndex = 0;
+  toggleRecommendationsModal(false);
   hideFrozenLabel();
   pendingStart = true;
   if (!ws || ws.readyState === WebSocket.CLOSED) {
@@ -445,10 +489,18 @@ function sendCmd(cmd) {
     currentRecommendations = [];
     chatHistory = [];
     chatConversationState = null;
+    currentActiveFilters = {};
+    hasShownInitialRecommendationsModal = false;
+    recommendationDetailIndex = 0;
+    toggleRecommendationsModal(false);
     hideFrozenLabel();
     actions.classList.remove('show');
     tagsEl.innerHTML = '<span class="notag">Scanning...</span>';
     recsEl.innerHTML = '<div class="ph">Scanning your outfit...</div>';
+    recsScrollLeftBtn.disabled = true;
+    recsScrollRightBtn.disabled = true;
+    recsModalList.innerHTML = '';
+    recDetail.innerHTML = '<div class="ph">Recommendation details will appear here.</div>';
     beginCaptureUi();
   } else {
     recsEl.innerHTML = '<div class="ph">Finding new suggestions...</div>';
@@ -479,21 +531,180 @@ function renderTags(dets) {
   animateStagger('#tags', '.tag');
 }
 
-function renderRecs(recs) {
+function renderRecs(recs, options = {}) {
+  const autoOpen = Boolean(options.autoOpen);
+
   if (!recs.length) {
+    currentRecommendations = [];
     recsEl.innerHTML = '<div class="ph">No matches - try retrying</div>';
+    recsScrollLeftBtn.disabled = true;
+    recsScrollRightBtn.disabled = true;
+    recsModalList.innerHTML = '';
+    recDetail.innerHTML = '<div class="ph">Recommendation details will appear here.</div>';
+    recModalSubtitle.textContent = 'Select an item to inspect its details.';
+    toggleRecommendationsModal(false);
     return;
   }
 
-  recsEl.innerHTML = recs.map((r) =>
-    '<div class="card"><div class="cthumb">' + (EMOJI[r.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
+  currentRecommendations = recs;
+  recommendationDetailIndex = 0;
+  recsScrollLeftBtn.disabled = false;
+  recsScrollRightBtn.disabled = false;
+
+  recsEl.innerHTML = recs.map((r, index) =>
+    '<button class="card rec-card-button" type="button" onclick="openRecommendationDetail(' + index + ', true)"><div class="cthumb">' + (EMOJI[r.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
     '<div class="cinfo"><div class="cname">' + esc(r.name) + '</div>' +
     '<div class="ccat">' + (r.category || '').replace(/_/g, ' ') + '</div>' +
     '<div class="cwhy">' + esc(r.reason) + '</div>' +
-    '<div class="cprice">' + esc(r.price) + '</div></div></div>'
+    '<div class="cprice">' + esc(r.price) + '</div></div></button>'
   ).join('');
 
+  recsEl.scrollTo({ left: 0, behavior: 'auto' });
+  renderRecommendationsModal(recs);
   animateStagger('#recs', '.card');
+
+  if (autoOpen) {
+    hasShownInitialRecommendationsModal = true;
+    toggleRecommendationsModal(true);
+  }
+}
+
+function renderRecommendationsModal(recs) {
+  recsModalList.innerHTML = recs.map((rec, index) => {
+    const active = index === recommendationDetailIndex ? ' active' : '';
+    const category = (rec.category || 'item').replace(/_/g, ' ');
+    return (
+      '<button class="rec-modal-item' + active + '" type="button" onclick="openRecommendationDetail(' + index + ')">' +
+      '<div class="rec-modal-thumb">' + (EMOJI[rec.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
+      '<div class="rec-modal-copy">' +
+      '<div class="rec-modal-name">' + esc(rec.name) + '</div>' +
+      '<div class="rec-modal-category">' + esc(category) + '</div>' +
+      '<div class="rec-modal-price">' + esc(rec.price) + '</div>' +
+      '</div></button>'
+    );
+  }).join('');
+
+  openRecommendationDetail(recommendationDetailIndex);
+}
+
+function extractIncludeFilters(source) {
+  if (!source || typeof source !== 'object') return {};
+  if (source.include && typeof source.include === 'object') {
+    return source.include || {};
+  }
+  const candidateKeys = Object.keys(source);
+  const looksLikeFlatInclude = candidateKeys.some((key) => Array.isArray(source[key]));
+  return looksLikeFlatInclude ? source : {};
+}
+
+function getActiveIncludeFilters() {
+  const directInclude = extractIncludeFilters(currentActiveFilters);
+  if (Object.keys(directInclude).length) return directInclude;
+
+  const stateFilters = chatConversationState && typeof chatConversationState === 'object'
+    ? chatConversationState.filters
+    : null;
+  const stateInclude = extractIncludeFilters(stateFilters);
+  if (Object.keys(stateInclude).length) return stateInclude;
+
+  return {};
+}
+
+function normalizeComparableValue(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function attributeMatchesUserIntent(field, value, recommendation) {
+  const include = getActiveIncludeFilters();
+  const desired = include && Array.isArray(include[field]) ? include[field] : null;
+  if (!desired || !desired.length) return false;
+
+  const currentValue = normalizeComparableValue(value);
+  const desiredValues = desired.map(normalizeComparableValue);
+  if (field === 'type' && recommendation && recommendation.category) {
+    return desiredValues.includes(normalizeComparableValue(recommendation.category));
+  }
+  return desiredValues.includes(currentValue);
+}
+
+function buildDetailRow(label, value, field, recommendation) {
+  const highlight = attributeMatchesUserIntent(field, value, recommendation) ? ' match' : '';
+  const badge = highlight ? '<em class="match-badge">match</em>' : '';
+  return '<div class="rec-detail-row' + highlight + '"><span>' + esc(label) + '</span>' + badge + '<strong>' + esc(value) + '</strong></div>';
+}
+
+function openRecommendationDetail(index, openModal = false) {
+  if (!currentRecommendations.length || !currentRecommendations[index]) return;
+
+  recommendationDetailIndex = index;
+  const rec = currentRecommendations[index];
+  const metadata = rec.metadata && typeof rec.metadata === 'object' ? rec.metadata : {};
+  const sizes = Array.isArray(rec.sizes) ? rec.sizes.filter(Boolean) : [];
+  const stockStatus = rec.stock_status ? String(rec.stock_status).replace(/_/g, ' ') : null;
+  const detailRows = Object.entries(metadata).map(([key, value]) =>
+    buildDetailRow(key.replace(/_/g, ' '), value, key, rec)
+  ).join('');
+  const overviewRows = [
+    buildDetailRow('type', (rec.category || 'item').replace(/_/g, ' '), 'type', rec),
+    rec.brand ? buildDetailRow('brand', rec.brand, 'brand', rec) : '',
+    rec.sku ? buildDetailRow('sku', rec.sku, 'sku', rec) : '',
+    stockStatus ? buildDetailRow('stock', stockStatus, 'stock_status', rec) : '',
+    sizes.length ? buildDetailRow('sizes', sizes.join(', '), 'sizes', rec) : ''
+  ].filter(Boolean).join('');
+
+  recDetail.innerHTML =
+    '<div class="rec-detail-hero">' +
+    '<div class="rec-detail-icon">' + (EMOJI[rec.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
+    '<div class="rec-detail-copy">' +
+    '<h3>' + esc(rec.name) + '</h3>' +
+    '<div class="rec-detail-category">' + esc((rec.category || 'item').replace(/_/g, ' ')) + '</div>' +
+    '<div class="rec-detail-price">' + esc(rec.price) + '</div>' +
+    '</div></div>' +
+    (overviewRows ? '<div class="rec-detail-section"><div class="rec-detail-label">Store details</div><div class="rec-detail-grid">' + overviewRows + '</div></div>' : '') +
+    '<div class="rec-detail-section"><div class="rec-detail-label">Why it fits</div><p>' + esc(rec.reason || 'Recommended from your search context.') + '</p></div>' +
+    '<div class="rec-detail-section"><div class="rec-detail-label">Description</div><p>' + esc(rec.description || 'No extra product description is available for this item yet.') + '</p></div>' +
+    '<div class="rec-detail-grid">' + (
+      detailRows || '<div class="ph">No extra attributes available for this recommendation.</div>'
+    ) + '</div>';
+
+  recModalSubtitle.textContent = currentRecommendations.length + ' recommendation(s) ready to explore.';
+  Array.from(recsModalList.querySelectorAll('.rec-modal-item')).forEach((item, itemIndex) => {
+    item.classList.toggle('active', itemIndex === index);
+  });
+
+  if (openModal) {
+    toggleRecommendationsModal(true);
+  }
+}
+
+function scrollRecommendations(direction) {
+  const card = recsEl.querySelector('.rec-card-button');
+  const step = card ? card.getBoundingClientRect().width + 14 : 280;
+  const maxScroll = Math.max(0, recsEl.scrollWidth - recsEl.clientWidth);
+  const current = recsEl.scrollLeft;
+  let target = current + direction * step;
+
+  if (direction > 0 && current >= maxScroll - 8) {
+    target = 0;
+  } else if (direction < 0 && current <= 8) {
+    target = maxScroll;
+  } else {
+    target = Math.max(0, Math.min(target, maxScroll));
+  }
+
+  recsEl.scrollTo({
+    left: target,
+    behavior: 'smooth'
+  });
+}
+
+function toggleRecommendationsModal(open) {
+  const shouldOpen = Boolean(open);
+  if (shouldOpen && !currentRecommendations.length) return;
+
+  recsModal.classList.toggle('open', shouldOpen);
+  recsModal.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+  document.body.classList.toggle('modal-open', shouldOpen);
 }
 
 function animateStagger(containerSelector, childSelector, opts = { delay: 80, start: 0 }) {
@@ -631,6 +842,22 @@ function computeRmsLevel(analyser, buffer) {
   return Math.sqrt(sumSquares / buffer.length);
 }
 
+function extractApiError(data, fallback) {
+  if (!data) return fallback;
+  if (typeof data.detail === 'string' && data.detail.trim()) return data.detail;
+  if (typeof data.message === 'string' && data.message.trim()) return data.message;
+  if (typeof data.reply === 'string' && data.reply.trim()) return data.reply;
+  if (Array.isArray(data.detail)) {
+    const parts = data.detail.map((entry) => {
+      if (typeof entry === 'string') return entry;
+      if (entry && typeof entry.msg === 'string') return entry.msg;
+      return '';
+    }).filter(Boolean);
+    if (parts.length) return parts.join(' ');
+  }
+  return fallback;
+}
+
 function sendChat() {
   const text = chatInput.value.trim();
   if (!text) return;
@@ -653,19 +880,27 @@ function sendChat() {
       recommendations: currentRecommendations
     })
   })
-    .then((response) => response.json())
-    .then((data) => {
+    .then((response) => response.json().then((data) => ({ ok: response.ok, status: response.status, data })))
+    .then(({ ok, status, data }) => {
+      if (!ok) {
+        throw new Error(extractApiError(data, 'Chat failed (HTTP ' + status + ')'));
+      }
       removeTypingIndicator();
       const reply = data.reply || data.message || data.response || 'Sorry, I could not process that.';
       if (data.session_id) currentSessionId = data.session_id;
       if (data.state) chatConversationState = data.state;
+      if (data.active_filters && Object.keys(extractIncludeFilters(data.active_filters)).length) {
+        currentActiveFilters = data.active_filters;
+      } else if (data.state && data.state.filters && Object.keys(extractIncludeFilters(data.state.filters)).length) {
+        currentActiveFilters = data.state.filters;
+      }
       addChatBubble(reply, 'bot');
       chatHistory.push({ role: 'assistant', content: reply });
       if (Array.isArray(data.results) && data.results.length) renderRecs(data.results);
     })
-    .catch(() => {
+    .catch((error) => {
       removeTypingIndicator();
-      addChatBubble('Connection error. Please try again.', 'bot');
+      addChatBubble(error && error.message ? error.message : 'Connection error. Please try again.', 'bot');
     });
 }
 
@@ -842,19 +1077,27 @@ async function toggleVoice() {
                 recommendations: currentRecommendations
               })
             })
-              .then((response) => response.json())
-              .then((chatData) => {
+              .then((response) => response.json().then((data) => ({ ok: response.ok, status: response.status, data })))
+              .then(({ ok, status, data: chatData }) => {
+                if (!ok) {
+                  throw new Error(extractApiError(chatData, 'Chat failed (HTTP ' + status + ')'));
+                }
                 removeTypingIndicator();
                 const reply = chatData.reply || chatData.message || chatData.response || 'Sorry, I could not process that.';
                 if (chatData.session_id) currentSessionId = chatData.session_id;
                 if (chatData.state) chatConversationState = chatData.state;
+                if (chatData.active_filters && Object.keys(extractIncludeFilters(chatData.active_filters)).length) {
+                  currentActiveFilters = chatData.active_filters;
+                } else if (chatData.state && chatData.state.filters && Object.keys(extractIncludeFilters(chatData.state.filters)).length) {
+                  currentActiveFilters = chatData.state.filters;
+                }
                 addChatBubble(reply, 'bot');
                 chatHistory.push({ role: 'assistant', content: reply });
                 if (Array.isArray(chatData.results) && chatData.results.length) renderRecs(chatData.results);
               })
-              .catch(() => {
+              .catch((error) => {
                 removeTypingIndicator();
-                addChatBubble('Connection error. Please try again.', 'bot');
+                addChatBubble(error && error.message ? error.message : 'Connection error. Please try again.', 'bot');
               });
           })
           .catch((err) => {

@@ -275,14 +275,14 @@ async def _detect_image_impl(file: UploadFile) -> DetectionResponse:
     )
 
 
-def _get_detected_type(session_id: str | None, detected_categories: list[str]) -> str:
+def _get_detected_type(session_id: str | None, detected_categories: list[str]) -> str | None:
     if detected_categories:
         return detected_categories[0]
     if session_id:
         session = search_service.get_session(session_id)
         if session and session.detected_categories:
             return session.detected_categories[0]
-    raise HTTPException(status_code=400, detail="A detected clothing type is required to start chat refinement")
+    return None
 
 
 def _format_conversation_results(raw_results: list[dict]) -> list[dict]:
@@ -499,42 +499,53 @@ async def chat(payload: ChatRequest):
         session_id = session.id
 
     detected_type = _get_detected_type(session_id, payload.detected_categories)
-    mode = "override" if payload.replace_vision else "vision"
-
-    conversation_result = await _run_conversation_search(
-        ConversationRequest(
-            detected_type=detected_type,
-            message=payload.message,
-            strict=payload.strict,
-            state=payload.state,
+    if detected_type:
+        conversation_result = await _run_conversation_search(
+            ConversationRequest(
+                detected_type=detected_type,
+                message=payload.message,
+                strict=payload.strict,
+                state=payload.state,
+            )
         )
-    )
-    results = _format_conversation_results(conversation_result.get("results", []))
-    state = conversation_result.get("state") or {}
-    active_filters = state.get("filters") if isinstance(state.get("filters"), dict) else {}
+        results = _format_conversation_results(conversation_result.get("results", []))
+        state = conversation_result.get("state") or {}
+        active_filters = state.get("filters") if isinstance(state.get("filters"), dict) else {}
+        mode = "override" if payload.replace_vision else "vision"
 
-    reply = (
-        f"I replaced the scan context and used your message as the main search direction. "
-        f"I found {len(results)} option(s) to explore next."
-        if mode == "override"
-        else f"I refined the results using the scanned clothing context. "
-             f"I found {len(results)} option(s) to explore next."
-    )
-    if not results:
         reply = (
-            "I couldn't find strong matches from that refinement. Try a more specific request."
+            f"I replaced the scan context and used your message as the main search direction. "
+            f"I found {len(results)} option(s) to explore next."
+            if mode == "override"
+            else f"I refined the results using the scanned clothing context. "
+                 f"I found {len(results)} option(s) to explore next."
+        )
+        if not results:
+            reply = (
+                "I couldn't find strong matches from that refinement. Try a more specific request."
+            )
+
+        return ChatResponse(
+            reply=reply,
+            session_id=session_id,
+            mode=mode,
+            active_filters=active_filters,
+            results=results,
+            state=state,
+            strict=payload.strict,
+            warning=None,
         )
 
-    return ChatResponse(
-        reply=reply,
+    fallback = search_service.refine(
         session_id=session_id,
-        mode=mode,
-        active_filters=active_filters,
-        results=results,
-        state=state,
-        strict=payload.strict,
-        warning=None,
+        message=payload.message,
+        history=[
+            message.model_dump() if hasattr(message, "model_dump") else message.dict()
+            for message in payload.history
+        ],
+        replace_vision=payload.replace_vision,
     )
+    return ChatResponse(**fallback, state=payload.state)
 
 
 @app.websocket("/ws/camera")

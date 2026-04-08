@@ -1,17 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Viralytics Mobile</string>
-    <string name="server_url_hint">http://192.168.1.100:8000</string>
+    <string name="app_name">FashionSense</string>
+    <string name="server_url_hint">http://192.168.1.80:8000</string>
     <string name="capture_outfit">Capture Outfit</string>
     <string name="send_refinement">Send Refinement</string>
     <string name="replace_vision">Replace vision result</string>
     <string name="status_idle">Status: Ready</string>
-    <string name="tagline">Scan with the tablet camera, then refine results with search-aware chat.</string>
+    <string name="tagline">Scan with the tablet camera, then refine with chat-aware fashion search.</string>
     <string name="connection_title">Connection</string>
     <string name="connection_help">Enter the PC server URL reachable on your local network.</string>
+    <string name="connection_save">Save Connection</string>
+    <string name="connection_settings">Connection settings</string>
     <string name="scan_title">Outfit Scan</string>
     <string name="scan_help">Take a photo on the tablet and send it to the PC for detection.</string>
     <string name="results_title">Results</string>
     <string name="refine_title">Refine Search</string>
     <string name="session_waiting">Session: waiting for scan</string>
+    <string name="detected_title">Detected Clothing</string>
+    <string name="recommendations_title">Store Recommendations</string>
+    <string name="recommendations_empty">Recommendations will appear here after a scan or chat refinement.</string>
+    <string name="recommendations_left">Scroll recommendations left</string>
+    <string name="recommendations_right">Scroll recommendations right</string>
+    <string name="chat_hint">Ask for yellow tops, tighter fits, more formal options, or tell it to ignore the scan.</string>
+    <string name="chat_empty">Assistant replies will appear here.</string>
+    <string name="annotated_scan">Annotated scan result</string>
+    <string name="detail_why_fits">Why it fits</string>
+    <string name="detail_description">Description</string>
+    <string name="detail_store_details">Store Details</string>
+    <string name="detail_attributes">Attributes</string>
+    <string name="match_badge">MATCH</string>
+    <string name="no_description">No extra product description is available for this item yet.</string>
+    <string name="no_attribute_rows">No extra attributes available for this recommendation.</string>
+    <string name="detections_empty">Nothing detected yet.</string>
+    <string name="tab_scan">Outfit Scan</string>
+    <string name="tab_refine">Refine Search</string>
 </resources>
