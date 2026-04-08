@@ -219,6 +219,7 @@ let currentSessionId = null;
 let currentDetectedCategories = [];
 let currentRecommendations = [];
 let chatHistory = [];
+let chatConversationState = null;
 let cameraReady = false;
 let pendingStart = false;
 let cameraSuspended = false;
@@ -387,6 +388,7 @@ function handleCameraMessage(msg) {
   } else if (msg.type === 'results') {
     frozen = false;
     hideFrozenLabel();
+    chatConversationState = null;
     if (msg.annotated_frame) {
       feed.style.display = 'block';
       feed.src = 'data:image/jpeg;base64,' + msg.annotated_frame;
@@ -412,6 +414,7 @@ function startScan() {
   currentDetectedCategories = [];
   currentRecommendations = [];
   chatHistory = [];
+  chatConversationState = null;
   hideFrozenLabel();
   pendingStart = true;
   if (!ws || ws.readyState === WebSocket.CLOSED) {
@@ -441,6 +444,7 @@ function sendCmd(cmd) {
     currentDetectedCategories = [];
     currentRecommendations = [];
     chatHistory = [];
+    chatConversationState = null;
     hideFrozenLabel();
     actions.classList.remove('show');
     tagsEl.innerHTML = '<span class="notag">Scanning...</span>';
@@ -644,6 +648,7 @@ function sendChat() {
       message: text,
       history: chatHistory,
       session_id: currentSessionId,
+      state: chatConversationState,
       detected_categories: currentDetectedCategories,
       recommendations: currentRecommendations
     })
@@ -653,6 +658,7 @@ function sendChat() {
       removeTypingIndicator();
       const reply = data.reply || data.message || data.response || 'Sorry, I could not process that.';
       if (data.session_id) currentSessionId = data.session_id;
+      if (data.state) chatConversationState = data.state;
       addChatBubble(reply, 'bot');
       chatHistory.push({ role: 'assistant', content: reply });
       if (Array.isArray(data.results) && data.results.length) renderRecs(data.results);
@@ -831,6 +837,7 @@ async function toggleVoice() {
                 message: text,
                 history: chatHistory,
                 session_id: currentSessionId,
+                state: chatConversationState,
                 detected_categories: currentDetectedCategories,
                 recommendations: currentRecommendations
               })
@@ -840,6 +847,7 @@ async function toggleVoice() {
                 removeTypingIndicator();
                 const reply = chatData.reply || chatData.message || chatData.response || 'Sorry, I could not process that.';
                 if (chatData.session_id) currentSessionId = chatData.session_id;
+                if (chatData.state) chatConversationState = chatData.state;
                 addChatBubble(reply, 'bot');
                 chatHistory.push({ role: 'assistant', content: reply });
                 if (Array.isArray(chatData.results) && chatData.results.length) renderRecs(chatData.results);

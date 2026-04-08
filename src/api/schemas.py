@@ -62,6 +62,8 @@ class ChatRequest(BaseModel):
     history: List[ChatMessage] = Field(default_factory=list)
     session_id: Optional[str] = None
     replace_vision: Optional[bool] = None
+    strict: bool = False
+    state: Optional[Dict[str, Any]] = None
     detected_categories: List[str] = Field(default_factory=list)
     recommendations: List[Dict[str, Any]] = Field(default_factory=list)
 
@@ -72,5 +74,6 @@ class ChatResponse(BaseModel):
     mode: str
     active_filters: Dict[str, Any]
     results: List[Dict[str, Any]]
+    state: Optional[Dict[str, Any]] = None
     strict: bool = False
     warning: Optional[str] = None

@@ -32,6 +32,7 @@ from fastapi.staticfiles import StaticFiles
 from src.api.schemas import (
     ChatRequest,
     ChatResponse,
+    ConversationRequest,
     DetectionResponse,
     HealthResponse,
     SessionResponse,
@@ -274,13 +275,73 @@ async def _detect_image_impl(file: UploadFile) -> DetectionResponse:
     )
 
 
-@app.post("/api/search/conversation")
-async def search_conversation(payload: ConversationRequest):
-    """
-    HTTP conversation step for the LNIAGIA search flow.
+def _get_detected_type(session_id: str | None, detected_categories: list[str]) -> str:
+    if detected_categories:
+        return detected_categories[0]
+    if session_id:
+        session = search_service.get_session(session_id)
+        if session and session.detected_categories:
+            return session.detected_categories[0]
+    raise HTTPException(status_code=400, detail="A detected clothing type is required to start chat refinement")
 
-    The frontend should send `state` from the previous response to keep context.
-    """
+
+def _format_conversation_results(raw_results: list[dict]) -> list[dict]:
+    formatted: list[dict] = []
+    for entry in raw_results:
+        item = entry.get("item") or {}
+        item_type = str(item.get("type") or item.get("category") or "item")
+        brand = item.get("brand")
+        name = (
+            item.get("name")
+            or item.get("title")
+            or item.get("product_name")
+            or (f"{brand} {item_type.replace('_', ' ')}".title() if brand else item_type.replace("_", " ").title())
+        )
+        price_value = item.get("price")
+        if isinstance(price_value, (int, float)):
+            price = f"EUR {price_value:.2f}"
+        else:
+            price = str(price_value) if price_value is not None else "N/A"
+
+        reason_parts = []
+        for key in ("color", "style", "occasion", "season", "material"):
+            value = item.get(key)
+            if value:
+                reason_parts.append(str(value))
+        reason = " | ".join(reason_parts) if reason_parts else "Refined via semantic search"
+
+        formatted.append(
+            {
+                "id": str(entry.get("item_id") or item.get("id") or item.get("item_id") or ""),
+                "name": str(name),
+                "category": item_type,
+                "price": price,
+                "image_url": item.get("image_url") or item.get("image"),
+                "reason": reason,
+                "score": round(float(entry.get("score", 0.0)), 4),
+                "brand": brand,
+                "description": item.get("description"),
+                "metadata": {
+                    key: item.get(key)
+                    for key in (
+                        "color",
+                        "style",
+                        "pattern",
+                        "material",
+                        "fit",
+                        "season",
+                        "occasion",
+                        "gender",
+                        "age_group",
+                    )
+                    if item.get(key) is not None
+                },
+            }
+        )
+    return formatted
+
+
+async def _run_conversation_search(payload: ConversationRequest) -> dict:
     try:
         from LNIAGIA.search_app import run_conversation_model
     except Exception as exc:
@@ -313,29 +374,9 @@ async def search_conversation(payload: ConversationRequest):
 
     The frontend should send `state` from the previous response to keep context.
     """
-    try:
-        from LNIAGIA.search_app import run_conversation_model
-    except Exception as exc:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Could not import conversation search module: {exc}",
-        ) from exc
+    return await _run_conversation_search(payload)
 
-    result = await run_in_threadpool(
-        run_conversation_model,
-        detected_type=payload.detected_type,
-        user_input=payload.message,
-        conversation_state=payload.state,
-        strict=payload.strict,
-    )
 
-    if not result.get("ok", False):
-        raise HTTPException(
-            status_code=400,
-            detail=result.get("error", "Conversation search failed."),
-        )
-
-    return result
 @app.post("/api/detect/image", response_model=DetectionResponse)
 async def detect_image(file: UploadFile = File(...)):
     """
@@ -449,8 +490,6 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(payload: ChatRequest):
-    from fastapi import HTTPException
-
     session_id = payload.session_id
     if not session_id:
         session = search_service.create_session(
@@ -459,17 +498,43 @@ async def chat(payload: ChatRequest):
         )
         session_id = session.id
 
-    try:
-        result = search_service.refine(
-            session_id=session_id,
-            message=payload.message,
-            history=[msg.model_dump() for msg in payload.history],
-            replace_vision=payload.replace_vision,
-        )
-    except KeyError:
-        raise HTTPException(status_code=404, detail="Session not found")
+    detected_type = _get_detected_type(session_id, payload.detected_categories)
+    mode = "override" if payload.replace_vision else "vision"
 
-    return ChatResponse(**result)
+    conversation_result = await _run_conversation_search(
+        ConversationRequest(
+            detected_type=detected_type,
+            message=payload.message,
+            strict=payload.strict,
+            state=payload.state,
+        )
+    )
+    results = _format_conversation_results(conversation_result.get("results", []))
+    state = conversation_result.get("state") or {}
+    active_filters = state.get("filters") if isinstance(state.get("filters"), dict) else {}
+
+    reply = (
+        f"I replaced the scan context and used your message as the main search direction. "
+        f"I found {len(results)} option(s) to explore next."
+        if mode == "override"
+        else f"I refined the results using the scanned clothing context. "
+             f"I found {len(results)} option(s) to explore next."
+    )
+    if not results:
+        reply = (
+            "I couldn't find strong matches from that refinement. Try a more specific request."
+        )
+
+    return ChatResponse(
+        reply=reply,
+        session_id=session_id,
+        mode=mode,
+        active_filters=active_filters,
+        results=results,
+        state=state,
+        strict=payload.strict,
+        warning=None,
+    )
 
 
 @app.websocket("/ws/camera")

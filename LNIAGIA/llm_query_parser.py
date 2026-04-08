@@ -5,6 +5,7 @@
 # ════════════════════════════════════════════════════════════
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -22,8 +23,37 @@ from DB.models import FILTERABLE_FIELDS, FREE_TEXT_FILTER_FIELDS
 # CONFIGURATION
 # ══════════════════════════════════════════════════════════════
 
-OLLAMA_MODEL = "qwen2.5:7b-instruct-q3_K_M"
-#OLLAMA_MODEL = "qwen2.5:3b-instruct"
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:3b-instruct")
+_FALLBACK_MODELS = [
+    OLLAMA_MODEL,
+    "qwen2.5:3b-instruct",
+    "qwen2.5:7b-instruct-q3_K_M",
+]
+
+
+def _chat_with_fallback(messages: list[dict], model: str | None = None):
+    candidates = []
+    preferred = model or OLLAMA_MODEL
+    for candidate in [preferred, *_FALLBACK_MODELS]:
+        if candidate and candidate not in candidates:
+            candidates.append(candidate)
+
+    last_error = None
+    for candidate in candidates:
+        try:
+            return ollama.chat(
+                model=candidate,
+                messages=messages,
+                options={"temperature": 0},
+            )
+        except Exception as exc:
+            last_error = exc
+            message = str(exc).lower()
+            if "not found" in message or "404" in message:
+                continue
+            raise
+
+    raise last_error if last_error is not None else RuntimeError("No Ollama model available")
 
 # ══════════════════════════════════════════════════════════════
 # PROMPT
@@ -321,13 +351,12 @@ def parse_query(query: str, model: str | None = None, verbose: bool = False) -> 
     """
     model = model or OLLAMA_MODEL
 
-    response = ollama.chat(
-        model=model,
-        messages=[
+    response = _chat_with_fallback(
+        [
             {"role": "system", "content": _build_system_prompt()},
             {"role": "user", "content": _build_user_prompt(query)},
         ],
-        options={"temperature": 0},
+        model=model,
     )
 
     raw = response.message.content.strip()
@@ -376,9 +405,8 @@ def refine_query(
     """
     model = model or OLLAMA_MODEL
 
-    response = ollama.chat(
-        model=model,
-        messages=[
+    response = _chat_with_fallback(
+        [
             {"role": "system", "content": _build_refinement_system_prompt()},
             {
                 "role": "user",
@@ -389,7 +417,7 @@ def refine_query(
                 ),
             },
         ],
-        options={"temperature": 0},
+        model=model,
     )
 
     raw = response.message.content.strip()

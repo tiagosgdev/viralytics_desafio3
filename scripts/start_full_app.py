@@ -211,6 +211,7 @@ def build_env(args: argparse.Namespace) -> dict:
     env = os.environ.copy()
     env["PYTHONPATH"] = str(REPO_ROOT) + os.pathsep + env.get("PYTHONPATH", "")
     env["DETECTOR_BACKEND"] = args.detector_backend
+    env.setdefault("OLLAMA_MODEL", EXPECTED_OLLAMA_MODEL)
     if args.model_weights:
         env["MODEL_WEIGHTS"] = args.model_weights
     return env
