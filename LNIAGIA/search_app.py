@@ -29,9 +29,16 @@ from DB.vector.VectorDBManager import (
 )
 from DB.SQLLite.DBManager import get_items_by_ids
 from llm_query_parser import parse_query, refine_query, OLLAMA_MODEL
+from query_parsing_models.baselines.exporter import load_latest_exported_parser
 
 
 _CONVERSATION_MODEL = None
+_INITIAL_BASELINE_PARSER = None
+_INITIAL_BASELINE_META: dict[str, Any] = {}
+_INITIAL_BASELINE_LOADED = False
+
+PARSER_MODE_ENV_VAR = "VIRALYTICS_PARSER_MODE"
+DEFAULT_PARSER_MODE = "auto"
 
 
 def clear():
@@ -43,6 +50,107 @@ def _to_int_or_none(value):
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def _normalize_filter_payload(payload: Any) -> dict:
+    if not isinstance(payload, dict):
+        return {"include": {}, "exclude": {}}
+
+    include = payload.get("include", {})
+    exclude = payload.get("exclude", {})
+
+    if not isinstance(include, dict):
+        include = {}
+    if not isinstance(exclude, dict):
+        exclude = {}
+
+    return {
+        "include": include,
+        "exclude": exclude,
+    }
+
+
+def _get_parser_mode() -> str:
+    configured = os.getenv(PARSER_MODE_ENV_VAR, DEFAULT_PARSER_MODE).strip().lower()
+    if configured in {"auto", "baseline", "llm"}:
+        return configured
+    return DEFAULT_PARSER_MODE
+
+
+def _candidate_results_dirs() -> list[Path]:
+    return [
+        Path("LNIAGIA/query_parsing_models/results"),
+        Path("query_parsing_models/results"),
+    ]
+
+
+def _load_exported_initial_parser() -> tuple[Any | None, dict[str, Any]]:
+    global _INITIAL_BASELINE_PARSER, _INITIAL_BASELINE_META, _INITIAL_BASELINE_LOADED
+
+    if _INITIAL_BASELINE_LOADED:
+        return _INITIAL_BASELINE_PARSER, _INITIAL_BASELINE_META
+
+    _INITIAL_BASELINE_LOADED = True
+    last_error = "No exported parser found."
+
+    for results_dir in _candidate_results_dirs():
+        try:
+            parser, manifest = load_latest_exported_parser(results_dir)
+            _INITIAL_BASELINE_PARSER = parser
+            _INITIAL_BASELINE_META = dict(manifest)
+            _INITIAL_BASELINE_META["results_dir"] = str(results_dir)
+            return _INITIAL_BASELINE_PARSER, _INITIAL_BASELINE_META
+        except Exception as exc:
+            last_error = f"{type(exc).__name__}: {exc}"
+
+    _INITIAL_BASELINE_PARSER = None
+    _INITIAL_BASELINE_META = {"load_error": last_error}
+    return _INITIAL_BASELINE_PARSER, _INITIAL_BASELINE_META
+
+
+def _initial_parser_banner() -> str:
+    mode = _get_parser_mode()
+
+    if mode == "llm":
+        return f"LLM only ({PARSER_MODE_ENV_VAR}=llm)"
+
+    parser, manifest = _load_exported_initial_parser()
+    if parser is None:
+        if mode == "baseline":
+            return f"baseline requested but unavailable; fallback to LLM ({manifest.get('load_error', 'unknown')})"
+        return "LLM fallback (no exported baseline parser found)"
+
+    model_name = str(manifest.get("model", "unknown"))
+    folder_size = manifest.get("folder_size", "?")
+    score = None
+    selection_row = manifest.get("selection_row")
+    if isinstance(selection_row, dict):
+        score = selection_row.get("tradeoff_score")
+
+    if isinstance(score, (int, float)):
+        return f"exported baseline: {model_name} (size={folder_size}, tradeoff={score:.4f})"
+    return f"exported baseline: {model_name} (size={folder_size})"
+
+
+def _parse_initial_query(query: str) -> tuple[dict, str]:
+    mode = _get_parser_mode()
+
+    if mode == "llm":
+        return _normalize_filter_payload(parse_query(query, verbose=False)), "llm"
+
+    parser, _ = _load_exported_initial_parser()
+
+    if parser is not None:
+        try:
+            parsed = parser.parse(query)
+            return _normalize_filter_payload(parsed), "baseline"
+        except Exception as exc:
+            print(f"\n  WARNING: Exported baseline parser failed ({exc}). Falling back to LLM parser.")
+
+    if mode == "baseline":
+        print("\n  WARNING: Baseline parser mode requested but no exported parser is available. Falling back to LLM parser.")
+
+    return _normalize_filter_payload(parse_query(query, verbose=False)), "llm"
 
 
 def _display_results(hits: list, parsed_filters: dict):
@@ -99,7 +207,8 @@ def main():
 
     print(f"  Vector DB    : {COLLECTION_NAME} ({points} points)")
     print(f"  Embed model  : {EMBEDDING_MODEL_NAME}")
-    print(f"  LLM parser   : {OLLAMA_MODEL}")
+    print(f"  Initial parser: {_initial_parser_banner()}")
+    print(f"  LLM refiner  : {OLLAMA_MODEL}")
     print(f"  Total results: {TOTAL_RESULTS} (evaluating {MAX_QUERY_RESULTS} cands)")
     print(f"  Threshold    : {SIMILARITY_THRESHOLD}")
     print("=" * 60)
@@ -148,9 +257,12 @@ def main():
             user_query = user_input
 
         if current_query is None or is_new_query:
-            print("\n  Parsing query with LLM ...")
             current_query = user_query
-            current_filters = parse_query(current_query, verbose=False)
+            current_filters, parser_source = _parse_initial_query(current_query)
+            if parser_source == "baseline":
+                print("\n  Parsed initial query with exported baseline parser.")
+            else:
+                print("\n  Parsed initial query with LLM parser.")
         else:
             print("\n  Refining current query + filters with LLM ...")
             updated = refine_query(
