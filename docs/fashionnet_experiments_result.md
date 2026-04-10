@@ -196,3 +196,64 @@ edna_1m_balanced_100 wins on: long_sleeve_outwear, vest, shorts, sling_dress (sl
 fashionnet_balanced_v1 wins on: long_sleeve_top (AP 0.0999 vs 0.0709), trousers, skirt, overall mAP.
 
 The aug=medium + multi_cell flags in fashionnet_balanced_v1 appear to provide marginal but real benefit for mAP, particularly for harder long-tail classes. The significantly lower val_loss of edna_1m_balanced_100 does not translate into better detection metrics, suggesting val_loss and mAP@50 are not tightly coupled at this scale.
+
+---
+
+## Full Training — edna_1.2m
+
+### Setup
+
+- Config: aug=medium, multi_cell=true, model_scale=m (~1.2M params), optimizer=adamw
+- Dataset: full balanced_dataset, 52,199 training images (no sample cap)
+- Epochs: 100
+- Batch: 16
+- Device: CUDA (NVIDIA GPU, 16GB VRAM)
+- Training time: 2093m 31s (~34h 53m)
+- Best val_loss: 2.8128 (epoch 100)
+- Weights: `models/weights/edna_1.2m/best.pt`
+
+### Evaluation — edna_1.2m
+
+Evaluated with `scripts/evaluate_custom.py`, val split (11,186 images), conf=0.25, NMS IoU=0.45.
+
+| Metric | edna_1.2m |
+|--------|-----------|
+| mAP@50 | **0.2600** |
+| Precision | 0.3467 |
+| Recall | 0.4920 |
+| F1 | **0.4068** |
+| Best val_loss | 2.8128 |
+| Best epoch | 100 |
+| Key flags | aug=medium, multi_cell |
+
+### Per-class breakdown
+
+| Category | AP | P | R | F1 |
+|----------|----|---|---|----|
+| short_sleeve_top | 0.1284 | 0.215 | 0.440 | 0.289 |
+| long_sleeve_top | 0.1448 | 0.329 | 0.338 | 0.334 |
+| long_sleeve_outwear | **0.3734** | 0.524 | 0.552 | **0.537** |
+| vest | 0.3516 | 0.368 | 0.594 | 0.455 |
+| shorts | 0.3290 | 0.414 | 0.592 | 0.487 |
+| trousers | 0.2463 | 0.318 | 0.604 | 0.417 |
+| skirt | 0.2086 | 0.236 | 0.556 | 0.332 |
+| short_sleeve_dress | 0.2705 | 0.404 | 0.445 | 0.424 |
+| long_sleeve_dress | 0.2240 | 0.417 | 0.381 | 0.398 |
+| vest_dress | 0.2706 | 0.406 | 0.478 | 0.439 |
+| sling_dress | 0.3128 | 0.430 | 0.415 | 0.422 |
+
+### 3-Way Comparison
+
+| Experiment | mAP@50 | F1 | Best val_loss | Best epoch | Key flags |
+|------------|--------|----|---------------|------------|-----------|
+| fashionnet_balanced_v1 | 0.1930 | 0.3594 | 3.0591 | 87 | aug=medium, multi_cell |
+| edna_1m_balanced_100 | 0.1869 | 0.3597 | 2.6953 | 63 | — |
+| **edna_1.2m** | **0.2600** | **0.4068** | 2.8128 | 100 | aug=medium, multi_cell |
+
+### Analysis
+
+edna_1.2m is a clear improvement over both previous versions: +0.0670 mAP@50 over fashionnet_balanced_v1 and +0.0731 over edna_1m_balanced_100. F1 also improves meaningfully (+0.0474 vs both). Recall jumps to 0.4920 — the highest of the three — suggesting the medium-scale model with aug=medium + multi_cell is better at finding objects, though precision (0.3467) remains the lowest, meaning more false positives.
+
+The biggest gains over edna_1m_balanced_100 are on long_sleeve_outwear (+0.0872 AP), vest (+0.0789 AP), shorts (+0.0509 AP), and skirt (+0.0907 AP). The weak classes (short_sleeve_top, long_sleeve_top) see meaningful improvement too (+0.0407 and +0.0739 AP respectively) but remain the bottom two.
+
+Scaling the model (m vs default s scale in edna_1m) combined with re-enabling aug=medium and multi_cell accounts for the gain — consistent with the original exp4 finding that these flags help.
