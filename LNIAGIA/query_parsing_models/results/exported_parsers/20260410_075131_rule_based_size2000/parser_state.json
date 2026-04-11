@@ -1,0 +1,1285 @@
+{
+  "parser_type": "rule_based",
+  "spacy_model": "core_web_sm",
+  "known_values_by_key": {
+    "type": [
+      "long_sleeve_dress",
+      "long_sleeve_outwear",
+      "long_sleeve_top",
+      "short_sleeve_dress",
+      "short_sleeve_top",
+      "shorts",
+      "skirt",
+      "sling_dress",
+      "trousers",
+      "vest",
+      "vest_dress"
+    ],
+    "pattern": [
+      "abstract",
+      "animal print",
+      "camouflage",
+      "checkered",
+      "embroidered",
+      "floral",
+      "geometric",
+      "graphic",
+      "plaid",
+      "plain",
+      "polka dot",
+      "striped",
+      "tie-dye"
+    ],
+    "material": [
+      "cashmere",
+      "chiffon",
+      "cotton",
+      "denim",
+      "fleece",
+      "leather",
+      "linen",
+      "nylon",
+      "organic cotton",
+      "polyester",
+      "rayon",
+      "satin",
+      "silk",
+      "spandex",
+      "suede",
+      "velvet",
+      "wool"
+    ],
+    "color": [
+      "beige",
+      "black",
+      "blue",
+      "brown",
+      "burgundy",
+      "coral",
+      "cream",
+      "gray",
+      "green",
+      "multicolor",
+      "navy",
+      "olive",
+      "orange",
+      "pink",
+      "purple",
+      "red",
+      "teal",
+      "white",
+      "yellow"
+    ],
+    "style": [
+      "bohemian",
+      "casual",
+      "elegant",
+      "formal",
+      "minimalist",
+      "preppy",
+      "smart casual",
+      "sporty",
+      "streetwear",
+      "vintage"
+    ],
+    "fit": [
+      "athletic",
+      "baggy",
+      "cropped",
+      "fitted",
+      "loose",
+      "oversized",
+      "regular",
+      "relaxed",
+      "slim fit",
+      "tailored"
+    ],
+    "occasion": [
+      "beach",
+      "date night",
+      "everyday",
+      "formal event",
+      "lounge",
+      "party",
+      "sport",
+      "travel",
+      "wedding",
+      "work"
+    ],
+    "gender": [
+      "female",
+      "male",
+      "unisex"
+    ],
+    "season": [
+      "all-season",
+      "autumn",
+      "spring",
+      "summer",
+      "winter"
+    ],
+    "age_group": [
+      "adult",
+      "baby",
+      "child",
+      "senior",
+      "teenager",
+      "young adult"
+    ],
+    "bottom_pockets": [
+      "back pockets",
+      "cargo pockets",
+      "coin pocket",
+      "hidden pockets",
+      "patch pockets",
+      "side pockets",
+      "welt pockets"
+    ],
+    "waist_style": [
+      "belted",
+      "drawstring",
+      "elastic",
+      "high-waisted",
+      "low-rise",
+      "mid-rise",
+      "regular"
+    ],
+    "hem_style": [
+      "asymmetric",
+      "cropped",
+      "curved",
+      "knotted",
+      "longline",
+      "raw edge",
+      "split",
+      "straight"
+    ],
+    "leg_style": [
+      "bootcut",
+      "cargo",
+      "flared",
+      "jogger",
+      "skinny",
+      "slim",
+      "straight",
+      "tapered",
+      "wide leg"
+    ],
+    "waist": [
+      "large",
+      "medium",
+      "small",
+      "xl",
+      "xs",
+      "xxl"
+    ],
+    "outwear_pockets": [
+      "flap pockets",
+      "hand warmer pockets",
+      "interior pockets",
+      "multiple pockets",
+      "none",
+      "patch pockets",
+      "side pockets",
+      "zippered pockets"
+    ],
+    "sleeve_style": [
+      "bell",
+      "bishop",
+      "cap",
+      "cuffed",
+      "dolman",
+      "lantern",
+      "puff",
+      "raglan",
+      "regular",
+      "rolled"
+    ],
+    "rise": [
+      "high-rise",
+      "low-rise",
+      "mid-rise"
+    ],
+    "neckline": [
+      "boat neck",
+      "collared",
+      "cowl neck",
+      "crew neck",
+      "halter",
+      "mock neck",
+      "off-shoulder",
+      "scoop neck",
+      "square neck",
+      "sweetheart",
+      "turtleneck",
+      "v-neck"
+    ],
+    "collar": [
+      "button-down",
+      "cuban",
+      "mandarin",
+      "none",
+      "notched",
+      "peter pan",
+      "pointed",
+      "shawl",
+      "spread"
+    ],
+    "dress_style": [
+      "a-line",
+      "empire",
+      "fit and flare",
+      "maxi",
+      "midi",
+      "mini",
+      "sheath",
+      "shift",
+      "shirt dress",
+      "slip dress",
+      "wrap"
+    ],
+    "closure": [
+      "belt",
+      "buttons",
+      "double breasted",
+      "open front",
+      "snap buttons",
+      "toggle",
+      "velcro",
+      "zipper"
+    ],
+    "hood": [
+      "attached",
+      "detachable",
+      "faux fur trim",
+      "none"
+    ],
+    "length": [
+      "ankle",
+      "cropped",
+      "full length",
+      "knee-length",
+      "maxi",
+      "midi",
+      "mini",
+      "short"
+    ],
+    "insulation": [
+      "down",
+      "heavy",
+      "light",
+      "medium",
+      "none",
+      "synthetic"
+    ],
+    "waterproof": [
+      "none",
+      "water resistant",
+      "waterproof"
+    ]
+  },
+  "surface_forms_by_pair": {
+    "type": {
+      "long_sleeve_dress": [
+        "long sleeve dress"
+      ],
+      "long_sleeve_outwear": [
+        "coat",
+        "coats",
+        "hoodie",
+        "jacket",
+        "jackets",
+        "long sleeve outwear",
+        "long sleeve outwears",
+        "outerwear"
+      ],
+      "long_sleeve_top": [
+        "blouse",
+        "blouses",
+        "jacket",
+        "long sleeve top",
+        "long sleeve tops",
+        "shirt",
+        "shirts",
+        "slip dress",
+        "sweater",
+        "sweatshirt"
+      ],
+      "short_sleeve_dress": [
+        "short sleeve dress"
+      ],
+      "short_sleeve_top": [
+        "blouse",
+        "shirt",
+        "short sleeve top",
+        "short sleeve tops",
+        "sleeveless top",
+        "strappy dress",
+        "t shirt",
+        "tank top",
+        "tee",
+        "tees",
+        "top",
+        "tshirt"
+      ],
+      "shorts": [
+        "shorts"
+      ],
+      "skirt": [
+        "jacket",
+        "skirt",
+        "skirts"
+      ],
+      "sling_dress": [
+        "sling dress",
+        "slip dress",
+        "strappy dress"
+      ],
+      "trousers": [
+        "chinos",
+        "jacket",
+        "jackets",
+        "jeans",
+        "pants",
+        "slacks",
+        "sleeveless tops",
+        "trouser",
+        "trousers"
+      ],
+      "vest": [
+        "sleeveless top",
+        "sleeveless tops",
+        "tank",
+        "tank top",
+        "vest",
+        "vests"
+      ],
+      "vest_dress": [
+        "sleeveless dress",
+        "vest dress"
+      ]
+    },
+    "pattern": {
+      "abstract": [
+        "abstract"
+      ],
+      "animal print": [
+        "animal print",
+        "embroidered"
+      ],
+      "camouflage": [
+        "camouflage"
+      ],
+      "checkered": [
+        "abstract",
+        "checkered",
+        "plaid"
+      ],
+      "embroidered": [
+        "embroidered"
+      ],
+      "floral": [
+        "floral"
+      ],
+      "geometric": [
+        "geometric"
+      ],
+      "graphic": [
+        "camouflage",
+        "graphic"
+      ],
+      "plaid": [
+        "plaid"
+      ],
+      "plain": [
+        "plaid",
+        "plain",
+        "polka dot",
+        "tie"
+      ],
+      "polka dot": [
+        "polka dot"
+      ],
+      "striped": [
+        "striped"
+      ],
+      "tie-dye": [
+        "tie",
+        "tie dye"
+      ]
+    },
+    "material": {
+      "cashmere": [
+        "cashmere"
+      ],
+      "chiffon": [
+        "chiffon"
+      ],
+      "cotton": [
+        "cotton",
+        "leather"
+      ],
+      "denim": [
+        "denim"
+      ],
+      "fleece": [
+        "fleece"
+      ],
+      "leather": [
+        "chiffon",
+        "leather"
+      ],
+      "linen": [
+        "linen"
+      ],
+      "nylon": [
+        "cashmere",
+        "nylon"
+      ],
+      "organic cotton": [
+        "organic cotton",
+        "satin"
+      ],
+      "polyester": [
+        "polyester"
+      ],
+      "rayon": [
+        "rayon"
+      ],
+      "satin": [
+        "denim",
+        "satin"
+      ],
+      "silk": [
+        "silk"
+      ],
+      "spandex": [
+        "spandex"
+      ],
+      "suede": [
+        "suede"
+      ],
+      "velvet": [
+        "velvet"
+      ],
+      "wool": [
+        "wool"
+      ]
+    },
+    "color": {
+      "beige": [
+        "beige"
+      ],
+      "black": [
+        "black"
+      ],
+      "blue": [
+        "blue"
+      ],
+      "brown": [
+        "brown"
+      ],
+      "burgundy": [
+        "burgundy"
+      ],
+      "coral": [
+        "coral"
+      ],
+      "cream": [
+        "cream"
+      ],
+      "gray": [
+        "gray"
+      ],
+      "green": [
+        "green"
+      ],
+      "multicolor": [
+        "multicolor"
+      ],
+      "navy": [
+        "navy"
+      ],
+      "olive": [
+        "olive"
+      ],
+      "orange": [
+        "orange"
+      ],
+      "pink": [
+        "green",
+        "pink"
+      ],
+      "purple": [
+        "purple"
+      ],
+      "red": [
+        "red"
+      ],
+      "teal": [
+        "teal"
+      ],
+      "white": [
+        "white"
+      ],
+      "yellow": [
+        "yellow"
+      ]
+    },
+    "style": {
+      "bohemian": [
+        "bohemian"
+      ],
+      "casual": [
+        "casual",
+        "elegant"
+      ],
+      "elegant": [
+        "elegant"
+      ],
+      "formal": [
+        "formal"
+      ],
+      "minimalist": [
+        "minimalist"
+      ],
+      "preppy": [
+        "preppy"
+      ],
+      "smart casual": [
+        "smart casual"
+      ],
+      "sporty": [
+        "formal",
+        "sporty"
+      ],
+      "streetwear": [
+        "streetwear"
+      ],
+      "vintage": [
+        "vintage"
+      ]
+    },
+    "fit": {
+      "athletic": [
+        "athletic"
+      ],
+      "baggy": [
+        "baggy",
+        "regular"
+      ],
+      "cropped": [
+        "cropped"
+      ],
+      "fitted": [
+        "cropped",
+        "fitted"
+      ],
+      "loose": [
+        "loose",
+        "relaxed"
+      ],
+      "oversized": [
+        "oversized"
+      ],
+      "regular": [
+        "regular"
+      ],
+      "relaxed": [
+        "athletic",
+        "relaxed"
+      ],
+      "slim fit": [
+        "fitted",
+        "loose",
+        "slim fit",
+        "tailored"
+      ],
+      "tailored": [
+        "tailored"
+      ]
+    },
+    "occasion": {
+      "beach": [
+        "beach"
+      ],
+      "date night": [
+        "date night"
+      ],
+      "everyday": [
+        "everyday"
+      ],
+      "formal event": [
+        "formal event"
+      ],
+      "lounge": [
+        "lounge"
+      ],
+      "party": [
+        "date night",
+        "party"
+      ],
+      "sport": [
+        "sport"
+      ],
+      "travel": [
+        "travel"
+      ],
+      "wedding": [
+        "wedding"
+      ],
+      "work": [
+        "work"
+      ]
+    },
+    "gender": {
+      "female": [
+        "female"
+      ],
+      "male": [
+        "female",
+        "male"
+      ],
+      "unisex": [
+        "unisex"
+      ]
+    },
+    "season": {
+      "all-season": [
+        "all",
+        "all season",
+        "winter"
+      ],
+      "autumn": [
+        "autumn",
+        "spring"
+      ],
+      "spring": [
+        "autumn",
+        "spring"
+      ],
+      "summer": [
+        "summer"
+      ],
+      "winter": [
+        "autumn",
+        "winter"
+      ]
+    },
+    "age_group": {
+      "adult": [
+        "adult"
+      ],
+      "baby": [
+        "baby"
+      ],
+      "child": [
+        "child"
+      ],
+      "senior": [
+        "baby",
+        "senior"
+      ],
+      "teenager": [
+        "child",
+        "teenager"
+      ],
+      "young adult": [
+        "young adult"
+      ]
+    },
+    "bottom_pockets": {
+      "back pockets": [
+        "back pockets"
+      ],
+      "cargo pockets": [
+        "cargo pockets"
+      ],
+      "coin pocket": [
+        "coin pocket"
+      ],
+      "hidden pockets": [
+        "hidden pockets"
+      ],
+      "patch pockets": [
+        "patch pockets"
+      ],
+      "side pockets": [
+        "side pockets"
+      ],
+      "welt pockets": [
+        "welt pockets"
+      ]
+    },
+    "waist_style": {
+      "belted": [
+        "belted"
+      ],
+      "drawstring": [
+        "drawstring"
+      ],
+      "elastic": [
+        "elastic"
+      ],
+      "high-waisted": [
+        "high",
+        "high waisted"
+      ],
+      "low-rise": [
+        "low",
+        "low rise"
+      ],
+      "mid-rise": [
+        "mid",
+        "mid rise"
+      ],
+      "regular": [
+        "high",
+        "regular"
+      ]
+    },
+    "hem_style": {
+      "asymmetric": [
+        "asymmetric"
+      ],
+      "cropped": [
+        "cropped"
+      ],
+      "curved": [
+        "curved"
+      ],
+      "knotted": [
+        "knotted"
+      ],
+      "longline": [
+        "longline"
+      ],
+      "raw edge": [
+        "raw edge"
+      ],
+      "split": [
+        "split"
+      ],
+      "straight": [
+        "straight"
+      ]
+    },
+    "leg_style": {
+      "bootcut": [
+        "bootcut"
+      ],
+      "cargo": [
+        "cargo"
+      ],
+      "flared": [
+        "flared"
+      ],
+      "jogger": [
+        "jogger"
+      ],
+      "skinny": [
+        "skinny"
+      ],
+      "slim": [
+        "slim"
+      ],
+      "straight": [
+        "straight"
+      ],
+      "tapered": [
+        "tapered"
+      ],
+      "wide leg": [
+        "wide leg"
+      ]
+    },
+    "waist": {
+      "large": [
+        "large"
+      ],
+      "medium": [
+        "medium"
+      ],
+      "small": [
+        "small"
+      ],
+      "xl": [
+        "xl"
+      ],
+      "xs": [
+        "xs"
+      ],
+      "xxl": [
+        "xxl"
+      ]
+    },
+    "outwear_pockets": {
+      "flap pockets": [
+        "flap pockets"
+      ],
+      "hand warmer pockets": [
+        "hand warmer pockets"
+      ],
+      "interior pockets": [
+        "hand warmer pockets",
+        "interior pockets"
+      ],
+      "multiple pockets": [
+        "multiple pockets"
+      ],
+      "none": [
+        "none"
+      ],
+      "patch pockets": [
+        "patch pockets"
+      ],
+      "side pockets": [
+        "side pockets"
+      ],
+      "zippered pockets": [
+        "zippered pockets"
+      ]
+    },
+    "sleeve_style": {
+      "bell": [
+        "bell"
+      ],
+      "bishop": [
+        "bishop"
+      ],
+      "cap": [
+        "cap"
+      ],
+      "cuffed": [
+        "cuffed"
+      ],
+      "dolman": [
+        "dolman"
+      ],
+      "lantern": [
+        "lantern"
+      ],
+      "puff": [
+        "puff"
+      ],
+      "raglan": [
+        "raglan"
+      ],
+      "regular": [
+        "regular"
+      ],
+      "rolled": [
+        "rolled"
+      ]
+    },
+    "rise": {
+      "high-rise": [
+        "high",
+        "high rise"
+      ],
+      "low-rise": [
+        "low",
+        "low rise"
+      ],
+      "mid-rise": [
+        "low",
+        "mid",
+        "mid rise"
+      ]
+    },
+    "neckline": {
+      "boat neck": [
+        "boat neck"
+      ],
+      "collared": [
+        "collared"
+      ],
+      "cowl neck": [
+        "cowl neck"
+      ],
+      "crew neck": [
+        "crew neck"
+      ],
+      "halter": [
+        "halter"
+      ],
+      "mock neck": [
+        "mock neck"
+      ],
+      "off-shoulder": [
+        "off",
+        "off shoulder"
+      ],
+      "scoop neck": [
+        "scoop neck"
+      ],
+      "square neck": [
+        "square neck"
+      ],
+      "sweetheart": [
+        "sweetheart"
+      ],
+      "turtleneck": [
+        "turtleneck"
+      ],
+      "v-neck": [
+        "v",
+        "v neck"
+      ]
+    },
+    "collar": {
+      "button-down": [
+        "button",
+        "button down"
+      ],
+      "cuban": [
+        "cuban"
+      ],
+      "mandarin": [
+        "mandarin"
+      ],
+      "none": [
+        "none"
+      ],
+      "notched": [
+        "notched"
+      ],
+      "peter pan": [
+        "peter pan"
+      ],
+      "pointed": [
+        "pointed"
+      ],
+      "shawl": [
+        "shawl"
+      ],
+      "spread": [
+        "spread"
+      ]
+    },
+    "dress_style": {
+      "a-line": [
+        "a",
+        "a line"
+      ],
+      "empire": [
+        "empire"
+      ],
+      "fit and flare": [
+        "fit and flare"
+      ],
+      "maxi": [
+        "maxi"
+      ],
+      "midi": [
+        "midi"
+      ],
+      "mini": [
+        "mini"
+      ],
+      "sheath": [
+        "sheath"
+      ],
+      "shift": [
+        "shift"
+      ],
+      "shirt dress": [
+        "shirt dress"
+      ],
+      "slip dress": [
+        "slip dress"
+      ],
+      "wrap": [
+        "wrap"
+      ]
+    },
+    "closure": {
+      "belt": [
+        "belt"
+      ],
+      "buttons": [
+        "buttons"
+      ],
+      "double breasted": [
+        "double breasted"
+      ],
+      "open front": [
+        "open front"
+      ],
+      "snap buttons": [
+        "snap buttons"
+      ],
+      "toggle": [
+        "toggle"
+      ],
+      "velcro": [
+        "velcro"
+      ],
+      "zipper": [
+        "zipper"
+      ]
+    },
+    "hood": {
+      "attached": [
+        "attached"
+      ],
+      "detachable": [
+        "attached",
+        "detachable"
+      ],
+      "faux fur trim": [
+        "faux fur trim"
+      ],
+      "none": [
+        "none"
+      ]
+    },
+    "length": {
+      "ankle": [
+        "ankle"
+      ],
+      "cropped": [
+        "ankle",
+        "cropped"
+      ],
+      "full length": [
+        "full length"
+      ],
+      "knee-length": [
+        "knee",
+        "knee length"
+      ],
+      "maxi": [
+        "maxi"
+      ],
+      "midi": [
+        "midi"
+      ],
+      "mini": [
+        "mini"
+      ],
+      "short": [
+        "short"
+      ]
+    },
+    "insulation": {
+      "down": [
+        "down"
+      ],
+      "heavy": [
+        "heavy"
+      ],
+      "light": [
+        "light"
+      ],
+      "medium": [
+        "medium"
+      ],
+      "none": [
+        "none"
+      ],
+      "synthetic": [
+        "synthetic"
+      ]
+    },
+    "waterproof": {
+      "none": [
+        "none"
+      ],
+      "water resistant": [
+        "water resistant"
+      ],
+      "waterproof": [
+        "waterproof"
+      ]
+    }
+  },
+  "semantic_expansion": {
+    "dark": [
+      [
+        "color",
+        "black"
+      ],
+      [
+        "color",
+        "navy"
+      ],
+      [
+        "color",
+        "burgundy"
+      ],
+      [
+        "color",
+        "olive"
+      ],
+      [
+        "color",
+        "brown"
+      ],
+      [
+        "color",
+        "gray"
+      ]
+    ],
+    "light": [
+      [
+        "color",
+        "white"
+      ],
+      [
+        "color",
+        "cream"
+      ],
+      [
+        "color",
+        "beige"
+      ],
+      [
+        "color",
+        "yellow"
+      ]
+    ],
+    "warm": [
+      [
+        "color",
+        "red"
+      ],
+      [
+        "color",
+        "orange"
+      ],
+      [
+        "color",
+        "coral"
+      ],
+      [
+        "color",
+        "burgundy"
+      ]
+    ],
+    "cool": [
+      [
+        "color",
+        "blue"
+      ],
+      [
+        "color",
+        "green"
+      ],
+      [
+        "color",
+        "navy"
+      ],
+      [
+        "color",
+        "teal"
+      ]
+    ]
+  },
+  "negation_words": [
+    "avoid",
+    "can't",
+    "cannot",
+    "don't",
+    "dont",
+    "except",
+    "never",
+    "no",
+    "not",
+    "without"
+  ],
+  "type_aliases": {
+    "short_sleeve_top": [
+      "t-shirt",
+      "tee",
+      "tees",
+      "tshirt",
+      "top"
+    ],
+    "long_sleeve_top": [
+      "shirt",
+      "blouse",
+      "sweater",
+      "sweatshirt"
+    ],
+    "short_sleeve_outwear": [
+      "short sleeve jacket"
+    ],
+    "long_sleeve_outwear": [
+      "jacket",
+      "coat",
+      "outerwear",
+      "hoodie"
+    ],
+    "vest": [
+      "tank top",
+      "sleeveless top",
+      "tank"
+    ],
+    "shorts": [
+      "shorts"
+    ],
+    "trousers": [
+      "pants",
+      "jeans",
+      "slacks",
+      "chinos",
+      "trouser"
+    ],
+    "skirt": [
+      "skirt"
+    ],
+    "short_sleeve_dress": [
+      "short sleeve dress"
+    ],
+    "long_sleeve_dress": [
+      "long sleeve dress"
+    ],
+    "vest_dress": [
+      "sleeveless dress"
+    ],
+    "sling_dress": [
+      "slip dress",
+      "strappy dress",
+      "sling dress"
+    ]
+  },
+  "semantic_hints": {
+    "dark": {
+      "color": [
+        "black",
+        "navy",
+        "burgundy",
+        "olive",
+        "brown",
+        "gray",
+        "charcoal"
+      ]
+    },
+    "light": {
+      "color": [
+        "white",
+        "cream",
+        "beige",
+        "yellow",
+        "pastel"
+      ]
+    },
+    "warm": {
+      "color": [
+        "red",
+        "orange",
+        "coral",
+        "burgundy"
+      ]
+    },
+    "cool": {
+      "color": [
+        "blue",
+        "green",
+        "navy",
+        "teal"
+      ]
+    }
+  }
+}

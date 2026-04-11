@@ -37,8 +37,12 @@ _INITIAL_BASELINE_PARSER = None
 _INITIAL_BASELINE_META: dict[str, Any] = {}
 _INITIAL_BASELINE_LOADED = False
 
-PARSER_MODE_ENV_VAR = "VIRALYTICS_PARSER_MODE"
-DEFAULT_PARSER_MODE = "auto"
+# Parser switch (manual toggle).
+# Keep one active line and comment the other.
+PARSER_MODE = "LLM"
+# PARSER_MODE = "Baseline"
+
+DEFAULT_PARSER_MODE = "llm"
 
 
 def clear():
@@ -71,9 +75,12 @@ def _normalize_filter_payload(payload: Any) -> dict:
 
 
 def _get_parser_mode() -> str:
-    configured = os.getenv(PARSER_MODE_ENV_VAR, DEFAULT_PARSER_MODE).strip().lower()
-    if configured in {"auto", "baseline", "llm"}:
+    # Accept only the two supported modes.
+    configured = str(PARSER_MODE).strip().lower()
+    if configured in {"baseline", "llm"}:
         return configured
+
+    # Safe fallback if the value is accidentally changed to something invalid.
     return DEFAULT_PARSER_MODE
 
 
@@ -112,7 +119,7 @@ def _initial_parser_banner() -> str:
     mode = _get_parser_mode()
 
     if mode == "llm":
-        return f"LLM only ({PARSER_MODE_ENV_VAR}=llm)"
+        return "LLM only (PARSER_MODE=LLM)"
 
     parser, manifest = _load_exported_initial_parser()
     if parser is None:

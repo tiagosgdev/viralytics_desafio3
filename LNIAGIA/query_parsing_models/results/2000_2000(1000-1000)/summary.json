@@ -1,0 +1,1539 @@
+{
+  "folder_size": 2000,
+  "folder_name": "2000(1000-1000)",
+  "train_count": 1400,
+  "val_count": 300,
+  "fixed_test_count": 1500,
+  "fixed_test_path": "LNIAGIA\\query_parsing_models\\data_generation\\full_outputs\\10000(5000-5000)\\test.json",
+  "fixed_test_sha256": "35c19b89e49129e42864110edd6e44275a67f277e7a09199f0b8331107ae8205",
+  "leakage_report": {
+    "overlap_id_count": 262,
+    "overlap_query_count": 137,
+    "overlap_ids_preview": [
+      "llm_aug_00004",
+      "llm_aug_00017",
+      "llm_aug_00024",
+      "llm_aug_00039",
+      "llm_aug_00051",
+      "llm_aug_00054",
+      "llm_aug_00061",
+      "llm_aug_00062",
+      "llm_aug_00063",
+      "llm_aug_00068",
+      "llm_aug_00073",
+      "llm_aug_00083",
+      "llm_aug_00086",
+      "llm_aug_00092",
+      "llm_aug_00097",
+      "llm_aug_00106",
+      "llm_aug_00108",
+      "llm_aug_00112",
+      "llm_aug_00120",
+      "llm_aug_00121"
+    ],
+    "overlap_queries_preview": [
+      "anything but animal print long sleeve dress",
+      "anything but striped long sleeve outwears",
+      "anything but striped skirts",
+      "are you looking for a tailored preppy shirt in teal, suitable for both unisex and male wear?",
+      "athletic gray striped long sleeve top",
+      "attending a formal dinner",
+      "baggy elegant long sleeve dress for all-season",
+      "bohemian embroidered shorts",
+      "bohemian tie-dye long sleeve dress",
+      "can you show me formal long sleeve outwears?",
+      "can you show me long sleeve outwears with shift",
+      "can you show me minimalist long sleeve outwears?",
+      "can you show me minimalist shorts?",
+      "can you show me short sleeve dress with maxi",
+      "can you show me skirts with a-line",
+      "can you show me skirts with empire",
+      "can you show me skirts with slip dress",
+      "can you show me smart casual trousers?",
+      "can you show me trousers with shift",
+      "can you show me vest dress with a-line"
+    ]
+  },
+  "models": {
+    "rule_based": {
+      "fit_time_s": 0.03379039996070787,
+      "metrics": {
+        "structured_micro_precision": 0.49255989911727616,
+        "structured_micro_recall": 0.8226621735467565,
+        "structured_micro_f1": 0.6161855182205395,
+        "structured_macro_f1": 0.6244794349836683,
+        "strict_exact_match_rate": 0.08533333333333333,
+        "negation_accuracy": 0.9112412177985948,
+        "pair_tp": 3906.0,
+        "pair_fp": 4024.0,
+        "pair_fn": 842.0,
+        "per_key": {
+          "age_group": {
+            "precision": 0.6021505376344086,
+            "recall": 0.5572139303482587,
+            "f1": 0.5788113695090439,
+            "support": 201.0
+          },
+          "bottom_pockets": {
+            "precision": 0.47619047619047616,
+            "recall": 0.7142857142857143,
+            "f1": 0.5714285714285714,
+            "support": 14.0
+          },
+          "closure": {
+            "precision": 0.7924528301886793,
+            "recall": 0.7777777777777778,
+            "f1": 0.7850467289719626,
+            "support": 54.0
+          },
+          "collar": {
+            "precision": 0.8571428571428571,
+            "recall": 0.9473684210526315,
+            "f1": 0.9,
+            "support": 38.0
+          },
+          "color": {
+            "precision": 0.831230283911672,
+            "recall": 0.8696369636963697,
+            "f1": 0.85,
+            "support": 606.0
+          },
+          "dress_style": {
+            "precision": 0.04728950403690888,
+            "recall": 0.9318181818181818,
+            "f1": 0.09001097694840834,
+            "support": 44.0
+          },
+          "fit": {
+            "precision": 0.4848901098901099,
+            "recall": 0.9145077720207254,
+            "f1": 0.6337522441651706,
+            "support": 386.0
+          },
+          "gender": {
+            "precision": 0.6820809248554913,
+            "recall": 0.7972972972972973,
+            "f1": 0.7352024922118379,
+            "support": 148.0
+          },
+          "hem_style": {
+            "precision": 0.4044943820224719,
+            "recall": 0.9473684210526315,
+            "f1": 0.5669291338582677,
+            "support": 38.0
+          },
+          "hood": {
+            "precision": 0.631578947368421,
+            "recall": 0.96,
+            "f1": 0.7619047619047619,
+            "support": 25.0
+          },
+          "insulation": {
+            "precision": 0.34375,
+            "recall": 0.9166666666666666,
+            "f1": 0.5,
+            "support": 12.0
+          },
+          "leg_style": {
+            "precision": 0.35443037974683544,
+            "recall": 0.9333333333333333,
+            "f1": 0.5137614678899083,
+            "support": 30.0
+          },
+          "length": {
+            "precision": 0.20164609053497942,
+            "recall": 0.9074074074074074,
+            "f1": 0.32996632996632996,
+            "support": 54.0
+          },
+          "material": {
+            "precision": 0.6447058823529411,
+            "recall": 0.898360655737705,
+            "f1": 0.7506849315068493,
+            "support": 305.0
+          },
+          "neckline": {
+            "precision": 0.9111111111111111,
+            "recall": 0.8913043478260869,
+            "f1": 0.9010989010989011,
+            "support": 46.0
+          },
+          "occasion": {
+            "precision": 0.7419354838709677,
+            "recall": 0.6845238095238095,
+            "f1": 0.7120743034055727,
+            "support": 336.0
+          },
+          "outwear_pockets": {
+            "precision": 0.6333333333333333,
+            "recall": 0.7037037037037037,
+            "f1": 0.6666666666666667,
+            "support": 27.0
+          },
+          "pattern": {
+            "precision": 0.5781487101669196,
+            "recall": 0.8718535469107551,
+            "f1": 0.6952554744525548,
+            "support": 437.0
+          },
+          "rise": {
+            "precision": 0.32608695652173914,
+            "recall": 0.8823529411764706,
+            "f1": 0.47619047619047616,
+            "support": 17.0
+          },
+          "season": {
+            "precision": 0.4760820045558087,
+            "recall": 0.8672199170124482,
+            "f1": 0.6147058823529412,
+            "support": 241.0
+          },
+          "sleeve_style": {
+            "precision": 0.5,
+            "recall": 0.9318181818181818,
+            "f1": 0.6507936507936508,
+            "support": 44.0
+          },
+          "style": {
+            "precision": 0.46153846153846156,
+            "recall": 0.7668393782383419,
+            "f1": 0.5762491888384167,
+            "support": 579.0
+          },
+          "type": {
+            "precision": 0.5031367628607277,
+            "recall": 0.8084677419354839,
+            "f1": 0.6202629543696829,
+            "support": 992.0
+          },
+          "waist": {
+            "precision": 0.6071428571428571,
+            "recall": 0.8095238095238095,
+            "f1": 0.6938775510204083,
+            "support": 21.0
+          },
+          "waist_style": {
+            "precision": 0.35514018691588783,
+            "recall": 0.9047619047619048,
+            "f1": 0.5100671140939598,
+            "support": 42.0
+          },
+          "waterproof": {
+            "precision": 0.4444444444444444,
+            "recall": 0.7272727272727273,
+            "f1": 0.5517241379310345,
+            "support": 11.0
+          }
+        },
+        "token_metrics": {
+          "token_accuracy": 0.9007016228375556,
+          "token_micro_precision": 0.8585365853658536,
+          "token_micro_recall": 0.7746478873239436,
+          "token_micro_f1": 0.8144377602961592,
+          "token_macro_precision": 0.6222106286044564,
+          "token_macro_recall": 0.6306729836397615,
+          "token_macro_f1": 0.5994896584376884,
+          "per_label": {
+            "B-AGE_GROUP": {
+              "precision": 0.9741379310344828,
+              "recall": 0.9186991869918699,
+              "f1": 0.9456066945606695,
+              "support": 123.0
+            },
+            "B-AGE_GROUP-X": {
+              "precision": 0.16666666666666666,
+              "recall": 0.4,
+              "f1": 0.23529411764705882,
+              "support": 5.0
+            },
+            "B-BOTTOM_POCKETS": {
+              "precision": 0.631578947368421,
+              "recall": 0.8571428571428571,
+              "f1": 0.7272727272727273,
+              "support": 14.0
+            },
+            "B-BOTTOM_POCKETS-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "B-CLOSURE": {
+              "precision": 1.0,
+              "recall": 0.9111111111111111,
+              "f1": 0.9534883720930233,
+              "support": 45.0
+            },
+            "B-CLOSURE-X": {
+              "precision": 0.16666666666666666,
+              "recall": 1.0,
+              "f1": 0.2857142857142857,
+              "support": 1.0
+            },
+            "B-COLLAR": {
+              "precision": 0.875,
+              "recall": 0.8235294117647058,
+              "f1": 0.8484848484848485,
+              "support": 17.0
+            },
+            "B-COLLAR-X": {
+              "precision": 0.8333333333333334,
+              "recall": 0.9523809523809523,
+              "f1": 0.8888888888888888,
+              "support": 21.0
+            },
+            "B-COLOR": {
+              "precision": 0.9267139479905437,
+              "recall": 0.9679012345679012,
+              "f1": 0.9468599033816425,
+              "support": 405.0
+            },
+            "B-COLOR-X": {
+              "precision": 0.8987341772151899,
+              "recall": 0.8208092485549133,
+              "f1": 0.8580060422960725,
+              "support": 173.0
+            },
+            "B-DRESS_STYLE": {
+              "precision": 0.7272727272727273,
+              "recall": 0.7619047619047619,
+              "f1": 0.7441860465116279,
+              "support": 42.0
+            },
+            "B-DRESS_STYLE-X": {
+              "precision": 0.17647058823529413,
+              "recall": 0.75,
+              "f1": 0.2857142857142857,
+              "support": 4.0
+            },
+            "B-FIT": {
+              "precision": 0.9233870967741935,
+              "recall": 0.9541666666666667,
+              "f1": 0.9385245901639344,
+              "support": 240.0
+            },
+            "B-FIT-X": {
+              "precision": 0.8520710059171598,
+              "recall": 0.9473684210526315,
+              "f1": 0.897196261682243,
+              "support": 152.0
+            },
+            "B-GENDER": {
+              "precision": 0.9838709677419355,
+              "recall": 0.9312977099236641,
+              "f1": 0.9568627450980393,
+              "support": 131.0
+            },
+            "B-GENDER-X": {
+              "precision": 0.3076923076923077,
+              "recall": 0.6666666666666666,
+              "f1": 0.42105263157894735,
+              "support": 6.0
+            },
+            "B-HEM_STYLE": {
+              "precision": 0.96875,
+              "recall": 0.8857142857142857,
+              "f1": 0.9253731343283582,
+              "support": 35.0
+            },
+            "B-HEM_STYLE-X": {
+              "precision": 0.25,
+              "recall": 0.5,
+              "f1": 0.3333333333333333,
+              "support": 2.0
+            },
+            "B-HOOD": {
+              "precision": 1.0,
+              "recall": 0.8888888888888888,
+              "f1": 0.9411764705882353,
+              "support": 9.0
+            },
+            "B-HOOD-X": {
+              "precision": 0.9411764705882353,
+              "recall": 0.9411764705882353,
+              "f1": 0.9411764705882353,
+              "support": 17.0
+            },
+            "B-INSULATION": {
+              "precision": 0.7692307692307693,
+              "recall": 0.9090909090909091,
+              "f1": 0.8333333333333334,
+              "support": 11.0
+            },
+            "B-INSULATION-X": {
+              "precision": 0.09090909090909091,
+              "recall": 1.0,
+              "f1": 0.16666666666666666,
+              "support": 1.0
+            },
+            "B-LEG_STYLE": {
+              "precision": 1.0,
+              "recall": 0.8571428571428571,
+              "f1": 0.9230769230769231,
+              "support": 14.0
+            },
+            "B-LEG_STYLE-X": {
+              "precision": 0.9411764705882353,
+              "recall": 1.0,
+              "f1": 0.9696969696969697,
+              "support": 16.0
+            },
+            "B-LENGTH": {
+              "precision": 0.06818181818181818,
+              "recall": 0.16666666666666666,
+              "f1": 0.0967741935483871,
+              "support": 18.0
+            },
+            "B-LENGTH-X": {
+              "precision": 0.7619047619047619,
+              "recall": 0.48484848484848486,
+              "f1": 0.5925925925925926,
+              "support": 33.0
+            },
+            "B-MATERIAL": {
+              "precision": 0.9432314410480349,
+              "recall": 0.9191489361702128,
+              "f1": 0.9310344827586207,
+              "support": 235.0
+            },
+            "B-MATERIAL-X": {
+              "precision": 0.7659574468085106,
+              "recall": 0.8674698795180723,
+              "f1": 0.8135593220338984,
+              "support": 83.0
+            },
+            "B-NECKLINE": {
+              "precision": 0.972972972972973,
+              "recall": 0.8181818181818182,
+              "f1": 0.8888888888888888,
+              "support": 44.0
+            },
+            "B-NECKLINE-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 1.0
+            },
+            "B-OCCASION": {
+              "precision": 0.8153846153846154,
+              "recall": 0.9592760180995475,
+              "f1": 0.8814968814968815,
+              "support": 221.0
+            },
+            "B-OCCASION-X": {
+              "precision": 0.5217391304347826,
+              "recall": 1.0,
+              "f1": 0.6857142857142857,
+              "support": 12.0
+            },
+            "B-OUTWEAR_POCKETS": {
+              "precision": 1.0,
+              "recall": 0.375,
+              "f1": 0.5454545454545454,
+              "support": 24.0
+            },
+            "B-OUTWEAR_POCKETS-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "B-PATTERN": {
+              "precision": 0.8928571428571429,
+              "recall": 0.8333333333333334,
+              "f1": 0.8620689655172413,
+              "support": 240.0
+            },
+            "B-PATTERN-X": {
+              "precision": 0.8524590163934426,
+              "recall": 0.8387096774193549,
+              "f1": 0.8455284552845529,
+              "support": 186.0
+            },
+            "B-RISE": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 17.0
+            },
+            "B-SEASON": {
+              "precision": 0.9354838709677419,
+              "recall": 0.7767857142857143,
+              "f1": 0.848780487804878,
+              "support": 224.0
+            },
+            "B-SEASON-X": {
+              "precision": 0.20833333333333334,
+              "recall": 0.4166666666666667,
+              "f1": 0.2777777777777778,
+              "support": 12.0
+            },
+            "B-SLEEVE_STYLE": {
+              "precision": 1.0,
+              "recall": 0.9302325581395349,
+              "f1": 0.963855421686747,
+              "support": 43.0
+            },
+            "B-STYLE": {
+              "precision": 0.6924564796905223,
+              "recall": 0.9597855227882037,
+              "f1": 0.8044943820224719,
+              "support": 373.0
+            },
+            "B-STYLE-X": {
+              "precision": 0.5276073619631901,
+              "recall": 0.7478260869565218,
+              "f1": 0.6187050359712231,
+              "support": 115.0
+            },
+            "B-TYPE": {
+              "precision": 0.9808917197452229,
+              "recall": 0.5403508771929825,
+              "f1": 0.6968325791855203,
+              "support": 855.0
+            },
+            "B-TYPE-X": {
+              "precision": 0.13829787234042554,
+              "recall": 0.18055555555555555,
+              "f1": 0.1566265060240964,
+              "support": 72.0
+            },
+            "B-WAIST": {
+              "precision": 0.9230769230769231,
+              "recall": 0.6666666666666666,
+              "f1": 0.7741935483870968,
+              "support": 18.0
+            },
+            "B-WAIST-X": {
+              "precision": 0.5714285714285714,
+              "recall": 1.0,
+              "f1": 0.7272727272727273,
+              "support": 4.0
+            },
+            "B-WAIST_STYLE": {
+              "precision": 1.0,
+              "recall": 0.34146341463414637,
+              "f1": 0.509090909090909,
+              "support": 41.0
+            },
+            "B-WAIST_STYLE-X": {
+              "precision": 0.6666666666666666,
+              "recall": 1.0,
+              "f1": 0.8,
+              "support": 2.0
+            },
+            "B-WATERPROOF": {
+              "precision": 1.0,
+              "recall": 0.9,
+              "f1": 0.9473684210526315,
+              "support": 10.0
+            },
+            "B-WATERPROOF-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-AGE_GROUP": {
+              "precision": 1.0,
+              "recall": 0.9473684210526315,
+              "f1": 0.972972972972973,
+              "support": 19.0
+            },
+            "I-AGE_GROUP-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-BOTTOM_POCKETS": {
+              "precision": 0.631578947368421,
+              "recall": 0.8571428571428571,
+              "f1": 0.7272727272727273,
+              "support": 14.0
+            },
+            "I-BOTTOM_POCKETS-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-CLOSURE": {
+              "precision": 1.0,
+              "recall": 0.875,
+              "f1": 0.9333333333333333,
+              "support": 16.0
+            },
+            "I-CLOSURE-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-COLLAR": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 1.0
+            },
+            "I-COLLAR-X": {
+              "precision": 0.5,
+              "recall": 0.5,
+              "f1": 0.5,
+              "support": 2.0
+            },
+            "I-DRESS_STYLE": {
+              "precision": 0.5714285714285714,
+              "recall": 0.6153846153846154,
+              "f1": 0.5925925925925926,
+              "support": 13.0
+            },
+            "I-DRESS_STYLE-X": {
+              "precision": 0.25,
+              "recall": 0.5,
+              "f1": 0.3333333333333333,
+              "support": 2.0
+            },
+            "I-FIT": {
+              "precision": 0.9545454545454546,
+              "recall": 0.9545454545454546,
+              "f1": 0.9545454545454546,
+              "support": 22.0
+            },
+            "I-FIT-X": {
+              "precision": 0.9444444444444444,
+              "recall": 0.9444444444444444,
+              "f1": 0.9444444444444444,
+              "support": 18.0
+            },
+            "I-HEM_STYLE": {
+              "precision": 1.0,
+              "recall": 0.6666666666666666,
+              "f1": 0.8,
+              "support": 3.0
+            },
+            "I-HEM_STYLE-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-HOOD": {
+              "precision": 1.0,
+              "recall": 0.6666666666666666,
+              "f1": 0.8,
+              "support": 6.0
+            },
+            "I-HOOD-X": {
+              "precision": 0.8333333333333334,
+              "recall": 1.0,
+              "f1": 0.9090909090909091,
+              "support": 10.0
+            },
+            "I-LEG_STYLE": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 2.0
+            },
+            "I-LEG_STYLE-X": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 3.0
+            },
+            "I-LENGTH": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 3.0
+            },
+            "I-LENGTH-X": {
+              "precision": 0.8,
+              "recall": 0.5,
+              "f1": 0.6153846153846154,
+              "support": 8.0
+            },
+            "I-MATERIAL": {
+              "precision": 0.9166666666666666,
+              "recall": 1.0,
+              "f1": 0.9565217391304348,
+              "support": 11.0
+            },
+            "I-MATERIAL-X": {
+              "precision": 1.0,
+              "recall": 0.8571428571428571,
+              "f1": 0.9230769230769231,
+              "support": 7.0
+            },
+            "I-NECKLINE": {
+              "precision": 1.0,
+              "recall": 0.68,
+              "f1": 0.8095238095238095,
+              "support": 25.0
+            },
+            "I-OCCASION": {
+              "precision": 0.819672131147541,
+              "recall": 0.9803921568627451,
+              "f1": 0.8928571428571429,
+              "support": 51.0
+            },
+            "I-OCCASION-X": {
+              "precision": 0.5,
+              "recall": 1.0,
+              "f1": 0.6666666666666666,
+              "support": 1.0
+            },
+            "I-OUTWEAR_POCKETS": {
+              "precision": 1.0,
+              "recall": 0.4583333333333333,
+              "f1": 0.6285714285714286,
+              "support": 24.0
+            },
+            "I-OUTWEAR_POCKETS-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-PATTERN": {
+              "precision": 0.9459459459459459,
+              "recall": 0.6140350877192983,
+              "f1": 0.7446808510638298,
+              "support": 57.0
+            },
+            "I-PATTERN-X": {
+              "precision": 1.0,
+              "recall": 0.5862068965517241,
+              "f1": 0.7391304347826086,
+              "support": 29.0
+            },
+            "I-RISE": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 17.0
+            },
+            "I-SEASON": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 31.0
+            },
+            "I-SEASON-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 5.0
+            },
+            "I-STYLE": {
+              "precision": 0.9534883720930233,
+              "recall": 0.9318181818181818,
+              "f1": 0.9425287356321839,
+              "support": 44.0
+            },
+            "I-STYLE-X": {
+              "precision": 0.6666666666666666,
+              "recall": 0.8571428571428571,
+              "f1": 0.75,
+              "support": 7.0
+            },
+            "I-TYPE": {
+              "precision": 1.0,
+              "recall": 0.5710843373493976,
+              "f1": 0.7269938650306749,
+              "support": 830.0
+            },
+            "I-TYPE-X": {
+              "precision": 0.06741573033707865,
+              "recall": 0.2608695652173913,
+              "f1": 0.10714285714285714,
+              "support": 23.0
+            },
+            "I-WAIST_STYLE": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 23.0
+            },
+            "I-WATERPROOF": {
+              "precision": 1.0,
+              "recall": 0.6666666666666666,
+              "f1": 0.8,
+              "support": 3.0
+            },
+            "I-WATERPROOF-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "NEG": {
+              "precision": 1.0,
+              "recall": 0.9016979445933869,
+              "f1": 0.9483082706766918,
+              "support": 1119.0
+            }
+          }
+        },
+        "latency": {
+          "count": 1500.0,
+          "mean_ms": 4.646598466788419,
+          "median_ms": 4.2708999826572835,
+          "p95_ms": 7.245299970963968,
+          "total_ms": 6969.897700182628,
+          "throughput_qps": 215.2111931227766
+        }
+      }
+    },
+    "crf": {
+      "fit_time_s": 31.697083299979568,
+      "training_info": {
+        "best_c1": 0.1,
+        "best_c2": 0.1,
+        "val_weighted_f1": 0.974055,
+        "labels_seen": 48
+      },
+      "metrics": {
+        "structured_micro_precision": 0.6579068695251268,
+        "structured_micro_recall": 0.6010951979780961,
+        "structured_micro_f1": 0.62821923838873,
+        "structured_macro_f1": 0.6056814656508844,
+        "strict_exact_match_rate": 0.2693333333333333,
+        "negation_accuracy": 0.7946503204235164,
+        "pair_tp": 2854.0,
+        "pair_fp": 1484.0,
+        "pair_fn": 1894.0,
+        "per_key": {
+          "age_group": {
+            "precision": 0.4645669291338583,
+            "recall": 0.2935323383084577,
+            "f1": 0.35975609756097565,
+            "support": 201.0
+          },
+          "bottom_pockets": {
+            "precision": 0.25,
+            "recall": 0.14285714285714285,
+            "f1": 0.18181818181818182,
+            "support": 14.0
+          },
+          "closure": {
+            "precision": 0.5777777777777777,
+            "recall": 0.48148148148148145,
+            "f1": 0.5252525252525252,
+            "support": 54.0
+          },
+          "collar": {
+            "precision": 0.9210526315789473,
+            "recall": 0.9210526315789473,
+            "f1": 0.9210526315789473,
+            "support": 38.0
+          },
+          "color": {
+            "precision": 0.8123924268502581,
+            "recall": 0.7788778877887789,
+            "f1": 0.7952822240943554,
+            "support": 606.0
+          },
+          "dress_style": {
+            "precision": 0.5581395348837209,
+            "recall": 0.5454545454545454,
+            "f1": 0.5517241379310344,
+            "support": 44.0
+          },
+          "fit": {
+            "precision": 0.5919395465994962,
+            "recall": 0.6088082901554405,
+            "f1": 0.6002554278416348,
+            "support": 386.0
+          },
+          "gender": {
+            "precision": 0.5373134328358209,
+            "recall": 0.4864864864864865,
+            "f1": 0.5106382978723404,
+            "support": 148.0
+          },
+          "hem_style": {
+            "precision": 0.8378378378378378,
+            "recall": 0.8157894736842105,
+            "f1": 0.8266666666666665,
+            "support": 38.0
+          },
+          "hood": {
+            "precision": 0.6923076923076923,
+            "recall": 0.72,
+            "f1": 0.7058823529411765,
+            "support": 25.0
+          },
+          "insulation": {
+            "precision": 0.5,
+            "recall": 0.16666666666666666,
+            "f1": 0.25,
+            "support": 12.0
+          },
+          "leg_style": {
+            "precision": 0.9166666666666666,
+            "recall": 0.7333333333333333,
+            "f1": 0.8148148148148148,
+            "support": 30.0
+          },
+          "length": {
+            "precision": 0.8723404255319149,
+            "recall": 0.7592592592592593,
+            "f1": 0.8118811881188118,
+            "support": 54.0
+          },
+          "material": {
+            "precision": 0.628125,
+            "recall": 0.659016393442623,
+            "f1": 0.6432000000000001,
+            "support": 305.0
+          },
+          "neckline": {
+            "precision": 0.5111111111111111,
+            "recall": 0.5,
+            "f1": 0.5054945054945055,
+            "support": 46.0
+          },
+          "occasion": {
+            "precision": 0.4549019607843137,
+            "recall": 0.34523809523809523,
+            "f1": 0.3925549915397631,
+            "support": 336.0
+          },
+          "outwear_pockets": {
+            "precision": 0.5454545454545454,
+            "recall": 0.4444444444444444,
+            "f1": 0.4897959183673469,
+            "support": 27.0
+          },
+          "pattern": {
+            "precision": 0.6378504672897196,
+            "recall": 0.6247139588100686,
+            "f1": 0.63121387283237,
+            "support": 437.0
+          },
+          "rise": {
+            "precision": 0.8235294117647058,
+            "recall": 0.8235294117647058,
+            "f1": 0.8235294117647058,
+            "support": 17.0
+          },
+          "season": {
+            "precision": 0.5458333333333333,
+            "recall": 0.5435684647302904,
+            "f1": 0.5446985446985446,
+            "support": 241.0
+          },
+          "sleeve_style": {
+            "precision": 0.8717948717948718,
+            "recall": 0.7727272727272727,
+            "f1": 0.8192771084337349,
+            "support": 44.0
+          },
+          "style": {
+            "precision": 0.760914760914761,
+            "recall": 0.6321243523316062,
+            "f1": 0.690566037735849,
+            "support": 579.0
+          },
+          "type": {
+            "precision": 0.6662995594713657,
+            "recall": 0.6098790322580645,
+            "f1": 0.6368421052631579,
+            "support": 992.0
+          },
+          "waist": {
+            "precision": 0.43478260869565216,
+            "recall": 0.47619047619047616,
+            "f1": 0.4545454545454545,
+            "support": 21.0
+          },
+          "waist_style": {
+            "precision": 0.575,
+            "recall": 0.5476190476190477,
+            "f1": 0.5609756097560975,
+            "support": 42.0
+          },
+          "waterproof": {
+            "precision": 0.7777777777777778,
+            "recall": 0.6363636363636364,
+            "f1": 0.7000000000000001,
+            "support": 11.0
+          }
+        },
+        "token_metrics": {
+          "token_accuracy": 0.8585506935889883,
+          "token_micro_precision": 0.8042328042328042,
+          "token_micro_recall": 0.6244131455399061,
+          "token_micro_f1": 0.7030062768417575,
+          "token_macro_precision": 0.5725409180094063,
+          "token_macro_recall": 0.4537929254141599,
+          "token_macro_f1": 0.4478145547860319,
+          "per_label": {
+            "B-AGE_GROUP": {
+              "precision": 0.9830508474576272,
+              "recall": 0.4715447154471545,
+              "f1": 0.6373626373626373,
+              "support": 123.0
+            },
+            "B-AGE_GROUP-X": {
+              "precision": 0.07407407407407407,
+              "recall": 0.4,
+              "f1": 0.125,
+              "support": 5.0
+            },
+            "B-BOTTOM_POCKETS": {
+              "precision": 1.0,
+              "recall": 0.21428571428571427,
+              "f1": 0.35294117647058826,
+              "support": 14.0
+            },
+            "B-BOTTOM_POCKETS-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "B-CLOSURE": {
+              "precision": 1.0,
+              "recall": 0.5555555555555556,
+              "f1": 0.7142857142857143,
+              "support": 45.0
+            },
+            "B-CLOSURE-X": {
+              "precision": 0.05,
+              "recall": 1.0,
+              "f1": 0.09523809523809523,
+              "support": 1.0
+            },
+            "B-COLLAR": {
+              "precision": 1.0,
+              "recall": 0.8823529411764706,
+              "f1": 0.9375,
+              "support": 17.0
+            },
+            "B-COLLAR-X": {
+              "precision": 0.9523809523809523,
+              "recall": 0.9523809523809523,
+              "f1": 0.9523809523809523,
+              "support": 21.0
+            },
+            "B-COLOR": {
+              "precision": 0.9589442815249267,
+              "recall": 0.8074074074074075,
+              "f1": 0.8766756032171582,
+              "support": 405.0
+            },
+            "B-COLOR-X": {
+              "precision": 0.6995305164319249,
+              "recall": 0.861271676300578,
+              "f1": 0.772020725388601,
+              "support": 173.0
+            },
+            "B-DRESS_STYLE": {
+              "precision": 0.9,
+              "recall": 0.42857142857142855,
+              "f1": 0.5806451612903226,
+              "support": 42.0
+            },
+            "B-DRESS_STYLE-X": {
+              "precision": 0.10526315789473684,
+              "recall": 0.5,
+              "f1": 0.17391304347826086,
+              "support": 4.0
+            },
+            "B-FIT": {
+              "precision": 0.9239766081871345,
+              "recall": 0.6583333333333333,
+              "f1": 0.7688564476885644,
+              "support": 240.0
+            },
+            "B-FIT-X": {
+              "precision": 0.8823529411764706,
+              "recall": 0.5921052631578947,
+              "f1": 0.7086614173228346,
+              "support": 152.0
+            },
+            "B-GENDER": {
+              "precision": 0.9733333333333334,
+              "recall": 0.5572519083969466,
+              "f1": 0.7087378640776699,
+              "support": 131.0
+            },
+            "B-GENDER-X": {
+              "precision": 0.17391304347826086,
+              "recall": 0.6666666666666666,
+              "f1": 0.27586206896551724,
+              "support": 6.0
+            },
+            "B-HEM_STYLE": {
+              "precision": 0.967741935483871,
+              "recall": 0.8571428571428571,
+              "f1": 0.9090909090909091,
+              "support": 35.0
+            },
+            "B-HEM_STYLE-X": {
+              "precision": 0.3333333333333333,
+              "recall": 1.0,
+              "f1": 0.5,
+              "support": 2.0
+            },
+            "B-HOOD": {
+              "precision": 1.0,
+              "recall": 0.7777777777777778,
+              "f1": 0.875,
+              "support": 9.0
+            },
+            "B-HOOD-X": {
+              "precision": 0.9230769230769231,
+              "recall": 0.7058823529411765,
+              "f1": 0.8,
+              "support": 17.0
+            },
+            "B-INSULATION": {
+              "precision": 0.6666666666666666,
+              "recall": 0.18181818181818182,
+              "f1": 0.2857142857142857,
+              "support": 11.0
+            },
+            "B-INSULATION-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 1.0
+            },
+            "B-LEG_STYLE": {
+              "precision": 1.0,
+              "recall": 0.7142857142857143,
+              "f1": 0.8333333333333334,
+              "support": 14.0
+            },
+            "B-LEG_STYLE-X": {
+              "precision": 0.9285714285714286,
+              "recall": 0.8125,
+              "f1": 0.8666666666666667,
+              "support": 16.0
+            },
+            "B-LENGTH": {
+              "precision": 0.7142857142857143,
+              "recall": 0.5555555555555556,
+              "f1": 0.625,
+              "support": 18.0
+            },
+            "B-LENGTH-X": {
+              "precision": 0.9230769230769231,
+              "recall": 0.7272727272727273,
+              "f1": 0.8135593220338984,
+              "support": 33.0
+            },
+            "B-MATERIAL": {
+              "precision": 0.9239766081871345,
+              "recall": 0.6723404255319149,
+              "f1": 0.7783251231527094,
+              "support": 235.0
+            },
+            "B-MATERIAL-X": {
+              "precision": 0.5773195876288659,
+              "recall": 0.6746987951807228,
+              "f1": 0.6222222222222222,
+              "support": 83.0
+            },
+            "B-NECKLINE": {
+              "precision": 0.9411764705882353,
+              "recall": 0.36363636363636365,
+              "f1": 0.5245901639344263,
+              "support": 44.0
+            },
+            "B-NECKLINE-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 1.0
+            },
+            "B-OCCASION": {
+              "precision": 0.9016393442622951,
+              "recall": 0.497737556561086,
+              "f1": 0.641399416909621,
+              "support": 221.0
+            },
+            "B-OCCASION-X": {
+              "precision": 0.07518796992481203,
+              "recall": 0.8333333333333334,
+              "f1": 0.13793103448275862,
+              "support": 12.0
+            },
+            "B-OUTWEAR_POCKETS": {
+              "precision": 0.8461538461538461,
+              "recall": 0.4583333333333333,
+              "f1": 0.5945945945945946,
+              "support": 24.0
+            },
+            "B-OUTWEAR_POCKETS-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "B-PATTERN": {
+              "precision": 0.9057971014492754,
+              "recall": 0.5208333333333334,
+              "f1": 0.6613756613756614,
+              "support": 240.0
+            },
+            "B-PATTERN-X": {
+              "precision": 0.7423312883435583,
+              "recall": 0.6505376344086021,
+              "f1": 0.6934097421203438,
+              "support": 186.0
+            },
+            "B-RISE": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 17.0
+            },
+            "B-SEASON": {
+              "precision": 0.9809523809523809,
+              "recall": 0.45982142857142855,
+              "f1": 0.6261398176291794,
+              "support": 224.0
+            },
+            "B-SEASON-X": {
+              "precision": 0.06896551724137931,
+              "recall": 0.3333333333333333,
+              "f1": 0.11428571428571428,
+              "support": 12.0
+            },
+            "B-SLEEVE_STYLE": {
+              "precision": 1.0,
+              "recall": 0.8372093023255814,
+              "f1": 0.9113924050632911,
+              "support": 43.0
+            },
+            "B-SLEEVE_STYLE-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "B-STYLE": {
+              "precision": 0.9198717948717948,
+              "recall": 0.7694369973190348,
+              "f1": 0.8379562043795621,
+              "support": 373.0
+            },
+            "B-STYLE-X": {
+              "precision": 0.6641221374045801,
+              "recall": 0.7565217391304347,
+              "f1": 0.7073170731707317,
+              "support": 115.0
+            },
+            "B-TYPE": {
+              "precision": 0.9902439024390244,
+              "recall": 0.47485380116959064,
+              "f1": 0.641897233201581,
+              "support": 855.0
+            },
+            "B-TYPE-X": {
+              "precision": 0.08552631578947369,
+              "recall": 0.18055555555555555,
+              "f1": 0.11607142857142858,
+              "support": 72.0
+            },
+            "B-WAIST": {
+              "precision": 0.7272727272727273,
+              "recall": 0.4444444444444444,
+              "f1": 0.5517241379310345,
+              "support": 18.0
+            },
+            "B-WAIST-X": {
+              "precision": 0.3333333333333333,
+              "recall": 1.0,
+              "f1": 0.5,
+              "support": 4.0
+            },
+            "B-WAIST_STYLE": {
+              "precision": 0.9090909090909091,
+              "recall": 0.24390243902439024,
+              "f1": 0.38461538461538464,
+              "support": 41.0
+            },
+            "B-WAIST_STYLE-X": {
+              "precision": 0.1,
+              "recall": 0.5,
+              "f1": 0.16666666666666666,
+              "support": 2.0
+            },
+            "B-WATERPROOF": {
+              "precision": 1.0,
+              "recall": 0.7,
+              "f1": 0.8235294117647058,
+              "support": 10.0
+            },
+            "B-WATERPROOF-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-AGE_GROUP": {
+              "precision": 1.0,
+              "recall": 0.7368421052631579,
+              "f1": 0.8484848484848485,
+              "support": 19.0
+            },
+            "I-AGE_GROUP-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-BOTTOM_POCKETS": {
+              "precision": 1.0,
+              "recall": 0.21428571428571427,
+              "f1": 0.35294117647058826,
+              "support": 14.0
+            },
+            "I-BOTTOM_POCKETS-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-CLOSURE": {
+              "precision": 1.0,
+              "recall": 0.4375,
+              "f1": 0.6086956521739131,
+              "support": 16.0
+            },
+            "I-CLOSURE-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-COLLAR": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 1.0
+            },
+            "I-COLLAR-X": {
+              "precision": 1.0,
+              "recall": 0.5,
+              "f1": 0.6666666666666666,
+              "support": 2.0
+            },
+            "I-DRESS_STYLE": {
+              "precision": 1.0,
+              "recall": 0.3076923076923077,
+              "f1": 0.47058823529411764,
+              "support": 13.0
+            },
+            "I-DRESS_STYLE-X": {
+              "precision": 0.16666666666666666,
+              "recall": 0.5,
+              "f1": 0.25,
+              "support": 2.0
+            },
+            "I-FIT": {
+              "precision": 0.9047619047619048,
+              "recall": 0.8636363636363636,
+              "f1": 0.8837209302325582,
+              "support": 22.0
+            },
+            "I-FIT-X": {
+              "precision": 0.8421052631578947,
+              "recall": 0.8888888888888888,
+              "f1": 0.8648648648648649,
+              "support": 18.0
+            },
+            "I-HEM_STYLE": {
+              "precision": 1.0,
+              "recall": 0.3333333333333333,
+              "f1": 0.5,
+              "support": 3.0
+            },
+            "I-HEM_STYLE-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-HOOD": {
+              "precision": 1.0,
+              "recall": 0.6666666666666666,
+              "f1": 0.8,
+              "support": 6.0
+            },
+            "I-HOOD-X": {
+              "precision": 0.8333333333333334,
+              "recall": 1.0,
+              "f1": 0.9090909090909091,
+              "support": 10.0
+            },
+            "I-LEG_STYLE": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 2.0
+            },
+            "I-LEG_STYLE-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 3.0
+            },
+            "I-LENGTH": {
+              "precision": 1.0,
+              "recall": 0.3333333333333333,
+              "f1": 0.5,
+              "support": 3.0
+            },
+            "I-LENGTH-X": {
+              "precision": 1.0,
+              "recall": 0.375,
+              "f1": 0.5454545454545454,
+              "support": 8.0
+            },
+            "I-MATERIAL": {
+              "precision": 0.8,
+              "recall": 0.7272727272727273,
+              "f1": 0.7619047619047619,
+              "support": 11.0
+            },
+            "I-MATERIAL-X": {
+              "precision": 0.625,
+              "recall": 0.7142857142857143,
+              "f1": 0.6666666666666666,
+              "support": 7.0
+            },
+            "I-NECKLINE": {
+              "precision": 1.0,
+              "recall": 0.2,
+              "f1": 0.3333333333333333,
+              "support": 25.0
+            },
+            "I-NECKLINE-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-OCCASION": {
+              "precision": 0.9629629629629629,
+              "recall": 0.5098039215686274,
+              "f1": 0.6666666666666666,
+              "support": 51.0
+            },
+            "I-OCCASION-X": {
+              "precision": 0.027777777777777776,
+              "recall": 1.0,
+              "f1": 0.05405405405405406,
+              "support": 1.0
+            },
+            "I-OUTWEAR_POCKETS": {
+              "precision": 0.8333333333333334,
+              "recall": 0.4166666666666667,
+              "f1": 0.5555555555555556,
+              "support": 24.0
+            },
+            "I-OUTWEAR_POCKETS-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "I-PATTERN": {
+              "precision": 0.875,
+              "recall": 0.12280701754385964,
+              "f1": 0.2153846153846154,
+              "support": 57.0
+            },
+            "I-PATTERN-X": {
+              "precision": 0.5625,
+              "recall": 0.3103448275862069,
+              "f1": 0.4,
+              "support": 29.0
+            },
+            "I-RISE": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 17.0
+            },
+            "I-SEASON": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 31.0
+            },
+            "I-SEASON-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 5.0
+            },
+            "I-STYLE": {
+              "precision": 0.972972972972973,
+              "recall": 0.8181818181818182,
+              "f1": 0.8888888888888888,
+              "support": 44.0
+            },
+            "I-STYLE-X": {
+              "precision": 0.4,
+              "recall": 0.8571428571428571,
+              "f1": 0.5454545454545454,
+              "support": 7.0
+            },
+            "I-TYPE": {
+              "precision": 1.0,
+              "recall": 0.5012048192771085,
+              "f1": 0.6677367576243981,
+              "support": 830.0
+            },
+            "I-TYPE-X": {
+              "precision": 0.04081632653061224,
+              "recall": 0.2608695652173913,
+              "f1": 0.07058823529411765,
+              "support": 23.0
+            },
+            "I-WAIST_STYLE": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 23.0
+            },
+            "I-WATERPROOF": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 3.0
+            },
+            "I-WATERPROOF-X": {
+              "precision": 0.0,
+              "recall": 0.0,
+              "f1": 0.0,
+              "support": 0.0
+            },
+            "NEG": {
+              "precision": 1.0,
+              "recall": 0.9016979445933869,
+              "f1": 0.9483082706766918,
+              "support": 1119.0
+            }
+          }
+        },
+        "latency": {
+          "count": 1500.0,
+          "mean_ms": 9.880840466202548,
+          "median_ms": 8.610049990238622,
+          "p95_ms": 18.86146498145535,
+          "total_ms": 14821.26069930382,
+          "throughput_qps": 101.20596556745389
+        }
+      }
+    }
+  }
+}

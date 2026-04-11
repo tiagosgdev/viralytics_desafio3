@@ -1,0 +1,7 @@
+{
+  "updated_at_utc": "2026-04-10T07:51:31.295142Z",
+  "manifest_path": "20260410_075131_rule_based_size2000/manifest.json",
+  "model": "rule_based",
+  "folder_size": 2000,
+  "tradeoff_score": 0.5820161060738386
+}
