@@ -28,8 +28,8 @@ from DB.vector.VectorDBManager import (
     SIMILARITY_THRESHOLD,
 )
 from DB.SQLLite.DBManager import get_items_by_ids
-from llm_query_parser import parse_query, refine_query, OLLAMA_MODEL
-from query_parsing_models.baselines.exporter import load_latest_exported_parser
+from LNIAGIA.query_parsing.llm_query_parser import parse_query, refine_query, OLLAMA_MODEL
+from LNIAGIA.query_parsing.qp_models.baselines.exporter import load_latest_exported_parser
 
 
 _CONVERSATION_MODEL = None

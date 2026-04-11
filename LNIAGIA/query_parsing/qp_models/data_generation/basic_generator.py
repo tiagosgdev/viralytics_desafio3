@@ -11,7 +11,7 @@ try:
 except ModuleNotFoundError:
     tqdm = None
 
-from bio_projection import project_bio_labels
+from LNIAGIA.query_parsing.qp_models.data_generation.bio_projection import project_bio_labels
 
 try:
     from LNIAGIA.DB import models as db_models

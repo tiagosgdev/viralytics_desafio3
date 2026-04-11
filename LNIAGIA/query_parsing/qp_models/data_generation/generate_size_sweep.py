@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from generate_full_dataset import generate_full_dataset
+from LNIAGIA.query_parsing.qp_models.data_generation.generate_full_dataset import generate_full_dataset
 
 
 def _parse_sizes(raw: str) -> list[int]:

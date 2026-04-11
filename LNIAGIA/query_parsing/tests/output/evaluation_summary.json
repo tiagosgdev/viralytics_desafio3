@@ -1,0 +1,89 @@
+{
+  "models": {
+    "llm_parser": "qwen2.5:7b-instruct-q3_K_M",
+    "winner_baseline": "rule_based_2000"
+  },
+  "categories": {
+    "basic_queries": {
+      "winner_by_quality": "llm_parser",
+      "winner_by_tradeoff": "winner_baseline",
+      "quality_scores": {
+        "llm_parser": 0.7534482758620689,
+        "winner_baseline": 0.5075193798449612
+      },
+      "tradeoff_scores": {
+        "llm_parser": 0.009575358349575683,
+        "winner_baseline": 0.5057601437893493
+      },
+      "time_s": {
+        "llm_parser": 102.54345170001034,
+        "winner_baseline": 0.0055683000246062875
+      },
+      "differences": {
+        "delta_micro_f1_baseline_minus_llm": -0.17989842288158242,
+        "delta_exact_match_rate_baseline_minus_llm": -0.4,
+        "delta_mean_latency_ms_baseline_minus_llm": -5125.778839999111,
+        "delta_p95_latency_ms_baseline_minus_llm": -7768.26916999417,
+        "head_to_head": {
+          "llm_better_count": 11,
+          "baseline_better_count": 4,
+          "tie_count": 5
+        }
+      }
+    },
+    "negation_queries": {
+      "winner_by_quality": "llm_parser",
+      "winner_by_tradeoff": "winner_baseline",
+      "quality_scores": {
+        "llm_parser": 0.48647743813682676,
+        "winner_baseline": 0.34216867469879514
+      },
+      "tradeoff_scores": {
+        "llm_parser": 0.004433099035434736,
+        "winner_baseline": 0.3415332690612433
+      },
+      "time_s": {
+        "llm_parser": 440.6755944000324,
+        "winner_baseline": 0.008764599915593863
+      },
+      "differences": {
+        "delta_micro_f1_baseline_minus_llm": -0.1632982334829023,
+        "delta_exact_match_rate_baseline_minus_llm": -0.1,
+        "delta_mean_latency_ms_baseline_minus_llm": -7344.13045165517,
+        "delta_p95_latency_ms_baseline_minus_llm": -10873.569204937667,
+        "head_to_head": {
+          "llm_better_count": 46,
+          "baseline_better_count": 10,
+          "tie_count": 4
+        }
+      }
+    },
+    "complex_queries": {
+      "winner_by_quality": "llm_parser",
+      "winner_by_tradeoff": "winner_baseline",
+      "quality_scores": {
+        "llm_parser": 0.16677115987460814,
+        "winner_baseline": 0.056375838926174496
+      },
+      "tradeoff_scores": {
+        "llm_parser": 0.0024117544242893483,
+        "winner_baseline": 0.05596552210402156
+      },
+      "time_s": {
+        "llm_parser": 106.01949950004928,
+        "winner_baseline": 0.006866400013677776
+      },
+      "differences": {
+        "delta_micro_f1_baseline_minus_llm": -0.1577076013549052,
+        "delta_exact_match_rate_baseline_minus_llm": 0.0,
+        "delta_mean_latency_ms_baseline_minus_llm": -5300.303419982083,
+        "delta_p95_latency_ms_baseline_minus_llm": -6814.198069937994,
+        "head_to_head": {
+          "llm_better_count": 17,
+          "baseline_better_count": 2,
+          "tie_count": 1
+        }
+      }
+    }
+  }
+}

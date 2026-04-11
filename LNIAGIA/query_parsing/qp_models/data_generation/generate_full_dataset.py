@@ -8,10 +8,10 @@ try:
 except ModuleNotFoundError:
     tqdm = None
 
-from basic_generator import TemplateBasedGenerator
-from bio_projection import project_bio_labels, tokenise_text
-from llm_augmented_generator import LLMAugmentedGenerator
-from llm_validator import LLMValidator
+from LNIAGIA.query_parsing.qp_models.data_generation.basic_generator import TemplateBasedGenerator
+from LNIAGIA.query_parsing.qp_models.data_generation.bio_projection import project_bio_labels, tokenise_text
+from LNIAGIA.query_parsing.qp_models.data_generation.llm_augmented_generator import LLMAugmentedGenerator
+from LNIAGIA.query_parsing.qp_models.data_generation.llm_validator import LLMValidator
 
 
 # Output configuration
