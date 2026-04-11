@@ -1,5 +1,12 @@
 # Traditional NLP Baseline Approaches for Structured Query Parsing
 
+> Note: This document is a conceptual overview.
+>
+> For implementation-accurate details from the current codebase, see:
+>
+> - `PARSER_CONSTRUCTION.md`
+> - `METRICS_EXPORT_OVERVIEW.md`
+
 ## Overview
 
 The query parsing task consists of three sub-tasks that must be solved in sequence:

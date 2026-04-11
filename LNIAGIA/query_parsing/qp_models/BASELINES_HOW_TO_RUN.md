@@ -7,6 +7,13 @@ This guide runs the two baseline models for structured query parsing:
 
 It benchmarks both models across dataset-size folders and produces per-folder and global comparison artifacts.
 
+## Implementation docs
+
+For architecture and metric details, see:
+
+- `PARSER_CONSTRUCTION.md`
+- `METRICS_EXPORT_OVERVIEW.md`
+
 ## 1. Install dependencies
 
 From the repository root:
@@ -21,15 +28,15 @@ python -m spacy download en_core_web_sm
 
 If 2000/4000/6000/8000/10000 folders are missing, generate them with:
 
-python LNIAGIA/query_parsing_models/data_generation/generate_size_sweep.py --sizes 2000,4000,6000,8000,10000
+python LNIAGIA/query_parsing/qp_models/data_generation/generate_size_sweep.py --sizes 2000,4000,6000,8000,10000
 
 Notes:
 - This uses the same full dataset generator used by your current pipeline.
-- It creates folders under LNIAGIA/query_parsing_models/data_generation/full_outputs.
+- It creates folders under LNIAGIA/query_parsing/qp_models/data_generation/full_outputs.
 
 ## 3. Run the baseline benchmark
 
-python -m LNIAGIA.query_parsing_models.run_benchmark --sizes 2000,4000,6000,8000,10000
+python -m LNIAGIA.query_parsing.qp_models.run_benchmark --sizes 2000,4000,6000,8000,10000
 
 Useful options:
 - --full-outputs-dir path/to/full_outputs
@@ -38,7 +45,7 @@ Useful options:
 - --max-test-samples 500
 - --crf-max-iterations 120
 - --disable-plots
-- --results-dir LNIAGIA/query_parsing_models/results
+- --results-dir LNIAGIA/query_parsing/qp_models/results
 - --winner-rank 1  (auto-export ranking position without prompt)
 - --no-export-winner  (skip winner export)
 
@@ -47,13 +54,13 @@ If you just press Enter, rank 1 is exported.
 
 Faster debug run example:
 
-python -m LNIAGIA.query_parsing_models.run_benchmark --sizes 2000,4000 --max-test-samples 300 --crf-max-iterations 80
+python -m LNIAGIA.query_parsing.qp_models.run_benchmark --sizes 2000,4000 --max-test-samples 300 --crf-max-iterations 80
 
 ## 4. Output structure
 
 Results are written to:
 
-LNIAGIA/query_parsing_models/results
+LNIAGIA/query_parsing/qp_models/results
 
 Main outputs:
 - global_summary.csv
@@ -106,7 +113,4 @@ The interactive search app uses a hybrid parser flow:
 - Initial query parsing: exported winner baseline (if available)
 - Follow-up refinements: LLM (refine_query)
 
-Parser mode is controlled with environment variable VIRALYTICS_PARSER_MODE:
-- auto (default): use exported baseline if found, else LLM
-- baseline: try exported baseline first, fallback to LLM if unavailable
-- llm: always use LLM parsing
+Parser mode is controlled directly in `LNIAGIA/search_app.py` via `PARSER_MODE`.
