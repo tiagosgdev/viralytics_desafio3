@@ -257,3 +257,78 @@ edna_1.2m is a clear improvement over both previous versions: +0.0670 mAP@50 ove
 The biggest gains over edna_1m_balanced_100 are on long_sleeve_outwear (+0.0872 AP), vest (+0.0789 AP), shorts (+0.0509 AP), and skirt (+0.0907 AP). The weak classes (short_sleeve_top, long_sleeve_top) see meaningful improvement too (+0.0407 and +0.0739 AP respectively) but remain the bottom two.
 
 Scaling the model (m vs default s scale in edna_1m) combined with re-enabling aug=medium and multi_cell accounts for the gain — consistent with the original exp4 finding that these flags help.
+
+---
+
+## Next — YOLOv8 Baseline on balanced_dataset
+
+All previous YOLOv8 weights were trained on `data/sample_dataset`, making them invalid as a comparison against edna_1.2m. These three runs retrain YOLO on the same balanced_dataset used by all FashionNet models.
+
+### Planned Runs
+
+| Run | Model | Params | Purpose |
+|-----|-------|--------|---------|
+| yolov8n_balanced | yolov8n | ~3.2M | Size-matched comparison against edna_1.2m (~1.2M) |
+| yolov8s_balanced | yolov8s | ~11M | Param-matched comparison against fashionnet_balanced_v1 (~11.74M) |
+| yolov8l_balanced | yolov8l | ~43.7M | Best-effort YOLO ceiling on this dataset |
+
+### Commands
+
+```bash
+python scripts/train.py \
+  --model yolov8n \
+  --epochs 100 \
+  --batch 16 \
+  --data data/balanced_dataset/dataset.yaml \
+  --patience 20
+
+python scripts/train.py \
+  --model yolov8s \
+  --epochs 100 \
+  --batch 16 \
+  --data data/balanced_dataset/dataset.yaml \
+  --patience 20
+
+python scripts/train.py \
+  --model yolov8l \
+  --epochs 100 \
+  --batch 16 \
+  --data data/balanced_dataset/dataset.yaml \
+  --patience 20
+```
+
+### Evaluation (after each run)
+
+```bash
+python scripts/evaluate.py --weights models/weights/yolov8n_fashion/weights/best.pt \
+  --data data/balanced_dataset/dataset.yaml
+python scripts/evaluate.py --weights models/weights/yolov8s_fashion/weights/best.pt \
+  --data data/balanced_dataset/dataset.yaml
+python scripts/evaluate.py --weights models/weights/yolov8l_fashion/weights/best.pt \
+  --data data/balanced_dataset/dataset.yaml
+```
+
+### Final Comparison
+
+```bash
+# edna_1.2m vs yolov8n (size-matched)
+python scripts/compare_models.py \
+  --custom_weights models/weights/edna_1.2m/best.pt \
+  --yolo_weights   models/weights/yolov8n_fashion/weights/best.pt \
+  --data           data/balanced_dataset \
+  --out            docs/compare_edna_1.2m_vs_yolov8n.json
+
+# edna_1.2m vs yolov8s (param-matched to FashionNet family)
+python scripts/compare_models.py \
+  --custom_weights models/weights/edna_1.2m/best.pt \
+  --yolo_weights   models/weights/yolov8s_fashion/weights/best.pt \
+  --data           data/balanced_dataset \
+  --out            docs/compare_edna_1.2m_vs_yolov8s.json
+
+# edna_1.2m vs yolov8l (best-effort ceiling)
+python scripts/compare_models.py \
+  --custom_weights models/weights/edna_1.2m/best.pt \
+  --yolo_weights   models/weights/yolov8l_fashion/weights/best.pt \
+  --data           data/balanced_dataset \
+  --out            docs/compare_edna_1.2m_vs_yolov8l.json
+```
