@@ -68,7 +68,8 @@ fashion-detector/
 
 ## Quick Start
 
-- `.\scripts\start_full_app.ps1`
+- `.\scripts\start_full_app.ps1` - run web
+- `.\scripts\start_full_app.ps1 -BindHost 0.0.0.0 -BindPort 8000` - run mobile
 
 ```bash
 # 1. Install dependencies
