@@ -203,7 +203,7 @@ The aug=medium + multi_cell flags in fashionnet_balanced_v1 appear to provide ma
 
 ### Setup
 
-- Config: aug=medium, multi_cell=true, model_scale=m (~1.2M params), optimizer=adamw
+- Config: aug=medium, multi_cell=true, model_scale=m (34.07M params), optimizer=adamw
 - Dataset: full balanced_dataset, 52,199 training images (no sample cap)
 - Epochs: 100
 - Batch: 16
@@ -257,6 +257,20 @@ edna_1.2m is a clear improvement over both previous versions: +0.0670 mAP@50 ove
 The biggest gains over edna_1m_balanced_100 are on long_sleeve_outwear (+0.0872 AP), vest (+0.0789 AP), shorts (+0.0509 AP), and skirt (+0.0907 AP). The weak classes (short_sleeve_top, long_sleeve_top) see meaningful improvement too (+0.0407 and +0.0739 AP respectively) but remain the bottom two.
 
 Scaling the model (m vs default s scale in edna_1m) combined with re-enabling aug=medium and multi_cell accounts for the gain — consistent with the original exp4 finding that these flags help.
+
+### Threshold Tuning — edna_1.2m
+
+Evaluated at conf=0.25 through 0.45 to test whether the precision/recall imbalance could be fixed without retraining.
+
+| conf | mAP@50 | Precision | Recall | F1 | Detections |
+|------|--------|-----------|--------|----|------------|
+| **0.25** | **0.2600** | 0.3467 | **0.4920** | 0.4068 | 17,237 |
+| 0.30 | 0.2380 | 0.3923 | 0.4344 | **0.4123** | 13,448 |
+| 0.35 | 0.2100 | 0.4355 | 0.3673 | 0.3985 | 10,244 |
+| 0.40 | 0.1766 | 0.4835 | 0.2925 | 0.3645 | 7,349 |
+| 0.45 | 0.1366 | 0.5349 | 0.2125 | 0.3042 | 4,825 |
+
+The F1 peak is at conf=0.30 (+0.0055 over default), but at the cost of -0.022 mAP@50. The gain is negligible. The low precision is structural — the model genuinely produces false positives that no threshold can eliminate without a proportional recall loss. Default conf=0.25 remains optimal for mAP; conf=0.30 is marginally better for F1 only.
 
 ---
 
