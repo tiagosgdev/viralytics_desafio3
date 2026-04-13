@@ -147,57 +147,58 @@ python scripts/train_custom.py \
 
 ---
 
-## Code Changes Required to Reach 0.60+ mAP
+## Code Changes Implemented
 
 Flag tuning alone (cos_lr, EMA, warmup, lambda_obj) will likely gain **+0.02–0.05 mAP**,
 plateauing around **~0.30–0.32 mAP@50** even with perfect hyperparameters. Reaching 0.60+
-requires addressing two architectural/methodology gaps. These are code changes, not flags —
-and they are likely **worth more than all the flag tweaks combined**.
+required addressing architectural/methodology gaps. These code changes are likely
+**worth more than all the flag tweaks combined**.
 
-### C1. IoU-aware Objectness Targets (loss.py — ~5 lines)
+All changes below are **implemented and included** in the proposed training command above.
 
-Currently `build_targets` sets `obj_mask = 1.0` for all positive cells regardless of
-localization quality. This means the model has no incentive to output lower confidence
-for poorly localized predictions, which is a direct cause of the structural precision problem.
+### C1. IoU-aware Objectness Targets — done (loss.py)
 
-**Fix:** use the CIoU between the current prediction and the GT box as a soft objectness
-target (`obj_mask = ciou.detach()`) instead of a binary 1.0. This is how YOLOv5/v8 train
-objectness — confidence should correlate with localization quality.
+`build_targets` previously set `obj_mask = 1.0` for all positive cells regardless of
+localization quality. Now uses the CIoU between prediction and GT box as a soft objectness
+target (`obj_mask = iou.detach().clamp(0)`), so confidence correlates with localization
+quality. This is how YOLOv5/v8 train objectness.
 
-Estimated impact: **highest single improvement available without architectural changes.**
+**Impact:** highest single improvement available without architectural changes.
 Directly addresses the precision/recall imbalance.
 
-### C2. Mosaic Augmentation (dataset.py — moderate effort)
+### C2. Mosaic Augmentation — done (dataset.py, `--mosaic` flag)
 
-Mosaic combines 4 training images into one tile, which:
-- Effectively multiplies batch diversity 4×
-- Forces the model to handle objects at varied scales and positions
-- Provides implicit small-object training
+4-image mosaic combines training images into one tile: 4× batch diversity, varied object
+scales and positions, implicit small-object training. Uses letterbox resizing to preserve
+aspect ratio (matching the non-mosaic pipeline). Enabled with `--mosaic` flag.
 
-This is absent from the current pipeline and is one of the primary reasons YOLOv8 trains
-so effectively. Without it, the model sees each image independently, limiting the variety
-of spatial contexts per batch.
+**Impact:** matches YOLOv8 training methodology — one of the primary reasons YOLOv8
+trains so effectively.
 
-### Other Code-Level Improvements (lower priority)
+### Other Code-Level Fixes Applied
+
+| Issue | Fix | Status |
+|-------|-----|--------|
+| `beta1=0.937` (non-standard AdamW) | Changed to `0.9` | Done |
+| `weight_decay=5e-4` (too low for AdamW) | Exposed as `--weight_decay` flag, default `0.01` | Done |
+| Label smoothing missing | cls target set to `0.95` instead of `1.0` in `build_targets` | Done |
+
+### Remaining (not yet implemented)
 
 | Issue | Location | Fix | Impact |
 |-------|----------|-----|--------|
-| `beta1=0.937` (non-standard AdamW) | train_custom.py:269 | Change to `0.9` | Moderate — may fix overshooting in flat regions |
-| `weight_decay=5e-4` (too low for AdamW) | train_custom.py:268 | Expose as flag, default `0.01` | Moderate — train/val gap confirms mild overfitting |
-| Label smoothing missing | loss.py build_targets | Set cls target to `0.95` instead of `1.0` | Small — prevents overconfident classification |
 | Focal loss gamma=1.5 | loss.py | Try gamma=1.0 to reduce suppression of easy negatives | Small — may help recall more than lambda_obj increase |
 
 ---
 
 ## Priority Order
 
-| Priority | Suggestion | Effort | Est. mAP gain |
+| Priority | Suggestion | Status | Est. mAP gain |
 |----------|-----------|--------|---------------|
-| 1 | Threshold tuning | ~10 min | +0.005 F1, done |
-| 2 | **C1: IoU-aware objectness targets** | ~2h code | Largest available gain |
-| 3 | **C2: Mosaic augmentation** | ~1 day code | High — matches YOLOv8 training methodology |
-| 4 | Retrain with cos_lr + EMA + warmup + lambda_obj | ~35h | +0.02–0.05 mAP (flags only) |
-| 5 | Retrain with C1 + C2 + all flags | ~35h | Required to reach 0.60+ |
-| 6 | Add images to weak classes | ~35h + data | Directly addresses missed detections |
-| 7 | Scale=l retrain | ~50h+ | Architecture ceiling test |
-| ~~8~~ | ~~Class merge~~ | — | Ruled out — wrong failure mode |
+| 1 | Threshold tuning | Done | +0.005 F1 |
+| 2 | C1: IoU-aware objectness targets | Done | Largest available gain |
+| 3 | C2: Mosaic augmentation | Done | High — matches YOLOv8 methodology |
+| 4 | Retrain with all flags + code changes | **Ready to run** | +0.02–0.05 mAP (flags) + C1/C2 gains |
+| 5 | Add images to weak classes | Not started | Directly addresses missed detections |
+| 6 | Scale=l retrain | Not started | Architecture ceiling test |
+| ~~7~~ | ~~Class merge~~ | — | Ruled out — wrong failure mode |
