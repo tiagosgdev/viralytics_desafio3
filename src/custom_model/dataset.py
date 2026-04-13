@@ -118,8 +118,10 @@ class FashionDataset(Dataset):
         max_samples: int = 0,
         augment_level: str = "light",
         grayscale: bool = False,
+        mosaic: bool = False,
     ):
         self.img_size   = img_size
+        self.mosaic     = mosaic and (split == "train")
         self.transforms = transforms or (
             get_train_transforms(img_size, augment_level, grayscale=grayscale)
             if split == "train"
@@ -149,14 +151,12 @@ class FashionDataset(Dataset):
     def __len__(self) -> int:
         return len(self.samples)
 
-    def __getitem__(self, idx: int):
+    def _load_raw(self, idx: int):
+        """Load image and labels without any transforms."""
         img_path, lbl_path = self.samples[idx]
-
-        # Load image
         img = cv2.imread(str(img_path))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        # Load labels
         boxes, classes = [], []
         if lbl_path and lbl_path.exists():
             with open(lbl_path) as f:
@@ -166,6 +166,95 @@ class FashionDataset(Dataset):
                         cls, cx, cy, w, h = parts
                         boxes.append([float(cx), float(cy), float(w), float(h)])
                         classes.append(int(cls))
+        return img, boxes, classes
+
+    def _mosaic4(self, idx: int):
+        """
+        Combine 4 images into a single mosaic tile.
+
+        Letterbox-resizes each image to img_size×img_size (preserving aspect
+        ratio), picks a random center point, and places one quadrant from each
+        image into the output canvas.
+        Bounding boxes are shifted and clipped accordingly.
+        """
+        s = self.img_size
+        yc = int(np.random.uniform(s * 0.25, s * 0.75))
+        xc = int(np.random.uniform(s * 0.25, s * 0.75))
+
+        indices = [idx] + [np.random.randint(0, len(self.samples)) for _ in range(3)]
+
+        mosaic_img = np.full((s, s, 3), 114, dtype=np.uint8)
+        mosaic_boxes: List = []
+        mosaic_classes: List = []
+
+        for i, index in enumerate(indices):
+            img, boxes, classes = self._load_raw(index)
+
+            # Letterbox resize: preserve aspect ratio, pad with gray (114)
+            h0, w0 = img.shape[:2]
+            scale = s / max(h0, w0)
+            new_w, new_h = int(w0 * scale), int(h0 * scale)
+            img = cv2.resize(img, (new_w, new_h))
+            pad_x, pad_y = (s - new_w) // 2, (s - new_h) // 2
+            letterboxed = np.full((s, s, 3), 114, dtype=np.uint8)
+            letterboxed[pad_y:pad_y + new_h, pad_x:pad_x + new_w] = img
+            img = letterboxed
+
+            # Adjust YOLO boxes for letterbox padding
+            boxes = [
+                [(cx * new_w + pad_x) / s, (cy * new_h + pad_y) / s,
+                 bw * new_w / s, bh * new_h / s]
+                for cx, cy, bw, bh in boxes
+            ]
+
+            # Determine source crop (b) and canvas placement (a) per quadrant
+            if i == 0:      # top-left
+                x1a, y1a, x2a, y2a = 0, 0, xc, yc
+                x1b, y1b, x2b, y2b = s - xc, s - yc, s, s
+            elif i == 1:    # top-right
+                x1a, y1a, x2a, y2a = xc, 0, s, yc
+                x1b, y1b, x2b, y2b = 0, s - yc, s - xc, s
+            elif i == 2:    # bottom-left
+                x1a, y1a, x2a, y2a = 0, yc, xc, s
+                x1b, y1b, x2b, y2b = s - xc, 0, s, s - yc
+            else:           # bottom-right
+                x1a, y1a, x2a, y2a = xc, yc, s, s
+                x1b, y1b, x2b, y2b = 0, 0, s - xc, s - yc
+
+            mosaic_img[y1a:y2a, x1a:x2a] = img[y1b:y2b, x1b:x2b]
+
+            # Shift boxes: pixel offset from source crop to canvas placement
+            offset_x = (x1a - x1b) / s
+            offset_y = (y1a - y1b) / s
+
+            for box, cls in zip(boxes, classes):
+                cx, cy, bw, bh = box
+                new_cx = cx + offset_x
+                new_cy = cy + offset_y
+
+                # Clip to canvas [0, 1]
+                x1 = max(new_cx - bw / 2, 0.0)
+                y1 = max(new_cy - bh / 2, 0.0)
+                x2 = min(new_cx + bw / 2, 1.0)
+                y2 = min(new_cy + bh / 2, 1.0)
+                new_w = x2 - x1
+                new_h = y2 - y1
+
+                # Keep box if ≥30% of original area remains (matches min_visibility)
+                orig_area = bw * bh
+                if orig_area > 0 and (new_w * new_h) / orig_area >= 0.3:
+                    mosaic_boxes.append([(x1 + x2) / 2, (y1 + y2) / 2, new_w, new_h])
+                    mosaic_classes.append(cls)
+
+        return mosaic_img, mosaic_boxes, mosaic_classes
+
+    def __getitem__(self, idx: int):
+        img_path = str(self.samples[idx][0])
+
+        if self.mosaic:
+            img, boxes, classes = self._mosaic4(idx)
+        else:
+            img, boxes, classes = self._load_raw(idx)
 
         # Apply transforms
         try:
@@ -182,7 +271,7 @@ class FashionDataset(Dataset):
             img_t  = torch.zeros(3, self.img_size, self.img_size)
             boxes, classes = [], []
 
-        return img_t, boxes, classes, str(img_path)
+        return img_t, boxes, classes, img_path
 
 
 def collate_fn(batch):
@@ -213,11 +302,13 @@ def build_dataloaders(
     max_samples: int = 0,
     augment_level: str = "light",
     grayscale: bool = False,
+    mosaic: bool = False,
 ) -> Tuple[DataLoader, DataLoader]:
     """Build train and val DataLoaders."""
     val_cap  = max(1, max_samples // 5) if max_samples else 0
     train_ds = FashionDataset(yolo_dir, "train", img_size, max_samples=max_samples,
-                              augment_level=augment_level, grayscale=grayscale)
+                              augment_level=augment_level, grayscale=grayscale,
+                              mosaic=mosaic)
     val_ds   = FashionDataset(yolo_dir, "val",   img_size, max_samples=val_cap,
                               grayscale=grayscale)
 

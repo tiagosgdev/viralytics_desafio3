@@ -80,8 +80,12 @@ def parse_args():
                    help="Optimizer: adamw (default) or sgd (momentum=0.937)")
     p.add_argument("--ema", action="store_true",
                    help="Exponential Moving Average of model weights (used for val/inference)")
+    p.add_argument("--weight_decay", type=float, default=0.01,
+                   help="Weight decay for optimizer (default 0.01 for AdamW)")
     p.add_argument("--model_scale", default="s", choices=["s", "m", "l"],
                    help="Model scale: s (~11.7M), m (~25M), l (~43M)")
+    p.add_argument("--mosaic", action="store_true",
+                   help="Enable mosaic augmentation (4 images combined per tile)")
     return p.parse_args()
 
 
@@ -222,6 +226,7 @@ def main():
     print(f"  Scheduler : {'CosineAnnealing' if args.cos_lr else 'OneCycleLR'}")
     print(f"  Warmup    : {args.warmup_epochs} epochs")
     print(f"  EMA       : {args.ema}")
+    print(f"  Mosaic    : {args.mosaic}")
     print(f"  Grayscale : {args.grayscale}")
     if args.fast:
         print(f"  Mode      : FAST (TinyFashionNet + capped samples)")
@@ -235,6 +240,7 @@ def main():
         max_samples=args.max_samples,
         augment_level=args.augment,
         grayscale=args.grayscale,
+        mosaic=args.mosaic,
     )
 
     # ── Model ─────────────────────────────────────────────────────────────
@@ -261,12 +267,12 @@ def main():
     if args.optimizer == "sgd":
         optimizer = optim.SGD(
             model.parameters(), lr=args.lr,
-            momentum=0.937, weight_decay=5e-4, nesterov=True,
+            momentum=0.937, weight_decay=args.weight_decay, nesterov=True,
         )
     else:
         optimizer = optim.AdamW(
             model.parameters(), lr=args.lr,
-            weight_decay=5e-4, betas=(0.937, 0.999),
+            weight_decay=args.weight_decay, betas=(0.9, 0.999),
         )
 
     # ── Scheduler ─────────────────────────────────────────────────────────

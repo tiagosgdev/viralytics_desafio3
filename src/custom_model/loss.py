@@ -160,7 +160,7 @@ def build_targets(
                         noobj_mask[bi, cj, ci]     = 0
                         target_box[bi, cj, ci]     = torch.stack([cx - ci, cy - cj, w, h])
                         if cls < num_classes:
-                            target_cls[bi, cj, ci, cls] = 1.0
+                            target_cls[bi, cj, ci, cls] = 0.95
 
         results.append((obj_mask, noobj_mask, target_box, target_cls))
 
@@ -240,6 +240,9 @@ class FashionNetLoss(nn.Module):
                 tgt_boxes  = tgt_box[obj_mask_bool]
                 iou        = bbox_iou(pred_boxes, tgt_boxes, ciou=True)
                 loss_box   = loss_box + (1 - iou).mean()
+
+                # IoU-aware objectness: use CIoU as soft target instead of 1.0
+                obj_mask[obj_mask_bool] = iou.detach().clamp(0)
 
                 # ── Class loss (only on positives) ───────────────────
                 loss_cls = loss_cls + self.bce(
