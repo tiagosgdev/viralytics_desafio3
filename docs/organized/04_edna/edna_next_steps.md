@@ -80,6 +80,7 @@ lower focal gamma (see "Other Code-Level Improvements" below).
 ```bash
 python scripts/train_custom.py \
   --data data/balanced_dataset \
+  --model_scale m \
   --epochs 100 \
   --batch 32 \
   --lr 0.001 \
@@ -93,7 +94,7 @@ python scripts/train_custom.py \
   --warmup_epochs 3 \
   --ema \
   --mosaic \
-  --output models/weights/fashionnet_s_coslr_ema
+  --output models/weights/edna_v1.3m
 ```
 
 ---
