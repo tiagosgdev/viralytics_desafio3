@@ -1,12 +1,12 @@
 """
-scripts/train_custom.py
+scripts/training/train_custom.py
 ────────────────────────
 Training script for FashionNet (custom from-scratch model).
 
 Usage:
-    python scripts/train_custom.py --epochs 50 --batch 8 --device cpu
-    python scripts/train_custom.py --epochs 50 --batch 16 --device cuda  # GPU
-    python scripts/train_custom.py --epochs 50 --batch 16 --device mps   # Apple
+    python scripts/training/train_custom.py --epochs 50 --batch 8 --device cpu
+    python scripts/training/train_custom.py --epochs 50 --batch 16 --device cuda  # GPU
+    python scripts/training/train_custom.py --epochs 50 --batch 16 --device mps   # Apple
 
 Saves checkpoints to: models/weights/fashionnet/
 """
@@ -26,7 +26,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, LinearLR, SequentialLR
 
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.custom_model.model   import FashionNet, TinyFashionNet
 from src.custom_model.loss    import FashionNetLoss
@@ -376,7 +376,7 @@ def main():
     print(f"  Avg per epoch : {avg_epoch:.1f}s")
     print(f"  Best val_loss : {best_val:.4f}")
     print(f"  Weights saved : {(out / 'best.pt').resolve()}")
-    print(f"  Run comparison: python scripts/compare_models.py")
+    print(f"  Run comparison: python scripts/evaluation/compare_models.py")
     print(f"{'='*55}\n")
 
 

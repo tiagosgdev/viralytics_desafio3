@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import re
-from copy import deepcopy
-
 try:
     from LNIAGIA.DB.vector.nl_mappings import ALL_MAPPINGS
 except Exception:  # pragma: no cover - optional integration stack
@@ -85,31 +83,3 @@ def parse_custom_query(message: str) -> dict:
                 _add_value(filters, section, "type", value)
 
     return {section: block for section, block in filters.items() if block}
-
-
-def refine_custom_query(previous_query: str, previous_filters: dict, refinement: str) -> dict:
-    updated_filters = deepcopy(previous_filters or {})
-    parsed = parse_custom_query(refinement)
-
-    for section in ("include", "exclude"):
-        incoming = parsed.get(section, {})
-        if not incoming:
-            continue
-        updated_filters.setdefault(section, {})
-        for field, values in incoming.items():
-            existing = updated_filters[section].get(field, [])
-            updated_filters[section][field] = list(dict.fromkeys(existing + values))
-
-    include = updated_filters.get("include", {})
-    exclude = updated_filters.get("exclude", {})
-    for field, ex_values in exclude.items():
-        if field not in include:
-            continue
-        include[field] = [value for value in include[field] if value not in ex_values]
-        if not include[field]:
-            del include[field]
-
-    return {
-        "query": f"{previous_query} {refinement}".strip(),
-        "filters": {section: block for section, block in updated_filters.items() if block},
-    }

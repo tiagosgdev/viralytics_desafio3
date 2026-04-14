@@ -19,7 +19,6 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
-from typing import List
 
 import cv2
 import numpy as np

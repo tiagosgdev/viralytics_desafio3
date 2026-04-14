@@ -1,5 +1,5 @@
 """
-scripts/compare_models.py
+scripts/evaluation/compare_models.py
 ──────────────────────────
 Evaluates both FashionNet (custom) and YOLOv8 (fine-tuned) on the
 same validation set and produces a side-by-side comparison report.
@@ -11,7 +11,7 @@ Metrics compared:
   - Model file size
 
 Usage:
-    python scripts/compare_models.py \
+    python scripts/evaluation/compare_models.py \
         --yolo_weights models/weights/yolov8n_fashion/weights/best.pt \
         --custom_weights models/weights/fashionnet/best.pt \
         --data data/sample_dataset/yolo
@@ -33,7 +33,7 @@ from tqdm import tqdm
 from ultralytics import YOLO
 
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.custom_model.model   import FashionNet
 from src.custom_model.dataset import FashionDataset, get_val_transforms, collate_fn
@@ -392,7 +392,7 @@ def main():
     parser.add_argument("--imgsz",          type=int, default=640)
     parser.add_argument("--batch",          type=int, default=8)
     parser.add_argument("--device",         default="")
-    parser.add_argument("--out",            default="docs/comparison.json")
+    parser.add_argument("--out",            default="docs/artifacts/comparison.json")
     args = parser.parse_args()
 
     if args.device:

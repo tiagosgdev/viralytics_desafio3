@@ -1,4 +1,6 @@
 """
+scripts/app/start_full_app.py
+--------------------------------
 Start the full FashionSense application with the integrated search stack.
 
 This launcher checks the pieces the merged app needs to work end-to-end:
@@ -10,9 +12,9 @@ This launcher checks the pieces the merged app needs to work end-to-end:
 If the prerequisites are satisfied, it starts uvicorn in the foreground.
 
 Usage:
-    python scripts/start_full_app.py
-    python scripts/start_full_app.py --reload
-    python scripts/start_full_app.py --detector-backend yolo_world
+    python scripts/app/start_full_app.py
+    python scripts/app/start_full_app.py --reload
+    python scripts/app/start_full_app.py --detector-backend yolo_world
 """
 
 from __future__ import annotations
@@ -28,7 +30,7 @@ from pathlib import Path
 import requests
 
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 OLLAMA_URL = "http://127.0.0.1:11434"
 EXPECTED_OLLAMA_MODEL = "qwen2.5:3b-instruct"
 

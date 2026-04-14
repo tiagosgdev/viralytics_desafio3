@@ -1,4 +1,4 @@
-# FashionSense
+﻿# FashionSense
 > Master's Project | Computer Vision + Semantic Fashion Search
 
 FashionSense is now a single integrated application with two runtime personas:
@@ -19,11 +19,11 @@ The app starts on a landing screen where the user chooses which persona to use. 
 
 Web:
 
-- `.\scripts\start_full_app.ps1`
+- `.\scripts\app\start_full_app.ps1`
 
 LAN / mobile testing:
 
-- `.\scripts\start_full_app.ps1 -BindHost 0.0.0.0 -BindPort 8000`
+- `.\scripts\app\start_full_app.ps1 -BindHost 0.0.0.0 -BindPort 8000`
 
 Android app:
 
@@ -114,7 +114,10 @@ viralytics_desafio3/
 |   |-- mock_store_catalogue_template.json
 |   `-- sample_dataset/
 |-- docs/
-|   `-- codebase_explanation.md
+|   |-- README.md
+|   |-- artifacts/
+|   |-- figures/
+|   `-- organized/
 |-- frontend/
 |   |-- index.html
 |   `-- static/
@@ -126,13 +129,11 @@ viralytics_desafio3/
 |       |-- yolov8n_fashion/
 |       `-- yolov8s_fashion/
 |-- scripts/
-|   |-- start_full_app.py
-|   |-- start_full_app.ps1
-|   |-- train.py
-|   |-- train_custom.py
-|   |-- evaluate.py
-|   |-- evaluate_custom.py
-|   `-- compare_models.py
+|   |-- README.md
+|   |-- app/
+|   |-- data_prep/
+|   |-- evaluation/
+|   `-- training/
 `-- src/
     |-- api/
     |   |-- main.py
@@ -247,14 +248,14 @@ Recommendation details shown in the UI are populated from this data source.
 
 YOLO path:
 
-- `scripts/train.py`
-- `scripts/evaluate.py`
+- `scripts/training/train.py`
+- `scripts/evaluation/evaluate.py`
 
 Custom FashionNet path:
 
-- `scripts/train_custom.py`
-- `scripts/evaluate_custom.py`
-- `scripts/compare_models.py`
+- `scripts/training/train_custom.py`
+- `scripts/evaluation/evaluate_custom.py`
+- `scripts/evaluation/compare_models.py`
 
 These support the two main research directions in the repository:
 
@@ -269,3 +270,4 @@ These support the two main research directions in the repository:
 - Voice transcription depends on Whisper plus `ffmpeg`.
 - The current frontend and backend are aligned around `/api/chat`; this is no longer just a placeholder.
 - The app now has a working persona-selection layer, so documentation or older notes referring to a single startup detector are outdated.
+

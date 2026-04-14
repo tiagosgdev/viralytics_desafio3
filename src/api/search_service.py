@@ -4,7 +4,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-from src.api.custom_text_parser import parse_custom_query, refine_custom_query
+from src.api.custom_text_parser import parse_custom_query
 from src.api.personas import normalize_persona
 from src.recommendations.engine import RecommendationEngine
 

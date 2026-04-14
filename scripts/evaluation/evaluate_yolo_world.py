@@ -1,13 +1,13 @@
 """
-scripts/evaluate_yolo_world.py
+scripts/evaluation/evaluate_yolo_world.py
 ──────────────────────────────
 Evaluate the YOLO-World zero-shot detector on the validation set
 using the metrics from src/utils/metrics.py.
 
 Usage:
-    python scripts/evaluate_yolo_world.py
-    python scripts/evaluate_yolo_world.py --data data/sample_dataset/yolo/dataset.yaml
-    python scripts/evaluate_yolo_world.py --conf 0.10 --iou 0.50
+    python scripts/evaluation/evaluate_yolo_world.py
+    python scripts/evaluation/evaluate_yolo_world.py --data data/sample_dataset/yolo/dataset.yaml
+    python scripts/evaluation/evaluate_yolo_world.py --conf 0.10 --iou 0.50
 """
 
 import argparse
@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 # Ensure project root is on sys.path so `src.*` imports work
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import cv2
 import numpy as np
