@@ -63,15 +63,17 @@ class ChatRequest(BaseModel):
     session_id: Optional[str] = None
     replace_vision: Optional[bool] = None
     strict: bool = False
+    assistant_mode: Optional[str] = None
     state: Optional[Dict[str, Any]] = None
     detected_categories: List[str] = Field(default_factory=list)
     recommendations: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class ConversationRequest(BaseModel):
-    detected_type: str
+    detected_type: Optional[str] = None
     message: Optional[str] = None
     strict: bool = False
+    assistant_mode: Optional[str] = None
     state: Optional[Dict[str, Any]] = None
 
 

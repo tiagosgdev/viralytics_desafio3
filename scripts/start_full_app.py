@@ -30,7 +30,7 @@ import requests
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OLLAMA_URL = "http://127.0.0.1:11434"
-EXPECTED_OLLAMA_MODEL = "qwen2.5:3b-instruct"
+EXPECTED_OLLAMA_MODEL = "qwen2.5:7b-instruct-q3_K_M"
 
 
 def parse_args() -> argparse.Namespace:

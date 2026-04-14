@@ -356,6 +356,7 @@ async def _run_conversation_search(payload: ConversationRequest) -> dict:
         user_input=payload.message,
         conversation_state=payload.state,
         strict=payload.strict,
+        assistant_mode=payload.assistant_mode,
     )
 
     if not result.get("ok", False):
@@ -499,12 +500,19 @@ async def chat(payload: ChatRequest):
         session_id = session.id
 
     detected_type = _get_detected_type(session_id, payload.detected_categories)
-    if detected_type:
+    state_mode = None
+    if isinstance(payload.state, dict):
+        state_mode = payload.state.get("assistant_mode")
+
+    use_conversation_flow = bool(detected_type or payload.assistant_mode or state_mode)
+
+    if use_conversation_flow:
         conversation_result = await _run_conversation_search(
             ConversationRequest(
                 detected_type=detected_type,
                 message=payload.message,
                 strict=payload.strict,
+                assistant_mode=payload.assistant_mode,
                 state=payload.state,
             )
         )
@@ -513,17 +521,19 @@ async def chat(payload: ChatRequest):
         active_filters = state.get("filters") if isinstance(state.get("filters"), dict) else {}
         mode = "override" if payload.replace_vision else "vision"
 
-        reply = (
-            f"I replaced the scan context and used your message as the main search direction. "
-            f"I found {len(results)} option(s) to explore next."
-            if mode == "override"
-            else f"I refined the results using the scanned clothing context. "
-                 f"I found {len(results)} option(s) to explore next."
-        )
-        if not results:
+        reply = conversation_result.get("reply")
+        if not isinstance(reply, str) or not reply.strip():
             reply = (
-                "I couldn't find strong matches from that refinement. Try a more specific request."
+                f"I replaced the scan context and used your message as the main search direction. "
+                f"I found {len(results)} option(s) to explore next."
+                if mode == "override"
+                else f"I refined the results using the scanned clothing context. "
+                     f"I found {len(results)} option(s) to explore next."
             )
+            if not results:
+                reply = (
+                    "I couldn't find strong matches from that refinement. Try a more specific request."
+                )
 
         return ChatResponse(
             reply=reply,
@@ -533,7 +543,7 @@ async def chat(payload: ChatRequest):
             results=results,
             state=state,
             strict=payload.strict,
-            warning=None,
+            warning=conversation_result.get("warning"),
         )
 
     fallback = search_service.refine(
