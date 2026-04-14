@@ -10,6 +10,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Any
+from typing import Any
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
@@ -229,8 +230,20 @@ def main():
 
     current_query: str | None = None
     current_filters: dict = {}
+    print("\n  Type a natural-language query, or 'exit' to quit.")
+    print("  Commands: 'new: <query>' to start a new query, 'reset' to clear state, 'show' to inspect state.\n")
+
+    current_query: str | None = None
+    current_filters: dict = {}
 
     while True:
+        user_input = input("  Query > ").strip()
+        if not user_input:
+            continue
+
+        lowered = user_input.lower()
+
+        if lowered == "exit":
         user_input = input("  Query > ").strip()
         if not user_input:
             continue
@@ -286,13 +299,16 @@ def main():
 
         print("\n  Extracted filters:")
         print(f"  {json.dumps(current_filters, indent=4)}")
+        print(f"  {json.dumps(current_filters, indent=4)}")
 
         # Step 2: Ask user for strictness
+        strict_ans = input("\n  Do you want strict matching (only exact filter matches)? (y/n) > ").strip().lower()
         strict_ans = input("\n  Do you want strict matching (only exact filter matches)? (y/n) > ").strip().lower()
         strict = strict_ans == 'y'
 
         # Step 3: Filtered semantic search
         print("\n  Searching ...")
+        hits = filtered_search(current_query, current_filters, model, strict=strict)
         hits = filtered_search(current_query, current_filters, model, strict=strict)
 
         # Step 4: Display results

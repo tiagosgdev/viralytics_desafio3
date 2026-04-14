@@ -1,0 +1,2346 @@
+{
+  "total": 2000,
+  "sample_rate": 0.2,
+  "validated": 400,
+  "valid": 109,
+  "corrected": 291,
+  "validation_errors": 5,
+  "issues": [
+    {
+      "issue": "'long_sleeve_outwear' is not mentioned or implied in the query.",
+      "count": 2
+    },
+    {
+      "issue": "No obvious attributes are missing from the include or exclude.",
+      "count": 2
+    },
+    {
+      "issue": "'casual' should not be included as the query asks for something without anything too casual.",
+      "count": 1
+    },
+    {
+      "issue": "'short_sleeve_top' and 'trousers' are implied but not explicitly mentioned.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual denim shorts', but the include only has 'denim' and not 'shorts'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'beige and orange animal print', which is correctly included, but the pattern should be more specific.",
+      "count": 1
+    },
+    {
+      "issue": "There's no mention of fleece in the query, so it shouldn't be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'all-season appropriate' dresses but the include has both 'season': ['winter', 'all-season'] which is a contradiction.",
+      "count": 1
+    },
+    {
+      "issue": "The exclude should explicitly mention negation of patterns, not just the pattern names.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions the clothing should not be baggy, but it is included in the exclude field.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies that the clothing is for everyday wear and suitable for both spring and autumn, which are correctly annotated, but 'party' is included in the include field.",
+      "count": 1
+    },
+    {
+      "issue": "Pattern should be 'plain' only.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude age_group 'senior' is correctly negated but 'animal print' pattern is incorrectly included.",
+      "count": 1
+    },
+    {
+      "issue": "'long_sleeve_top' and 'vest' should be 'long_sleeve_top' and 'tank_top'",
+      "count": 1
+    },
+    {
+      "issue": "'graphic' is not mentioned in the query, but 'graphic' pattern is included.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'maxi' in length is not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude should include 'formal' and 'restrictive' as negations are implied.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'ankle' length is not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'tie-dye' pattern is incorrectly included as it should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "'lantern sleeves' should be excluded but 'lantern' is in exclude, which might be a typo or misinterpretation. No dolman sleeve outwear found, cannot verify all attributes.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'adult formal wear', but the current annotation includes 'teenager' in age_group.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'luxurious and detailed like silk or satin', but there is no explicit mention of these materials in the annotations.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly excludes 'sporty styles' but includes 'sport' in the occasion.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'casual autumn wear', but 'beach' is included, which might not be casual enough.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'short_sleeve_dress' and 'short_sleeve_top', but the query asks for a dress or tee, not both.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'silk' when it should be included as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions avoiding organic cotton, which is correctly excluded, but fleece is incorrectly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'black and cream dresses', but the include only lists 'color': ['black', 'cream']. It should also include 'type': ['dress'].",
+      "count": 1
+    },
+    {
+      "issue": "The query implies a mix of styles, which is not reflected in the current annotations. No specific style is mentioned, so this can be left out for now.",
+      "count": 1
+    },
+    {
+      "issue": "'regular' fit is not explicitly requested and might be redundant given 'baggy'.",
+      "count": 1
+    },
+    {
+      "issue": "'teal' is not in the valid color list",
+      "count": 1
+    },
+    {
+      "issue": "'slim fit' should be excluded but is missing from exclude",
+      "count": 1
+    },
+    {
+      "issue": "Include 'long_sleeve_dress' and 'rayon' as they should be excluded according to the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'mandarin' collar instead of 'pointed'.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'preppy' style is not clearly implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "No mention or negation of 'brand', which might be an obvious attribute.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'without oversized fits or chiffon material', but the current exclude does not cover all possible fit types and materials. The current include only covers pattern and style, missing other relevant attributes.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'wide leg' but the include attributes do not specify a type of top (e.g., short_sleeve_top).",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'without ankle-length options', but there is no explicit negation in the current exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The include attributes mention 'polyester' which is not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'unisex' is included but not clearly implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'teal' is excluded but not explicitly mentioned as a negation in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'unisex' shirts but includes 'female' in the gender attribute.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks to avoid fleece altogether but includes 'fleece' in the material attribute.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'dress_style': 'fit and flare' is correct but should be 'fitted'.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'leg_style': ['wide leg', 'bootcut'] are incorrect, should not be included.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'leg_style': ['wide leg', 'bootcut'] is missing. The query implies these styles should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'bottom_pockets' with 'hidden pockets' which is not allowed.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'material' should include 'cashmere', but it's missing from exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'strappy dress', but the include attributes only contain 'sling_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'lightweight like chiffon', but 'chiffon' is included while 'satin' is excluded. The query does not mention any preference for satin.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly excludes 'cotton', but 'cotton' is not in the exclude list.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'shorts' but not 'long_sleeve_outwear'.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'tailored' is correctly negated, no issue.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'pink' but not 'teal'.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly excludes 'streetwear style', but the exclude field does not include this attribute. The include field incorrectly includes 'detachable hood' without a corresponding exclusion for 'streetwear'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for items that are 'either embroidered or made of a mix of nylon and wool', but the current include only lists 'nylon' and 'wool'. It should also exclude plain nylon and wool items.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'everyday and lounge wear items', which is correctly included, but it's not clear if 'lounge' is implied or explicitly stated. However, since both are included in the current annotations, this is not an issue.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'teenager' which is not implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'formal' which is not mentioned or negated in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation includes 'female' in the gender field which contradicts the query's requirement for unisex clothing.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation does not include 'male' in the exclude list, but it should as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "'long_sleeve_top' is not implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'short_sleeve_dress' should be excluded as it's not a top.",
+      "count": 1
+    },
+    {
+      "issue": "'party' is included but 'work' is correctly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'not too long', but includes both 'mini' and 'shirt dress' which imply short and regular length respectively.",
+      "count": 1
+    },
+    {
+      "issue": "The query avoids 'casual options', but includes 'casual' in the style.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'tailored' but the annotation includes 'sling_dress', which is not a tailored dress.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'unisex' and the annotation includes 'vest', which might be gender-specific.",
+      "count": 1
+    },
+    {
+      "issue": "The age_group 'baby' is included but not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The pattern 'graphic' and 'embroidered' are included but not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'belt' is included in closure but not excluded. 'shorts' is included without specifying the length or occasion which might be implied as casual but not explicitly stated.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'avoid anything in those colors that's neon or garish', but there is no exclude condition for these specific terms.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'loose-fitting' but 'fit: [\"baggy\"]' is included.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'casual and relaxed' which implies a 'relaxed fit', but 'fit: [\"baggy\"]' is included instead of 'fit: [\"relaxed\"]'.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any brand, so 'brand' should be excluded if it's not specified.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'non-t-shirt clothing', which implies a type other than 'short_sleeve_top', but 'exclude: {\"type\": [\"short_sleeve_top\"]}' is correct.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'baby boys and men over 60', but the current include only has 'male' and 'baby'. It should also include 'senior'.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly excludes 'athletic wear' and 'unisex items', but these are not reflected in the current exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual shorts' but the include attributes only mention 'shorts'. The type should be more specific.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies that the shorts should have pockets, but the include attribute for outwear_pockets is not correctly specified. It should include 'chest pocket' and 'interior pockets'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions that the shorts are 'cropped', but this is not included in the length field.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'silk jacket' but the annotation includes 'vest_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'sleeveless chiffon dress' but the annotation includes 'long_sleeve_outwear'.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'waist_style' should be ['low-rise'] instead of ['drawstring'].",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'hood' should include 'faux fur trim'.",
+      "count": 1
+    },
+    {
+      "issue": "'gender': ['female'] is not implied in the query. The query does not specify any gender preference.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'velvet' is incorrect as the query excludes synthetic materials and velvet is a synthetic material in this context. The include should only contain 'rayon'.",
+      "count": 1
+    },
+    {
+      "issue": "No explicit exclusion of any attributes, but the query implies that no synthetic materials are allowed.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'low-rise waist style', but 'drawstring' is included in the include list.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'streetwear options for adults', but 'teenager' is included in the include list.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'slip dress', but the include list contains 'sling_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for a color that avoids red, but the include list includes both 'purple' and 'red'.",
+      "count": 1
+    },
+    {
+      "issue": "'scoop neck' is not included in the include field.",
+      "count": 1
+    },
+    {
+      "issue": "'faux fur trim hood' is not excluded but should be.",
+      "count": 1
+    },
+    {
+      "issue": "'not too restrictive' and 'classic fit' are not explicitly mentioned or implied in the current annotations.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'sheath or slip dresses', but the include only lists 'slip dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'leather or organic cotton', but the include only lists 'organic cotton'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'raw edge hem' which is correctly included, but 'full-length options' are incorrectly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "There's no mention of 'elegant styles' in the query, so they should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'all-year-round wear', but the annotation only includes 'winter' and 'all-season'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies no geometric patterns, but 'geometric' is included in the exclude section.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly mentions 'senior-sized clothes' but the include only has 'regular' fit.",
+      "count": 1
+    },
+    {
+      "issue": "The query excludes 'tank tops', which is not reflected in the exclude field.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'slim-fit winter wear' but the include only has 'fit: slim fit' and 'season: winter'. It does not mention 'all-season', which should be included in the include.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly excludes 'elegant styles or short sleeve dresses', but both are incorrectly included in the exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'unisex' but includes both 'unisex' and 'male'.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any specific fit other than 'not too tight', which is implied as 'regular'. No issues with the 'fit' attribute.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'comfy, unisex loungewear', which implies it should be suitable for lounging. The current annotation only includes 'lounge' in 'occasion', but does not exclude any other occasions.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'color' should be ['red'] instead of ['red', 'green'].",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'pattern' should include 'floral'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'date night' for loose clothing options without solid colors. The current annotation includes 'wedding' in the occasion which is not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'loose' fit, but 'cropped' fit is included instead.",
+      "count": 1
+    },
+    {
+      "issue": "Incorrect inclusion of 'waist' attribute with values ['xl', 'xs'] when only 'XL' waist was requested. The exclude for 'material' is correct.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'spring' and 'autumn', but the include only lists 'date night' and 'work'. It should also include attributes for spring and autumn.",
+      "count": 1
+    },
+    {
+      "issue": "There are no explicit negations in the query, so there's no need to add anything to exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'cropped hem' but the annotation only includes 'cropped' under fit. It should be 'cropped hem'.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly excludes 'trousers', which is correctly annotated in exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any specific color, so there's no issue with the current exclude for color.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' shirts, but the included attributes only mention fit and color without specifying the type of shirt.",
+      "count": 1
+    },
+    {
+      "issue": "The query implies a casual occasion, which is not explicitly mentioned or negated in the current annotations.",
+      "count": 1
+    },
+    {
+      "issue": "'velvet' is included but not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'oversized' fit is missing from include and not negated in exclude.",
+      "count": 1
+    },
+    {
+      "issue": "Annotations should exclude men's options but do not have any exclusions for gender.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation includes 'female' under gender which is not implied in the query. The query only mentions 'unisex'.",
+      "count": 1
+    },
+    {
+      "issue": "There are no explicit negations or exclusions mentioned in the query that would require items to be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "'graphic' pattern is not mentioned in the query but included in include field.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'abstract purple and burgundy pattern', but the include only has 'pattern: [\"abstract\"]'. It should also include 'color: [\"purple\", \"burgundy\"]'.",
+      "count": 1
+    },
+    {
+      "issue": "The query implies a non-plain design, which is correctly excluded with 'exclude: {\"pattern\": [\"plain\"]}'. However, it does not explicitly mention avoiding cropped fit, so the exclusion of 'fit: [\"cropped\"]' is correct.",
+      "count": 1
+    },
+    {
+      "issue": "The include should also specify that it's a blouse, but this is not mentioned in the query and cannot be inferred from the given fields.",
+      "count": 1
+    },
+    {
+      "issue": "'long_sleeve_top' is included but not 'camouflage'. 'satin' is excluded but not 'synthetic' materials.",
+      "count": 1
+    },
+    {
+      "issue": "'medium waist' is not included in the include attributes.",
+      "count": 1
+    },
+    {
+      "issue": "'peter pan collar' is correctly excluded but 'patch pockets' should be under 'bottom_pockets'.",
+      "count": 1
+    },
+    {
+      "issue": "'pink' color is not explicitly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'all-season clothing' which is included but does not explicitly mention spandex or strappy dresses in the include section.",
+      "count": 1
+    },
+    {
+      "issue": "The exclude section correctly excludes 'sling_dress', but it should also exclude 'strappy dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'regular fit' but the included attributes only mention 'athletic'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'suitable for both a casual sports day out and a smart business meeting', which implies 'sporty' and 'smart casual' styles, but these are already included. However, it's better to ensure all relevant styles are covered.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'avoid any tie-dye patterns', but the exclude only mentions 'tie-dye'. This is correct.",
+      "count": 1
+    },
+    {
+      "issue": "'vintage' style is not excluded but only 'formal' is included in the include field.",
+      "count": 1
+    },
+    {
+      "issue": "'long_sleeve_outwear' should be excluded as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "'pointed collar' is included but 'collar' should be 'multiple pockets'",
+      "count": 1
+    },
+    {
+      "issue": "'baggy fit' is correctly included",
+      "count": 1
+    },
+    {
+      "issue": "'outwear_pockets: multiple pockets' is correctly included",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'strappy dresses and shorts', but the current annotations only include 'sling_dress' under 'type'. No mention of strappy dresses or shorts.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies chiffon material, which is correctly included. However, the current annotation does not cover all types of clothing (dresses and shorts) mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'short sleeve dress sweater', but the include annotation lists 'long_sleeve_top' and 'short_sleeve_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'sporty', which is correctly included, but 'wedding' is also mentioned as an occasion. The current exclude for 'date night' is correct.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' but the included attributes do not mention any style. The age_group 'senior' is incorrect as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "The season mentioned in the query is 'winter', which is correctly included, but 'all-season' is also included and should be excluded based on the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'short_sleeve_dress' instead of 'long_sleeve_top'.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'baby', 'child', and 'teenager' as the query specifies adult items.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'blouse' in the include list.",
+      "count": 1
+    },
+    {
+      "issue": "'chiffon' is included but not mentioned or implied in the query. 'linen' is correctly included.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'vest' which is not unisex short sleeve dress.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'long_sleeve_outwear' but query does not mention long sleeves or outwear.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'elegant' styles but the exclude list does not include 'formal'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'spring outfits' which is correctly included, but no specific type of outfit is excluded or included that should be.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'material': 'velvet' is correct but 'fleece' should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'material': 'fleece' is not mentioned in the query and should be included.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' which is not included in the include attributes.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'nothing too beachy or fitted though', but these are not explicitly negated in the exclude attributes.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' but the include does not specify this. The exclude should also ensure that nothing with nylon is included.",
+      "count": 1
+    },
+    {
+      "issue": "The coat type (baggy) is implied as a long-sleeve outwear, which is not explicitly mentioned in the current include.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'not made of cotton', but the exclude field does not have a negation for material.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for an unisex shirt, which is correctly included in the gender attribute, but the include and exclude fields do not cover all other possible attributes.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual sleeveless top' which is not included in the annotations.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation includes 'vest_dress', but this is not implied by the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'vest' which is not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'rayon' but it is not explicitly negated in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual linen shirt', but the current annotation includes 'chiffon' which is not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query excludes 'short_sleeve_top', but the current exclude condition does not match this exactly.",
+      "count": 1
+    },
+    {
+      "issue": "'long_sleeve_top' is included but not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'suede' is excluded but not explicitly negated in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'leather' is included in include but should be excluded",
+      "count": 1
+    },
+    {
+      "issue": "'linen' is included in include but should only exclude yellow colors",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'stylish' which is not an attribute and does not need to be excluded or included. The 'special dinner event' implies the occasion should be considered, but it's not explicitly mentioned in the annotations.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'slip dress', but the include only contains 'sling_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'casual everyday', which is correctly included, but 'sling_dress' should be changed to 'slip_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'fit': 'fitted' is not mentioned or implied in the query. The query asks for 'unisex, fitted', but 'fitted' should be included.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'color': 'blue' is not explicitly negated in the query. The query asks to exclude blue pants, so this should remain as is.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'female work pants' but the include attributes only mention gender as ['male', 'female']. It should specifically include 'female'.",
+      "count": 1
+    },
+    {
+      "issue": "The query excludes 'casual styles' which is correctly negated in the exclude attribute, but it also mentions a specific pattern ('polka dot') that is not excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not explicitly mention any attributes like material, color, etc., so they are not required to be included. However, the include and exclude should accurately reflect the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'cashmere' should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'vintage' is correctly excluded but not mentioned in the current exclude list.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions the clothing should be suitable for a formal event but not too dressy. The annotation includes 'formal event' in the occasion field but does not exclude 'elegant' or include 'casual' which might contradict the 'not too dressy' part of the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'material': 'linen' is incorrect as the query specifies 'winter linen jackets'. Linen is not a common material for winter jackets.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'season': 'autumn' is correct, but 'spring' should be removed from exclude as it's not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'short_sleeve_top' is included but not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'regular fit' is excluded but not clearly negated in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'fitted' fit is not excluded but should be",
+      "count": 1
+    },
+    {
+      "issue": "'relaxed' fit is excluded but the query asks for 'without relaxed silhouettes'",
+      "count": 1
+    },
+    {
+      "issue": "'white' color is excluded but the query mentions 'without white'",
+      "count": 1
+    },
+    {
+      "issue": "The query specifically mentions 'baby boys', but the current annotation only includes 'age_group: baby'. It should also include 'gender: male'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'not too formal' workwear, but the included attributes only mention 'work' and exclude 'formal event'. This is not a clear match.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'young adults', which should be included in the age_group. However, it is excluded.",
+      "count": 1
+    },
+    {
+      "issue": "There is no explicit mention of excluding tailored fit, so this exclusion might be incorrect.",
+      "count": 1
+    },
+    {
+      "issue": "'bohemian' style is included but not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'denim' material is excluded as per annotation but 'formal wear that avoids denim' is implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions avoiding a preppy vibe but includes it in the include field.",
+      "count": 1
+    },
+    {
+      "issue": "The query suggests going bohemian but includes it in the exclude field.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'sleeveless', but the include attributes mention 'vest' and 'vest_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for a 'velvet sleeveless top', which implies it should be a 'top', but 'vest' and 'vest_dress' are included.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'minimalistic', which is correctly included, but 'streetwear' is also included, which might not align with the minimalistic style.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'length' should not include 'mini' or 'knee-length'.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude is missing negation for 'lounge' occasion.",
+      "count": 1
+    },
+    {
+      "issue": "'dress_style' is not included but should be implied from the query.",
+      "count": 1
+    },
+    {
+      "issue": "'polyester' is incorrectly included in include instead of exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'a touch of collar detailing that's not your typical button-down', which implies the shirt has a unique twist in its collar. However, the current annotations only include 'button-down' under 'collar'. This does not capture the 'unique twist' aspect.",
+      "count": 1
+    },
+    {
+      "issue": "There is no mention or implication of any attributes being explicitly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'linen shorts' but the include attributes only mention 'material: linen'. It should also include 'type: shorts'.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly excludes 'animal print', 'striped', and 'bodycon' styles, which are not reflected in the current exclude list.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'casual outerwear', but there is no mention of this in the current include or exclude attributes.",
+      "count": 1
+    },
+    {
+      "issue": "'denim' is included but not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'cashmere' is included but not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'sporty' is mentioned but 'vest' is included instead of 'long_sleeve_top'",
+      "count": 1
+    },
+    {
+      "issue": "'not too bulky' is implied but 'vest' is included which can be considered bulky",
+      "count": 1
+    },
+    {
+      "issue": "Include 'trousers' but query specifies 'pants', which might be a typo. Exclude 'full-length legs' but query mentions 'without full-length legs'. Include 'XL' waist size, which matches the query. Exclude 'black' color, which matches the query.",
+      "count": 1
+    },
+    {
+      "issue": "Incorrect inclusion of 'slim fit' in include, should be excluded. No explicit exclusion for 'not oversized'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual white shorts without a slim fit', but the current annotations include 'long_sleeve_top' which is incorrect.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'simple silk or polyester blouses in white or green', but the current annotations only include 'long_sleeve_top' and exclude 'slim fit'. No mention of tops or blouses was made, so these should be included.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'satin' should be excluded as it's not related to the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'athletic fit' is correctly negated but 'bohemian style' is included and not mentioned in the exclude.",
+      "count": 1
+    },
+    {
+      "issue": "Include chiffon and polyester which should be excluded",
+      "count": 1
+    },
+    {
+      "issue": "Exclude sheer chiffon tops as mentioned in the query",
+      "count": 1
+    },
+    {
+      "issue": "'baby' in age_group is not young adult",
+      "count": 1
+    },
+    {
+      "issue": "'vintage' in style is not streetwear",
+      "count": 1
+    },
+    {
+      "issue": "velvet should be excluded but is included in include",
+      "count": 1
+    },
+    {
+      "issue": "Include 'age_group': ['adult'] is not implied or mentioned in the query. The query specifies 'baby'.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'pattern': ['striped', 'abstract'] includes an abstract pattern, which should be excluded according to the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude is correct as no explicit negation of attributes other than 'abstract' patterns is required.",
+      "count": 1
+    },
+    {
+      "issue": "Include long_sleeve_outwear and exclude trousers should be excluded as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include regular fit should be included as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'streetwear' outfits but the include only mentions 'color'. The exclude does not mention 'pink', which is a color in the valid fields. There are no free-text fields mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'vest_dress' is included but 'sleeveless dress' is explicitly mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'relaxed fit' should be excluded as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "'blouse in chiffon without shorts' implies 'blouse' and 'chiffon' should be included but not 'shorts'",
+      "count": 1
+    },
+    {
+      "issue": "'without shorts' is correctly excluded",
+      "count": 1
+    },
+    {
+      "issue": "'slip dresses' should be excluded but is not in exclude list.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'not all one color', but the include annotation only has 'multicolor' and 'brown'. It should be more specific about avoiding brown entirely.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any specific type of clothing, but the include annotation includes a specific type like 'short_sleeve_top'. This is not implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'blue jacket with patch pockets', but the annotation includes 'coral' in the color field.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation should include 'jacket' under 'type'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'green or burgundy' colors but the include only lists 'green', missing 'burgundy'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'without any bright patterns' which implies a pattern should be excluded, but the include includes 'abstract' pattern.",
+      "count": 1
+    },
+    {
+      "issue": "The query suggests shoes can wear all year long, which is implied by 'all-season' season. However, it's not explicitly mentioned in the include.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'loose-fitting sports outerwear', but the annotation includes both 'athletic' and 'loose' under fit, which is correct. However, it also includes 'baby' in the age_group, which contradicts the query's requirement that the item should not be suitable for babies.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation does not include 'long_sleeve_outwear', but this is implied by the term 'sports outerwear'.",
+      "count": 1
+    },
+    {
+      "issue": "'side pockets' should be under 'outwear_pockets' and not 'bottom_pockets'",
+      "count": 1
+    },
+    {
+      "issue": "'chest pocket' is correctly included in 'outwear_pockets'",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions avoiding fitted styles and leather, but the exclude fields do not include 'fitted' under fit or 'leather' under material.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for regular and relaxed winter clothes in purple, which are correctly included, but the include fields should explicitly mention these attributes.",
+      "count": 1
+    },
+    {
+      "issue": "'casual' is included in include but not negated in exclude",
+      "count": 1
+    },
+    {
+      "issue": "'formal' and 'smart casual' are included in include but not negated in exclude",
+      "count": 1
+    },
+    {
+      "issue": "Include 'trousers' instead of 'vest_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "'vest_dress' is not suitable for everyday wear and weddings.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'pants' in addition to 'short_sleeve_top'.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'waterproof' as it is mentioned in the query but not included.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'mid-rise' from include as it contradicts with 'low-rise'.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'trousers' as it is implied by 'jeans'.",
+      "count": 1
+    },
+    {
+      "issue": "'tailored' fit is not excluded as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual checkered clothes', but the include only has 'checkered' and not 'casual'.",
+      "count": 1
+    },
+    {
+      "issue": "The query implies comfort for work and date night, which is covered by including 'work' and 'date night', but it should also include 'casual' to cover the overall style.",
+      "count": 1
+    },
+    {
+      "issue": "The query avoids anything too fitted or beachy. The exclude correctly excludes 'beach', but 'fitted' should be included in exclude as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'material' should not contain 'spandex', but 'silk' is correct.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude should include 'sweetheart neckline' as it was explicitly avoided in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'elegant' style but the annotation only includes 'minimalist'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies to avoid 'preppy' styles, which is correctly excluded. However, 'elegant' should also be included.",
+      "count": 1
+    },
+    {
+      "issue": "No mention of age group or gender in the query, and these are not in the include annotations.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'zippered pockets' but the include section does not have this exact term.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'no polka dots or patch pockets', but the exclude section only covers 'polka dot'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'regular fit shirts with either animal print or polka dot patterns', but the current annotations only include 'animal print' and 'polka dot'. The query does not exclude any attributes, so there is no need for an exclusion list.",
+      "count": 1
+    },
+    {
+      "issue": "Annotations include 'nylon' but the query specifies 'without any stretchy materials'. Spandex is a stretchy material and should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions a 'short sleeve dress' but the include only lists 'long_sleeve_outwear' and 'short_sleeve_dress'. The correct type should be 'short_sleeve_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies a 'slim fit' for both jacket and dress, but 'slim fit' is included in the include while it's not explicitly mentioned for the dress.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any specific color or pattern negations other than 'not in burgundy', which is correctly excluded. However, 'loose fitting' is incorrectly included as an exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual everyday satin shirts' but the annotation only includes 'satin'. It should include 'short_sleeve_top' and 'casual'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies no synthetic materials, but there is no explicit mention or exclusion in the current annotations.",
+      "count": 1
+    },
+    {
+      "issue": "The pattern 'tie-dye' is mentioned as a preference, not an absolute requirement. The annotation could be more precise.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation includes 'spring' in the season which contradicts the query's requirement for 'all-season'.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation includes 'female' in the gender, but the query specifies only 'male'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'teenage girl', but the annotation includes 'baby'.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation includes 'female' when the query implies it's unisex.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation does not include 'trousers', which is a clear implication from 'baggy pants'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions a 'tank top' but the include annotation includes 'long_sleeve_top'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'casual' and 'slim fit', which are correctly included, but 'long_sleeve_top' is incorrectly included.",
+      "count": 1
+    },
+    {
+      "issue": "The query excludes 'streetwear styles', but 'vest' is included in the include annotations.",
+      "count": 1
+    },
+    {
+      "issue": "'sling_dress' should be excluded but is not in exclude list.",
+      "count": 1
+    },
+    {
+      "issue": "'streetwear' should be excluded but is not in exclude list.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'adult' in age_group is incorrect as the query specifies 'adult'.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'spandex' should not be included as it's negated in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'sling_dress' should be 'slip dress', 'trousers' should be removed from include.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions the dress should not have geometric patterns, but 'suede' is included in the include list.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies the material as chiffon, but 'suede' is also included.",
+      "count": 1
+    },
+    {
+      "issue": "'formalwear' is not explicitly mentioned but 'bohemian dress' and 'to the festival' imply it should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'short_sleeve_top' instead of 'sling_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'long_sleeve_outwear' as it is not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'streetwear' and exclude 'checkered' patterns.",
+      "count": 1
+    },
+    {
+      "issue": "Incorrect inclusion of 'senior' in age_group",
+      "count": 1
+    },
+    {
+      "issue": "Missing 'type: fleece jacket'",
+      "count": 1
+    },
+    {
+      "issue": "'all-season' in 'season' is not mentioned or implied. 'winter' is correctly included.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'waist_style': 'high-waisted' is not negated in the query and should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude is missing a negation for 'occasion: wedding'. The query implies it's only for date night, so 'wedding' should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "'trousers' should not be included as per the query. 'short_sleeve_dress' is correctly implied but 'trousers' is not.",
+      "count": 1
+    },
+    {
+      "issue": "'not loose' is not explicitly mentioned in the exclude field",
+      "count": 1
+    },
+    {
+      "issue": "'sleeveless' is not excluded",
+      "count": 1
+    },
+    {
+      "issue": "'preferably without any yellow ones' is not reflected in the exclude field.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'tie-dye' pattern is not relevant to the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'streetwear' style is correctly applied but 'tie-dye' should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'autumn dresses', but the include only specifies 'pattern' and not 'type'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks to avoid 'slim fit options', but the exclude does not mention 'fit'.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'short_sleeve_top' is missing.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'vest' is not correctly negated in the exclude field.",
+      "count": 1
+    },
+    {
+      "issue": "'long_sleeve_outwear' is not implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'nylon' is incorrectly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation includes 'female' in the gender field, which contradicts the query's requirement to avoid anything specifically for girls.",
+      "count": 1
+    },
+    {
+      "issue": "There is no mention of age_group other than 'child', but the query asks for unisex options suitable for kids, which might imply a broader age range.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'striped' pattern which is not suitable all year round as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'graphic' pattern which should be included according to the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions a 'slip dress' but the include only includes 'sling_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies to avoid silk and no minimalist style, but the exclude does not cover these attributes.",
+      "count": 1
+    },
+    {
+      "issue": "The query suggests pairing with jeans, which is not included in either include or exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query excludes shorts but the exclude field does not mention 'shorts'. The include field should be adjusted to ensure only unisex clothing is considered.",
+      "count": 1
+    },
+    {
+      "issue": "'maxi length' is included but 'length: maxi' is not negated or excluded.",
+      "count": 1
+    },
+    {
+      "issue": "'outwear with zippered pockets' is included but 'outwear_pockets: zippered pockets' is not negated or excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' tops but the include does not specify this.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'non-satin' tops, which is implied in the exclude, but the exclude only lists 'satin'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'cropped or have a slim fit', both of which are included, but it's unclear if 'slim fit' should be the only value.",
+      "count": 1
+    },
+    {
+      "issue": "'collared or sweetheart neckline' is not explicitly mentioned in the exclude field.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'unisex trousers' but the include attributes only mention 'trousers' and 'skirt'. The skirt should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies that the trousers are not too loose, which implies a fit of 'slim fit', but the include attributes do not explicitly state this. However, 'cropped' is included, which might imply a different fit than 'slim fit'.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'slim' in leg_style but 'tapered' is present.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude midi-length explicitly mentioned but not correctly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'autumn clothes' which is correctly included in the season attribute. However, it also states that the clothes should be 'versatile enough for any season without being too thick', implying a need to exclude winter and heavy insulation.",
+      "count": 1
+    },
+    {
+      "issue": "The current include does not exclude winter or heavy insulation.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'regular' fit is not aligned with the query which asks for an 'oversized shirt without a tight fit.'",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions that the shorts should not be too tight, but 'fit': ['fitted'] only is included without a more specific value like 'slim fit' or 'regular'.",
+      "count": 1
+    },
+    {
+      "issue": "The query avoids synthetic fabrics, but no material exclusion is present in the exclude field.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'slip dress', but the annotation includes 'sling_dress' instead.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'made of rayon', which is correctly included, but 'material: rayon' should be 'material: slip dress material'.",
+      "count": 1
+    },
+    {
+      "issue": "Include long_sleeve_top and vest are incorrect as the query specifies 'without long sleeves'. Exclude should include long_sleeve_top and vest.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'sling_dress' instead of 'sling_dress' and remove 'fleece'.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'skirt' but include 'sling_dress'.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'sporty' style which is not mentioned or implied in the query. Exclude 'vest' which is not explicitly negated and is not mentioned as a requirement.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation 'attached' for hood is not correctly implied. The query states the hood is detachable.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation 'casual' for style is correct but could be more specific.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'sleeveless', but the include attributes do not mention this.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'streetwear' and 'collared v-neck', which are included, but 'preppy' is included instead of 'streetwear'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks to avoid 'yellow or made of linen', but 'linen' is included in the include section.",
+      "count": 1
+    },
+    {
+      "issue": "'all-season' is not mentioned in the include or exclude fields.",
+      "count": 1
+    },
+    {
+      "issue": "'season': ['winter'] should be excluded as it's not suitable for all seasons.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions the t-shirt should not be made of velvet but some other comfy material. However, 'velvet' is included in the material field.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies a unisex t-shirt, which implies it's a short or long sleeve top, not outwear.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for a t-shirt with a vintage feel but 'short_sleeve_top' is included in the include list.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for trousers that are not sporty, but 'trousers' and 'sporty' are both included in the include list.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'not too tight', but the fit annotation only includes 'athletic'. There should be an option for loose or relaxed fit.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual adult pants', but the current annotations only include 'trousers'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'long sleeve dress' without any fleece, but the current annotations do not exclude 'material: fleece'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' but the annotation includes both 'smart casual' and 'casual'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'wool', which is correctly annotated, but it should not be included in the exclude section as there is no negation.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation includes 'striped' pattern, which is not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for a shirt or sweater that is not cropped. The current include only mentions 'long_sleeve_top' which does not cover the type of garment (shirt/sweater) and the exclude does not explicitly negate 'cropped'.",
+      "count": 1
+    },
+    {
+      "issue": "'unisex' is correctly included but 'gray' should be excluded with a more specific term like 'no gray'",
+      "count": 1
+    },
+    {
+      "issue": "'detailed and specific' is not an attribute and cannot be directly annotated",
+      "count": 1
+    },
+    {
+      "issue": "'beach trip' is mentioned but 'beach' is included in occasion, no explicit negation for 'wedding'",
+      "count": 1
+    },
+    {
+      "issue": "'nothing too fancy please' implies casual or everyday wear, but 'formal' is not excluded",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for a unisex strappy dress in smart casual style that avoids camouflage and does not include jackets. However, the annotation includes 'sling_dress' which is not mentioned as an allowed type.",
+      "count": 1
+    },
+    {
+      "issue": "The query also asks to avoid checkered patterns, but the annotation includes 'checkered'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions the clothes should not be too fancy for a formal event, but the 'occasion' field only includes 'formal event'. There is no mention of casual clothes in the query.",
+      "count": 1
+    },
+    {
+      "issue": "There are no explicit negations or mentions that would require exclusion.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'all-season' but the annotation includes both 'autumn' and 'all-season'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'nicely fitted' which implies a 'tailored fit', but the annotation only includes 'tailored'. No mention of other fits, so it's correct.",
+      "count": 1
+    },
+    {
+      "issue": "The query suggests suitability for 'both babies and adults' implying an 'unisex' or at least inclusive 'age_group', but the annotation only includes 'baby' and 'adult'.",
+      "count": 1
+    },
+    {
+      "issue": "There is no mention of any specific clothing type in the query, yet the annotation includes a few types like 'short_sleeve_top', which are not implied.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly states 'not something casual', but the annotation includes 'formal' which is a type of casual wear in the context of clothing. The annotation should exclude 'casual'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'stylish' and 'not too formal', which implies a specific style that is not covered by the included or excluded attributes.",
+      "count": 1
+    },
+    {
+      "issue": "Incorrect inclusion of 'fit: loose' as the query does not explicitly mention a specific fit other than it should be loose-fitting. The exclusion of 'material: silk' is correct.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'cropped' in fit which is not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'abstract' pattern but include 'plain' pattern which is not negated in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'pattern': 'plaid' and 'camouflage' should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'material': 'nylon' and 'cotton' are correct but not explicitly mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'pattern': 'plaid' and 'camouflage' should be included.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'zippered pockets' for pants but the annotation includes 'none' under 'waterproof'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'flap pockets' for a jacket, but the annotation includes 'none' under 'outwear_pockets'.",
+      "count": 1
+    },
+    {
+      "issue": "'long_sleeve_outwear' and 'long_sleeve_top' should be either both included or excluded as they refer to the same type of clothing in different contexts. The query mentions a 'coat or blouse', which are essentially tops, so only one of these should be included.",
+      "count": 1
+    },
+    {
+      "issue": "'winter' season is included but not excluded in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'floral' pattern is not explicitly mentioned or negated but should be checked.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for 'abstract patterns' but the annotation includes 'animal print'.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly excludes 'cropped fits', but the exclude field does not mention this.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'comfy sweater or casual shirt', but only 'long_sleeve_top' is included.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly excludes 'suede stuff', but 'suede' is not excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'relaxed fit' but the include only specifies 'baggy'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks to avoid multicolor options, but 'multicolor' is not in the exclude.",
+      "count": 1
+    },
+    {
+      "issue": "There are no specific mentions of age group or occasion that would require exclusion.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' style but the include only has 'sporty'. The exclude does not mention 'teal', which is a required exclusion.",
+      "count": 1
+    },
+    {
+      "issue": "'loose fit' is not explicitly negated but 'without a loose fit' implies it should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'plain brown or yellow clothes' but the include only specifies 'plain'. It should also include 'brown' and 'yellow'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks to avoid 'boring or basic', which is not reflected in either include or exclude fields.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies the coat should not be unisex wear, but 'gender': ['female', 'male'] is included in include.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions the coat should be either black or blue, but only includes 'color': ['black', 'blue']. No mention of other colors which are not excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'trousers' instead of 'long_sleeve_top', Exclude 'long_sleeve_top' and 'vest_dress' as they are not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'fitted' is not in include or exclude fields.",
+      "count": 1
+    },
+    {
+      "issue": "'dress' is implied but not explicitly mentioned in include/exclude fields.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'wool' but includes cotton as well which is not aligned with the query.",
+      "count": 1
+    },
+    {
+      "issue": "The suit should be tailored and formal, both of which are correctly included, but the query does not mention any specific style that would imply bohemian elements being excluded.",
+      "count": 1
+    },
+    {
+      "issue": "'not something too formal' is not explicitly negated in the exclude field.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'smart casual' but does not explicitly exclude any fit type other than 'fitted'. The current exclude is missing the 'slim fit', 'regular', and 'relaxed' fits which are common for smart casual clothing.",
+      "count": 1
+    },
+    {
+      "issue": "Missing 'material: wool' in include.",
+      "count": 1
+    },
+    {
+      "issue": "Missing 'insulation: heavy' or 'insulation: medium' in include.",
+      "count": 1
+    },
+    {
+      "issue": "Excluded attributes are correct as there is no explicit negation mentioned for any attribute.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'fit': ['regular'] is not mentioned or implied in the query. The query specifically asks for 'slim fit'.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude should include 'color': ['cream'] as it is explicitly avoided in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'without t-shirts', but the exclude field does not mention 'short_sleeve_top'. The include field also includes materials that are not mentioned in the query (wool and polyester).",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'avoiding sweaters', but there is no corresponding exclusion in the current annotations.",
+      "count": 1
+    },
+    {
+      "issue": "'multicolored' is not in the valid set of colors.",
+      "count": 1
+    },
+    {
+      "issue": "'green' is correctly included but 'polka dots' and 'stripes' should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "'non-casual' shirts are not excluded in the include and exclude fields.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'plain and camouflage clothes', but the annotation only includes 'plain' and 'camouflage'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'both boys and girls', which implies a wide age range, but the annotation only includes 'child'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions avoiding 'anything made of nylon', but the annotation does not explicitly exclude it.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'linen' is correct but 'spandex' should be excluded as the query mentions 'comfy linen pants' and avoids anything synthetic which includes spandex.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' which is not reflected in the include or exclude fields.",
+      "count": 1
+    },
+    {
+      "issue": "Include wide leg but exclude fitted options. Query does not mention cargo pants and includes only wide leg.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude baby but include baby in age_group.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'slim-fit sleeveless dress', but the annotation includes 'vest_dress' which is not a slim-fit sleeveless dress.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'young adults', but the annotation includes 'baby'.",
+      "count": 1
+    },
+    {
+      "issue": "No obvious attributes are missing, but there might be more specific details that could be added for better accuracy.",
+      "count": 1
+    },
+    {
+      "issue": "'slim fit' is included but 'trousers' should not have a specific fit mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'male' in gender as it is unisex.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'high-rise' from rise as only mid-rise is mentioned.",
+      "count": 1
+    },
+    {
+      "issue": "Add 'pants' to type as it is implied by spring pants.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'long sleeve dress' but the include attributes only cover 'long_sleeve_top'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies a 'casual weekend out' occasion, which is not covered by any of the included or excluded attributes.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any brand, but 'brand' is included in the include attributes.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for a 'long_sleeve_top' but the include attributes only mention 'oversized' and 'slim fit', which are not relevant to the fit of long sleeves.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions avoiding 'anything too oversized or slim fit', but the include includes both 'oversized' and 'slim fit'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks for a 'polite style' but this is not included in the valid style values.",
+      "count": 1
+    },
+    {
+      "issue": "'trousers' should be included but is not in include. 'short_sleeve_top' should not be included as it is explicitly excluded in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'welt pockets' but exclude 'side pockets'. The query requires 'welt pockets' and excludes 'side pockets', so the current annotations are incorrect.",
+      "count": 1
+    },
+    {
+      "issue": "'skirt' should be excluded but is not in exclude list",
+      "count": 1
+    },
+    {
+      "issue": "'casual beachwear' and 'men' are implied but not explicitly mentioned in include/exclude fields",
+      "count": 1
+    },
+    {
+      "issue": "Include 'long_sleeve_top' which is not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'cropped' hem style but include 'split' which is mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'female' gender is included but not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'elegant style' is excluded but not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'frills or decorations' not excluded in exclude field",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'unisex shirts', but the current include only includes 'gender: unisex'. There is no mention of 'short_sleeve_top' which is implied by 'shirts'. The exclude for color does not cover all cream items, as it should explicitly exclude 'color: cream'.",
+      "count": 1
+    },
+    {
+      "issue": "The age_group 'child' is included but not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The pattern 'plaid' is included without a clear mention or implication in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'material': 'chiffon' is not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'gender': 'male' is included but not negated in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'type': 'short_sleeve_top' is not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual winter clothes' but the included attributes only cover 'sport' and 'party' for occasion.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'to play sports' which implies a casual sporty style, but 'sport' is included while 'casual' is not.",
+      "count": 1
+    },
+    {
+      "issue": "'smart casual' is not excluded",
+      "count": 1
+    },
+    {
+      "issue": "'baggy' fit is included but not explicitly mentioned in the query",
+      "count": 1
+    },
+    {
+      "issue": "'Include' should not contain 'fit: athletic', as the query only asks to avoid pink and find teal athletic clothing.",
+      "count": 1
+    },
+    {
+      "issue": "Missing 'type: long_sleeve_dress' in include, 'material: cashmere' and 'fit: baggy' should be excluded but are not in exclude",
+      "count": 1
+    },
+    {
+      "issue": "Include 'occasion' should be ['everyday'] instead of ['beach', 'everyday'].",
+      "count": 1
+    },
+    {
+      "issue": "'pattern' should exclude ['polka dot', 'animal print'] as negated in the query.",
+      "count": 1
+    },
+    {
+      "issue": "No obvious attributes are missing from the include or exclude lists.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual beachwear', but the include only specifies 'beach' and 'wedding'.",
+      "count": 1
+    },
+    {
+      "issue": "The query asks to avoid 'slim fit', but 'slim fit' is included in the exclude, which is correct.",
+      "count": 1
+    },
+    {
+      "issue": "No obvious attributes are missing from the current annotations.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'hand warmer pockets' which should be included in the outwear_pockets field, but is incorrectly listed under patch pockets.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any pants or trousers, so the exclude for type: ['trousers'] is correct.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'faux fur trim' but the annotation includes only 'faux fur trim' under 'hood', which is not a complete representation of the query. The query implies that the coat has longline hem style, which should be explicitly included.",
+      "count": 1
+    },
+    {
+      "issue": "There are no obvious missing attributes from the query in the current annotations.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'material': 'spandex' is not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'pattern': 'graphic' should be included as it's part of the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'fit': 'oversized' is correctly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "'cute' is not an exact value in the valid fields and cannot be implied from the query.",
+      "count": 1
+    },
+    {
+      "issue": "'nothing short sleeve dresses please' should be explicitly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'occasion': 'party' is mentioned in the query but 'sport' is included.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'type': 'long_sleeve_top' is not mentioned or implied in the query, and 'short_sleeve_top' would be more appropriate.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'material': 'fleece' is correctly excluded as per the query.",
+      "count": 1
+    },
+    {
+      "issue": "'sling_dress' is not a valid type. 'sling_dress' should be 'sling dress'.",
+      "count": 1
+    },
+    {
+      "issue": "'sporty' style is not explicitly negated in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifically asks for a 'slip dress' but the include attributes do not mention this type.",
+      "count": 1
+    },
+    {
+      "issue": "The query excludes 'athletic' and 'smart casual' elements, but the current annotations include 'sling_dress', which is not explicitly mentioned in the query and may imply a casual or athletic style.",
+      "count": 1
+    },
+    {
+      "issue": "'sport' is included but not negated in the query",
+      "count": 1
+    },
+    {
+      "issue": "'coral' is excluded but not mentioned as a color to avoid",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'seniors' but the age_group is only set to ['senior']. It should also include 'adult' for clarity.",
+      "count": 1
+    },
+    {
+      "issue": "The query states 'not relaxed in fit', but 'fit' is only negated for 'relaxed'. There's no explicit mention of including non-relaxed fits.",
+      "count": 1
+    },
+    {
+      "issue": "'not too fitted though' implies 'fit' should not include 'fitted', but it is in exclude; 'light, breathable clothes for summer' implies 'season: summer' and 'material: light, breathable' are missing; 'shorts' or 'trousers' could fit the description but are not included in current annotations",
+      "count": 1
+    },
+    {
+      "issue": "Include 'formal' style which is not mentioned or implied in the query. Exclude 'tie-dye' pattern which is correctly excluded but 'casual' is incorrectly included.",
+      "count": 1
+    },
+    {
+      "issue": "Missing 'pattern' attribute with value 'floral'.",
+      "count": 1
+    },
+    {
+      "issue": "Incorrect inclusion of 'exclude' field as it is empty and not used for negation.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' and 'unisex', but these are not explicitly included or excluded.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies a 'loose fit', which is included, but 'slim fit' should be excluded based on the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'fun graphic patterns', which implies 'graphic pattern', but 'embroidered' is included and should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'sling_dress' instead of 'slip dress'.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'sporty' as it is not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "'trousers' should be excluded but is not in exclude field",
+      "count": 1
+    },
+    {
+      "issue": "'minimalist' style should be excluded but is not in exclude field",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'striped or floral clothes', but the current annotation only includes 'pattern': ['striped', 'floral']. It should include both 'striped' and 'floral'.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'suitable for spring and all seasons', which is correctly annotated, but it should also include 'season': ['spring', 'all-season'] to ensure completeness.",
+      "count": 1
+    },
+    {
+      "issue": "There is no mention of excluding regular fit options in the query. The current annotation under 'Exclude' includes {'fit': ['regular']}, which seems incorrect.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'denim empire waist pants with bishop sleeves', but the annotation includes 'short_sleeve_top' in exclude which is incorrect.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any t-shirt, so excluding 'short_sleeve_top' is correct.",
+      "count": 1
+    },
+    {
+      "issue": "'slim-fit' should be included in 'fit', but it is not. 'sleeveless' should be excluded from 'type', but it is not.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'young adults' but the annotation includes both 'female' and 'male', which is not incorrect but could be more specific.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation does not exclude 'unisex' options, even though it should according to the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'jacket', but the include only specifies 'long_sleeve_outwear'. The exclude for color is correctly specified, but the include does not cover all aspects of the query.",
+      "count": 1
+    },
+    {
+      "issue": "'cowl neck' should be excluded but is included in include",
+      "count": 1
+    },
+    {
+      "issue": "'short_sleeve_top' is not mentioned or implied",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'comfy sporty tee', but the include annotation only includes 'short_sleeve_top' and 'sling_dress'. A 'tee' is typically a short-sleeved top, so 'short_sleeve_top' should be included.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'date night or formal event', which are both occasions. However, the include annotation does not explicitly mention these occasions, only implies them through context.",
+      "count": 1
+    },
+    {
+      "issue": "The exclude annotation correctly excludes 'party', but it would be clearer if 'party-related' was directly mentioned in the exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual' but the included attributes do not specify any type of clothing.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'cotton' as the material, which is correctly included, but no specific type of garment is mentioned or implied.",
+      "count": 1
+    },
+    {
+      "issue": "Incorrect 'season' inclusion (should be only winter)', 'exclude' should include non-embroidered options",
+      "count": 1
+    },
+    {
+      "issue": "The query implies a regular fit, but 'athletic' is included in include.",
+      "count": 1
+    },
+    {
+      "issue": "No mention of casual style, but it's excluded correctly.",
+      "count": 1
+    },
+    {
+      "issue": "Include: 'tapered' leg style is not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude: 'trousers' type should be included as the query is about pants.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'toggle closure blazer' but the current annotation includes 'toggle' in include which is correct. However, 'maxi length' is excluded correctly but 'blazer' type is missing from exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'tailored' fit which is included but not in the valid fields.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies a 'wool sweater' that should be included under 'material', but 'fleece' is incorrectly included.",
+      "count": 1
+    },
+    {
+      "issue": "The query implies it's for casual beach days, so 'beach' and 'everyday' are correctly excluded from include and included in exclude respectively. However, 'formal event' is correctly negated but incorrectly included in exclude.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'cropped or loose fitting', but the include only lists 'cropped' and 'loose'. It should be 'fit': ['cropped', 'loose']",
+      "count": 1
+    },
+    {
+      "issue": "The exclude includes 'short_sleeve_dress', which is correct as per the query, but it's not explicitly mentioned in the current exclude. However, since it's implied by the query, we can keep it.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'preppy' and 'bohemian' styles but the include list only includes 'long_sleeve_top' and 'trousers'.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any specific color, material, fit, or other attributes, so these are not explicitly included or excluded.",
+      "count": 1
+    },
+    {
+      "issue": "'太过正式的' is not a valid attribute and should be ignored. The query implies the dress shoe should not be too formal.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'formal summer wear' but includes 'streetwear' in the style.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'cashmere' as the material but does not exclude all-season, which is mentioned in the exclude field.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'not relaxed fit', but the annotation includes 'pattern': ['striped'] which is implied and not explicitly negated.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation should exclude 'fit': ['relaxed'], but it does not.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'type': Missing 'sling_dress' in include.",
+      "count": 1
+    },
+    {
+      "issue": "Corrected include should only contain valid values.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'comfy travel pants without spandex', but the include attributes mention 'material: spandex'.",
+      "count": 1
+    },
+    {
+      "issue": "There is no clear mention of a specific gender or age group, but the include attributes specify 'age_group: young adult, teenager' which are not explicitly mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'pattern' should exclude 'animal print'.",
+      "count": 1
+    },
+    {
+      "issue": "'plain' pattern is not excluded in include.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'pattern': 'checkered' should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'age_group': 'adult' is not mentioned in the query and does not need exclusion.",
+      "count": 1
+    },
+    {
+      "issue": "Incorrect inclusion of 'male' in include attributes. The query is for a unisex top, not specifically male.",
+      "count": 1
+    },
+    {
+      "issue": "Exclusion of 'athletic' fit is correct but the exclude rule for 'female' gender is irrelevant to the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'material': 'wool' should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude is missing for 'pattern': 'polka dot'",
+      "count": 1
+    },
+    {
+      "issue": "'slip dress' should be excluded but is not in exclude list",
+      "count": 1
+    },
+    {
+      "issue": "'notched collar shirt' is correctly included but 'checkered or embroidered patterns' are not fully covered by the current include",
+      "count": 1
+    },
+    {
+      "issue": "Incorrect inclusion of 'beige' in the color attribute. The query only mentions 'red'.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation does not exclude any material other than rayon, but the query implies no synthetic materials.",
+      "count": 1
+    },
+    {
+      "issue": "Include long_sleeve_top and vest which are not mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude short_sleeve_top and short_sleeve_dress which should be included as tank tops and blouses.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'casual athletic wear' which implies a fit of 'athletic', but the include list also includes 'cropped'. The query does not mention any preference for cropped clothing, so this should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "There is no explicit mention or implication of long sleeves in the query, and thus they should be excluded from the include list.",
+      "count": 1
+    },
+    {
+      "issue": "'vest_dress' is not a valid type. The query mentions 'sleeveless dress'.",
+      "count": 1
+    },
+    {
+      "issue": "'elegant and slightly sporty' should be combined in the 'style' field.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'athletic-style clothing' which implies a fit but the included attributes only mention 'tailored'. The term 'athletic' should be included.",
+      "count": 1
+    },
+    {
+      "issue": "The color 'yellow' is mentioned in the query and it is correctly included, no issues here.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation includes 'female' in the include section which contradicts the query.",
+      "count": 1
+    },
+    {
+      "issue": "No specific clothing type, color, style, etc., is mentioned or implied in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'abstract pattern' but the annotation includes only 'pattern': ['abstract']. It should also include 'style': ['sporty'] and 'fit': ['baggy'].",
+      "count": 1
+    },
+    {
+      "issue": "The annotation incorrectly includes 'fit': ['athletic'], which is not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation correctly excludes 'color': ['orange'].",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'detailed' which is not a valid attribute and does not have an exact match in the valid fields.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'striped jacket with an animal print pattern', but only 'animal print' is included, missing 'striped'.",
+      "count": 1
+    },
+    {
+      "issue": "The query explicitly states it's for 'not beachwear', but 'beach' is included in exclude, which is correct.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'top' but the include and exclude annotations do not specify any top-related attributes.",
+      "count": 1
+    },
+    {
+      "issue": "The term 'slim legs' is mentioned in the query, which should be under 'leg_style', but it is missing from both include and exclude annotations.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'a purple shirt and strappy dress', but the current annotations only include 'long_sleeve_top' for the top and 'sling_dress' for the bottom, which does not match the query.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies that the items should be suitable all year round and especially for winter, but the current annotations only include 'winter' in the season. It should also include 'all-season'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'nothing spring', but there is no explicit exclusion of 'spring' in the current exclude section.",
+      "count": 1
+    },
+    {
+      "issue": "There is no mention of material in the query, so fleece should not be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Missing 'long_sleeve_dress' in include.",
+      "count": 1
+    },
+    {
+      "issue": "Missing 'tie-dye' in include.",
+      "count": 1
+    },
+    {
+      "issue": "The query specifies 'adult' for age_group, but the current annotation includes both 'adult' and 'young adult'.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions a 'straight hem', but the current annotation incorrectly includes 'curved' in the hem_style.",
+      "count": 1
+    },
+    {
+      "issue": "The query does not mention any specific brand, so there is no issue with the brand field.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation 'closure' includes 'buttons', which is not mentioned in the query and is not implied.",
+      "count": 1
+    },
+    {
+      "issue": "The annotation 'waterproof' should be 'none' as it is explicitly stated that the jacket should not be waterproof.",
+      "count": 1
+    },
+    {
+      "issue": "The query mentions 'jogger-style pants' which should be included in the include list but is not. The term 'vintage styles' should be excluded and is correctly negated in the exclude list.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'material': 'silk' is not mentioned or implied in the query and should be excluded.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'pattern': 'plain' is correctly included but 'graphic' should be excluded as it's not mentioned in the query.",
+      "count": 1
+    },
+    {
+      "issue": "Exclude 'material': 'wool' is correctly excluded.",
+      "count": 1
+    },
+    {
+      "issue": "'unisex' is not included in the include field",
+      "count": 1
+    },
+    {
+      "issue": "'female' is included but not relevant for this query",
+      "count": 1
+    },
+    {
+      "issue": "Include 'vest' should be excluded as the query asks for a tank top or dress.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'long_sleeve_dress' is missing and should be included based on the query.",
+      "count": 1
+    },
+    {
+      "issue": "Include 'tie-dye' pattern should be excluded as it's not allowed in the query.",
+      "count": 1
+    }
+  ]
+}

@@ -15,7 +15,28 @@ from typing import List, Optional
 
 import cv2
 import numpy as np
+import os
+import torch
 from ultralytics import YOLO
+
+try:
+    from ultralytics.nn.tasks import DetectionModel
+except Exception:  # pragma: no cover - version-dependent import
+    DetectionModel = None
+
+
+def _prepare_trusted_yolo_checkpoint_loading() -> None:
+    """
+    PyTorch 2.6 changed torch.load(..., weights_only=True) to be the default.
+    Older Ultralytics checkpoints may require either allow-listing model classes
+    or forcing the legacy behavior for trusted local checkpoints.
+    """
+    os.environ.setdefault("TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD", "1")
+    if DetectionModel is not None:
+        try:
+            torch.serialization.add_safe_globals([DetectionModel])
+        except Exception:
+            pass
 
 
 # ── Category definitions ───────────────────────────────────────────────────
@@ -149,6 +170,7 @@ class FashionDetector(BaseDetector):
         self.iou_thres  = iou_thres
         self.imgsz      = imgsz
 
+        _prepare_trusted_yolo_checkpoint_loading()
         print(f"🔍  Loading model: {weights}")
         self.model = YOLO(weights)
         if device:

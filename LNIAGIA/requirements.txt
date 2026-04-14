@@ -17,7 +17,13 @@ qdrant-client==1.17.1
 # ── LLM query parser (requires Ollama running locally) ───────
 # Install Ollama: https://ollama.com/download
 # Pull a model:  ollama pull qwen2.5:7b-instruct-q3_K_M
+# Pull a model:  ollama pull qwen2.5:7b-instruct-q3_K_M
 ollama==0.6.1
+tqdm>=4.66.0
+
+# ── NLP utilities for query-parsing dataset generation ────────
+# Optional (better tokenization): python -m spacy download en_core_web_sm
+spacy>=3.8.0
 tqdm>=4.66.0
 
 # ── NLP utilities for query-parsing dataset generation ────────

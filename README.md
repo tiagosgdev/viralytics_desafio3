@@ -43,8 +43,7 @@ fashion-detector/
 ├── frontend/
 │   ├── index.html                  # Main dashboard UI
 │   └── static/
-│       ├── css/style.css
-│       └── js/app.js
+│       └── css/style.css
 │
 ├── scripts/
 │   ├── sample_dataset.py           # Stratified dataset sampler
@@ -68,6 +67,8 @@ fashion-detector/
 ---
 
 ## Quick Start
+
+- `.\scripts\start_full_app.ps1`
 
 ```bash
 # 1. Install dependencies

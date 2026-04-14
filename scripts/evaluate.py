@@ -10,15 +10,10 @@ Usage:
 import argparse
 from pathlib import Path
 
+import yaml
+
 from ultralytics import YOLO
 import pandas as pd
-
-
-CATEGORY_NAMES = [
-    "short_sleeve_top", "long_sleeve_top", "short_sleeve_outwear",
-    "long_sleeve_outwear", "vest", "sling", "shorts", "trousers",
-    "skirt", "short_sleeve_dress", "long_sleeve_dress", "vest_dress", "sling_dress",
-]
 
 
 def main():
@@ -27,10 +22,15 @@ def main():
     parser.add_argument("--data",    default="data/sample_dataset/yolo/dataset.yaml")
     parser.add_argument("--imgsz",   type=int, default=640)
     parser.add_argument("--conf",    type=float, default=0.25)
+    parser.add_argument("--split",   default="val", choices=["val", "test"], help="Dataset split to evaluate on")
     args = parser.parse_args()
 
     if not Path(args.weights).exists():
         raise FileNotFoundError(f"Weights not found: {args.weights}")
+
+    with open(args.data) as f:
+        dataset_cfg = yaml.safe_load(f)
+    category_names = dataset_cfg["names"]
 
     model = YOLO(args.weights)
 
@@ -39,13 +39,14 @@ def main():
         data  = args.data,
         imgsz = args.imgsz,
         conf  = args.conf,
+        split = args.split,
         verbose = True,
     )
 
     # Per-class mAP table
     print("\n── Per-class mAP@50 ──────────────────────────────")
     rows = []
-    for i, name in enumerate(CATEGORY_NAMES):
+    for i, name in enumerate(category_names):
         try:
             ap = metrics.box.ap50[i]
         except Exception:
