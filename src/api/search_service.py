@@ -4,6 +4,8 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
+from src.api.custom_text_parser import parse_custom_query, refine_custom_query
+from src.api.personas import normalize_persona
 from src.recommendations.engine import RecommendationEngine
 
 try:
@@ -168,6 +170,7 @@ def _build_contextual_query(state: "SearchSession", message: str, mode: str) -> 
 @dataclass
 class SearchSession:
     id: str
+    persona: str
     detected_categories: List[str]
     seed_categories: List[str]
     base_filters: dict
@@ -219,7 +222,9 @@ class UnifiedSearchService:
         self,
         detected_categories: List[str],
         recommendations: Optional[List[dict]] = None,
+        persona: str = "cruella",
     ) -> SearchSession:
+        persona = normalize_persona(persona)
         detected_categories = _dedupe(detected_categories)
         if recommendations is not None:
             recs = recommendations
@@ -231,6 +236,7 @@ class UnifiedSearchService:
         base_filters = {"include": {"type": seed_categories}} if seed_categories else {}
         session = SearchSession(
             id=uuid.uuid4().hex,
+            persona=persona,
             detected_categories=detected_categories,
             seed_categories=seed_categories,
             base_filters=base_filters,
@@ -251,6 +257,8 @@ class UnifiedSearchService:
         message: str,
         history: Optional[List[dict]] = None,
         replace_vision: Optional[bool] = None,
+        parser_backend: str = "llm",
+        state: Optional[dict] = None,
     ) -> dict:
         session = self.get_session(session_id)
         if session is None:
@@ -258,7 +266,7 @@ class UnifiedSearchService:
 
         mode = _determine_mode(message, replace_vision, session.mode)
         strict = _use_strict_mode(message)
-        parsed_filters = self._safe_parse(message)
+        parsed_filters = self._safe_parse(message, parser_backend=parser_backend)
         effective_filters = parsed_filters if mode == "override" else _merge_filters(session.base_filters, parsed_filters)
         search_query = _build_contextual_query(session, message, mode)
 
@@ -275,11 +283,18 @@ class UnifiedSearchService:
         return {
             "reply": reply,
             "mode": mode,
+            "persona": session.persona,
             "session_id": session.id,
             "active_filters": effective_filters,
             "results": results,
             "strict": strict,
             "warning": warning,
+            "state": {
+                "query": search_query,
+                "filters": effective_filters,
+                "persona": session.persona,
+                "parser_backend": parser_backend,
+            },
         }
 
     def _build_reply(self, mode: str, warning: Optional[str], results: List[dict]) -> str:
@@ -294,7 +309,9 @@ class UnifiedSearchService:
             return f"{base} I found {len(results)} option(s) to explore next."
         return f"{base} I could not find strong matches, so you may want to try a more specific refinement."
 
-    def _safe_parse(self, message: str) -> dict:
+    def _safe_parse(self, message: str, parser_backend: str = "llm") -> dict:
+        if parser_backend == "custom":
+            return parse_custom_query(message)
         if parse_query is None:
             return {}
         try:

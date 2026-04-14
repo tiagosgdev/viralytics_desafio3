@@ -1,189 +1,271 @@
-# 👗 FashionSense — Real-Time Clothing Detection System
-> Master's Project | Deep Learning & Neural Networks
+# FashionSense
+> Master's Project | Computer Vision + Semantic Fashion Search
 
-A real-time clothing detection system using YOLOv8 fine-tuned on DeepFashion2,
-with a live camera feed, REST API, and store recommendation engine.
+FashionSense is now a single integrated application with two runtime personas:
 
----
+- `Cruella`: trained YOLO-based outfit detection + LLM-powered text refinement
+- `Edna`: custom FashionNet outfit detection + local custom text parsing
 
-## Project Structure
+The app starts on a landing screen where the user chooses which persona to use. After that, the user can:
 
-```
-fashion-detector/
-│
-├── data/
-│   ├── raw/                        # Original DeepFashion2 (17GB, not committed)
-│   └── sample_dataset/             # Stratified sample (~3-5GB)
-│       ├── images/
-│       └── annos/
-│
-├── models/
-│   └── weights/                    # Saved .pt model checkpoints
-│
-├── src/
-│   ├── detection/
-│   │   ├── __init__.py
-│   │   ├── detector.py             # Base detector ABC + YOLOv8 wrapper
-│   │   ├── yolo_world.py           # YOLO-World zero-shot detector
-│   │   ├── camera.py               # Real-time camera pipeline
-│   │   └── converter.py            # DeepFashion2 → YOLO format
-│   ├── recommendations/
-│   │   ├── __init__.py
-│   │   ├── engine.py               # Rule-based + embedding recommendation engine
-│   │   └── catalogue.py            # Mock store catalogue
-│   ├── api/
-│   │   ├── __init__.py
-│   │   ├── main.py                 # FastAPI application
-│   │   └── schemas.py              # Pydantic models
-│   └── utils/
-│       ├── __init__.py
-│       ├── visualizer.py           # Bounding box drawing utilities
-│       └── metrics.py              # Evaluation helpers
-│
-├── frontend/
-│   ├── index.html                  # Main dashboard UI
-│   └── static/
-│       └── css/style.css
-│
-├── scripts/
-│   ├── sample_dataset.py           # Stratified dataset sampler
-│   ├── train.py                    # Model training script
-│   ├── evaluate.py                 # Evaluation script (fine-tuned model)
-│   └── evaluate_yolo_world.py      # Evaluation script (YOLO-World zero-shot)
-│
-├── notebooks/
-│   └── 01_EDA.ipynb                # Exploratory Data Analysis
-│
-├── tests/
-│   ├── test_detector.py
-│   └── test_recommendations.py
-│
-├── requirements.txt
-├── Dockerfile
-├── docker-compose.yml
-└── README.md
-```
+- scan an outfit with the live camera flow,
+- get initial store recommendations,
+- refine the search through chat or voice,
+- switch back to the persona chooser and reset the active session.
 
 ---
 
 ## Quick Start
 
-- `.\scripts\start_full_app.ps1` - run web
-- `.\scripts\start_full_app.ps1 -BindHost 0.0.0.0 -BindPort 8000` - run mobile
+Web:
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+- `.\scripts\start_full_app.ps1`
 
-# 2. Sample the dataset (run once)
-python scripts/sample_dataset.py --data_dir data/raw --output_dir data/sample_dataset --n_per_class 500
+LAN / mobile testing:
 
-# 3. Convert annotations to YOLO format
-python -c "from src.detection.converter import DeepFashion2ToYOLO; DeepFashion2ToYOLO('data/sample_dataset').convert()"
+- `.\scripts\start_full_app.ps1 -BindHost 0.0.0.0 -BindPort 8000`
 
-# 4. Train the model
-python scripts/train.py --epochs 50 --model yolov8s --device 0
+Android app:
 
-# 5. Launch the API + camera
-python -m uvicorn src.api.main:app --reload
-
-# 5b. Or launch with YOLO-World zero-shot (no fine-tuning needed)
-DETECTOR_BACKEND=yolo_world uvicorn src.api.main:app --reload
-
-# 6. Open the dashboard
-open frontend/index.html
-
-# 7. Evaluate YOLO-World zero-shot on the validation set
-python scripts/evaluate_yolo_world.py
-```
-
-### `train.py` flags (YOLOv8 fine-tuning)
-
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--model` | str | `yolov8s` | YOLOv8 variant: `yolov8n` (nano), `yolov8s` (small), `yolov8m` (medium), `yolov8l` (large) |
-| `--epochs` | int | `50` | Number of training epochs |
-| `--batch` | int | `16` | Batch size |
-| `--imgsz` | int | `640` | Input image size (pixels) |
-| `--data` | str | `data/sample_dataset/yolo/dataset.yaml` | Path to dataset YAML |
-| `--output_dir` | str | `models/weights` | Parent directory for training runs |
-| `--workers` | int | `2` | Number of DataLoader workers |
-| `--device` | str | `0` | Hardware target (see table below) |
-| `--no-pretrained` | flag | off | Train from scratch (random weights, no COCO pretraining). Appends `_scratch` to run name |
-| `--wandb` | flag | off | Enable Weights & Biases logging |
-
-**Output:** Results are saved to `models/weights/{model}_fashion/` (or `{model}_fashion_scratch` with `--no-pretrained`). If the folder already exists, YOLO auto-increments the name (e.g. `yolov8s_fashion2`).
-
-### `train_custom.py` flags (FashionNet from scratch)
-
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--epochs` | int | `50` | Number of training epochs |
-| `--batch` | int | `8` | Batch size (use 4-8 on CPU, 16+ on GPU) |
-| `--imgsz` | int | `640` | Input image size (pixels) |
-| `--lr` | float | `1e-3` | Learning rate |
-| `--device` | str | auto | Hardware target: `cpu`, `cuda`, `mps`, or empty for auto-detect |
-| `--workers` | int | `0` | DataLoader workers (0 = main process, safest) |
-| `--data` | str | `data/sample_dataset/yolo` | Path to YOLO directory containing `images/` and `labels/` |
-| `--output` | str | `models/weights/fashionnet` | Output directory for checkpoints |
-| `--resume` | str | — | Path to a `.pt` checkpoint to resume training from |
-| `--fast` | flag | off | Use TinyFashionNet (fewer channels) for quick testing |
-| `--max_samples` | int | `0` | Cap dataset size for quick testing (0 = use all) |
-
-**Output:** Saves `best.pt`, `last.pt`, and `history.json` to the `--output` directory. **Warning:** re-running with the same `--output` path overwrites previous results — use a different path to preserve them.
-
-### `--device` values
-
-| Value | Hardware | Example |
-|-------|----------|---------|
-| `0` | First NVIDIA GPU (CUDA) | `--device 0` |
-| `0,1` | Multiple NVIDIA GPUs | `--device 0,1` |
-| `mps` | Apple Silicon GPU (Mac M1/M2/M3) | `--device mps` |
-| `cpu` | CPU only (slowest) | `--device cpu` |
+- open `android_app/` in Android Studio
+- build `Build > Build Bundle(s) / APK(s) > Build APK(s)`
 
 ---
 
-## Categories Detected (13 classes)
+## What The App Does
 
-| ID | Category | ID | Category |
-|----|----------|----|----------|
-| 1 | Short Sleeve Top | 8 | Trousers |
-| 2 | Long Sleeve Top | 9 | Skirt |
-| 3 | Short Sleeve Outwear | 10 | Short Sleeve Dress |
-| 4 | Long Sleeve Outwear | 11 | Long Sleeve Dress |
-| 5 | Vest | 12 | Vest Dress |
-| 6 | Sling | 13 | Sling Dress |
-| 7 | Shorts | | |
+The runtime system combines:
 
----
+1. clothing detection from a live camera or uploaded image
+2. rule-based initial complementary recommendations
+3. semantic follow-up search through natural language
+4. voice transcription for chat input
+5. a JSON-backed mock store catalogue for recommendation details
 
-## Detector Backends
+The current web experience has:
 
-The API supports two detection backends, selected via the `DETECTOR_BACKEND` environment variable:
-
-| Backend | Env value | Model | Needs training? | mAP@50 |
-|---------|-----------|-------|-----------------|--------|
-| YOLOv8 (default) | `yolov8` | Fine-tuned `best.pt` | Yes | **0.767** |
-| YOLO-World | `yolo_world` | `yolov8s-worldv2.pt` | No (zero-shot) | 0.146 |
-
-```bash
-# Fine-tuned YOLOv8 (default)
-uvicorn src.api.main:app --reload
-
-# YOLO-World zero-shot
-DETECTOR_BACKEND=yolo_world uvicorn src.api.main:app --reload
-```
+- a landing screen with `Cruella` and `Edna`
+- separate `Camera` and `Chat` tabs
+- a recommendation modal with item details
+- a side carousel of store recommendations
+- persona-specific visual themes
 
 ---
 
-## Architecture
+## Persona Modes
 
+### Cruella
+
+- Vision backend: trained YOLO detector
+- Text backend: LNIAGIA conversation flow with the LLM parser
+- Theme: dark red / black
+
+### Edna
+
+- Vision backend: custom `FashionNet`
+- Text backend: local custom parser path
+- Theme: current light neutral palette
+
+Notes:
+
+- `Cruella` is the more LLM-centric path.
+- `Edna` is the more custom-model-centric path.
+- If the custom FashionNet weights are missing, `Edna` falls back to the standard vision backend.
+
+---
+
+## Runtime Architecture
+
+High-level runtime flow:
+
+`Landing screen -> persona selection -> camera scan -> recommendations -> chat refinement`
+
+Backend components:
+
+- `src/api/main.py`
+- `src/api/search_service.py`
+- `src/api/personas.py`
+- `src/api/custom_text_parser.py`
+- `src/detection/detector.py`
+- `src/detection/fashionnet_detector.py`
+- `src/detection/camera.py`
+- `src/recommendations/engine.py`
+
+Frontend components:
+
+- `frontend/index.html`
+- `frontend/static/css/style.css`
+
+Integrated search subsystem:
+
+- `LNIAGIA/search_app.py`
+- `LNIAGIA/llm_query_parser.py`
+- `LNIAGIA/DB/vector/*`
+
+---
+
+## Project Structure
+
+```text
+viralytics_desafio3/
+|
+|-- android_app/                    # Native Android client
+|-- data/
+|   |-- mock_store_catalogue_template.json
+|   `-- sample_dataset/
+|-- docs/
+|   `-- codebase_explanation.md
+|-- frontend/
+|   |-- index.html
+|   `-- static/
+|       `-- css/style.css
+|-- LNIAGIA/                        # Semantic search subsystem
+|-- models/
+|   `-- weights/
+|       |-- fashionnet/
+|       |-- yolov8n_fashion/
+|       `-- yolov8s_fashion/
+|-- scripts/
+|   |-- start_full_app.py
+|   |-- start_full_app.ps1
+|   |-- train.py
+|   |-- train_custom.py
+|   |-- evaluate.py
+|   |-- evaluate_custom.py
+|   `-- compare_models.py
+`-- src/
+    |-- api/
+    |   |-- main.py
+    |   |-- schemas.py
+    |   |-- search_service.py
+    |   |-- personas.py
+    |   `-- custom_text_parser.py
+    |-- custom_model/
+    |-- detection/
+    |   |-- detector.py
+    |   |-- fashionnet_detector.py
+    |   |-- yolo_world.py
+    |   `-- camera.py
+    `-- recommendations/
+        |-- engine.py
+        `-- catalogue.py
 ```
-Camera (OpenCV) → YOLOv8 Inference → Detection Results
-                                           ↓
-                              Recommendation Engine
-                                           ↓
-                              FastAPI REST Endpoint
-                                           ↓
-                              Browser Dashboard (Live Feed)
-```
+
+---
+
+## Main API Surface
+
+Important routes:
+
+- `GET /`
+- `GET /health`
+- `POST /api/detect/image`
+- `POST /api/mobile/scan`
+- `POST /api/session/start`
+- `GET /api/session/{session_id}`
+- `POST /api/chat`
+- `POST /api/chat/warmup`
+- `POST /api/transcribe`
+- `GET /api/conf`
+- `POST /api/conf/{value}`
+- `WS /ws/camera`
+
+Important runtime behavior:
+
+- scan/image/chat/session requests now carry a `persona`
+- the camera WebSocket also uses the selected `persona`
+- sessions store persona information
+- chat results and recommendations are persona-aware
+
+---
+
+## Model Backends
+
+### Vision
+
+Available runtime paths:
+
+- `FashionDetector` in `src/detection/detector.py`
+- `FashionNetDetector` in `src/detection/fashionnet_detector.py`
+- `YOLOWorldDetector` in `src/detection/yolo_world.py`
+
+Current persona mapping:
+
+| Persona | Vision backend |
+|---------|----------------|
+| `cruella` | trained YOLO |
+| `edna` | FashionNet |
+
+### Text
+
+Available runtime paths:
+
+- LLM-based parser / conversation flow in `LNIAGIA/`
+- local custom parser in `src/api/custom_text_parser.py`
+
+Current persona mapping:
+
+| Persona | Text backend |
+|---------|--------------|
+| `cruella` | LLM conversation search |
+| `edna` | custom local parser |
+
+---
+
+## Mobile / Android
+
+The repository includes a native Android client in `android_app/`.
+
+Current Android direction:
+
+- native APK client
+- separate scan and chat tabs
+- default LAN server target
+- recommendation cards and detail dialog
+
+The Android app uses the backend running on the PC as the server.
+
+---
+
+## Catalogue
+
+Recommendations are now backed by the editable JSON catalogue:
+
+- `data/mock_store_catalogue_template.json`
+
+This file is intended to be:
+
+- easy to edit manually
+- replaceable per store
+- extensible with new attributes
+
+Recommendation details shown in the UI are populated from this data source.
+
+---
+
+## Training / Evaluation Scripts
+
+YOLO path:
+
+- `scripts/train.py`
+- `scripts/evaluate.py`
+
+Custom FashionNet path:
+
+- `scripts/train_custom.py`
+- `scripts/evaluate_custom.py`
+- `scripts/compare_models.py`
+
+These support the two main research directions in the repository:
+
+- strong fine-tuned baseline with YOLO
+- from-scratch detector experimentation with FashionNet
+
+---
+
+## Notes
+
+- The app launcher checks for integrated-search dependencies before starting.
+- Voice transcription depends on Whisper plus `ffmpeg`.
+- The current frontend and backend are aligned around `/api/chat`; this is no longer just a placeholder.
+- The app now has a working persona-selection layer, so documentation or older notes referring to a single startup detector are outdated.

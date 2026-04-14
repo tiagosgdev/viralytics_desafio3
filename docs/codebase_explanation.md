@@ -12,8 +12,9 @@ This repository is not a single-purpose script. It is a small research system th
 1. A computer-vision pipeline for clothing detection.
 2. A lightweight recommendation engine that suggests complementary garments.
 3. A browser-facing application layer built with FastAPI and a custom frontend.
-4. A separate natural-language clothing search subsystem in `LNIAGIA/`.
-5. Supporting experimentation code for dataset preparation, training, evaluation, and model comparison.
+4. A persona-selection layer that switches between two model stacks: `Cruella` and `Edna`.
+5. A natural-language clothing search subsystem in `LNIAGIA/`.
+6. Supporting experimentation code for dataset preparation, training, evaluation, and model comparison.
 
 At a master's-project level, the repository is interesting because it mixes two distinct AI paradigms:
 
@@ -40,9 +41,11 @@ This layer is responsible for:
 
 - serving the frontend,
 - exposing HTTP and WebSocket endpoints,
-- loading a detector once at startup,
+- loading multiple detector backends at startup,
+- routing requests by selected persona,
 - handling camera/image inference,
-- converting detections into product recommendations.
+- converting detections into product recommendations,
+- passing persona-aware state into chat refinement.
 
 ### 2.2 Vision model and data pipeline layer
 
@@ -105,7 +108,7 @@ These files are still important academically, but they are mostly evidence, repo
 
 The core online path is:
 
-`frontend -> FastAPI -> detector -> recommendation engine -> JSON/WebSocket response`.
+`frontend -> persona selection -> FastAPI -> persona-specific detector/parser -> recommendation/search response`.
 
 ### 3.1 `src/api/main.py`
 
@@ -116,8 +119,10 @@ What it does:
 - creates the FastAPI app,
 - enables permissive CORS,
 - mounts static files,
-- resolves which detector weights to use,
+- resolves detector weights,
 - creates singleton instances at startup,
+- loads both the standard detector and the custom FashionNet detector,
+- maintains persona-aware detector and camera registries,
 - exposes endpoints for health, image detection, live threshold updates, audio transcription, and camera streaming.
 
 Why this structure is used:
@@ -154,28 +159,32 @@ Tradeoff:
 - explicit config is cleaner and less implicit,
 - but the current approach is friendlier for demos and rapid iteration.
 
-#### B) Backend abstraction via `DETECTOR_BACKEND`
+#### B) Backend abstraction and persona routing
 
-The app can choose between:
+The current runtime architecture now has two overlapping ideas:
 
-- `FashionDetector` using fine-tuned YOLOv8 weights,
-- `YOLOWorldDetector` using zero-shot detection.
+1. a generic backend abstraction for detector classes
+2. a higher-level persona selection layer
 
-Why this matters:
+At startup, the code prepares:
 
-- it turns the application into an inference-backend-agnostic shell,
-- which is useful for comparative experimentation.
+- a `Cruella` detector path, normally the trained YOLO detector
+- an `Edna` detector path, normally the custom `FashionNetDetector`
 
-This is a simple form of dependency injection implemented with a startup conditional rather than a framework container.
+This is stronger than the earlier single-detector startup design because the frontend can select a model family at runtime without restarting the app.
+
+There is still a lower-level `DETECTOR_BACKEND` switch for the standard path, especially for YOLO-World experimentation, but the user-facing architectural concept is now persona-based rather than just "one detector backend."
 
 #### C) Startup-created shared objects
 
 The code stores:
 
-- `detector`
+- a default detector
+- a persona-to-detector map
+- a persona-to-camera map
 - `recommender`
-- `camera`
 - `whisper_model`
+- `search_service`
 
 as module-level globals initialized during startup.
 
@@ -187,9 +196,9 @@ Why this is being used:
 
 Alternative:
 
-- use a dedicated application state container such as `app.state.detector`.
+- use `app.state` or a dependency-injection layer for all runtime services.
 
-That would be more idiomatic FastAPI, but the current global pattern is acceptable for a prototype and easier for beginners to follow.
+That would be more idiomatic FastAPI, but the current global registry pattern is still reasonable for a prototype and keeps the model-switching logic easy to follow.
 
 #### D) Whisper loading in a background task
 
@@ -203,17 +212,19 @@ Why:
 
 This is good engineering for an interactive demo: the critical path is image/camera detection, not voice chat.
 
-#### E) `/api/detect/image`
+#### E) `/api/detect/image` and `/api/mobile/scan`
 
-This endpoint:
+These endpoints:
 
 1. reads uploaded bytes,
 2. decodes them with OpenCV,
-3. runs detection,
+3. resolves the selected persona,
+4. runs the corresponding detector,
 4. extracts unique categories,
 5. gets recommendations,
 6. draws annotations,
-7. returns structured detections plus a base64 frame.
+7. creates a persona-aware session,
+8. returns structured detections plus a base64 frame.
 
 Why OpenCV and base64:
 
@@ -255,9 +266,9 @@ That would be more elegant, but significantly more complex.
 
 #### H) `/ws/camera`
 
-This endpoint delegates the whole UX loop to `CameraStream.run_session`.
+This endpoint now resolves the selected persona from the WebSocket query string and delegates the whole UX loop to the corresponding `CameraStream.run_session`.
 
-That separation is good design. It keeps transport-level code in the API layer and session/state-machine logic in a dedicated class.
+That is a meaningful architectural improvement because it keeps the transport route stable while allowing different vision models to power the live scan flow.
 
 ### 3.2 `src/api/schemas.py`
 
@@ -267,18 +278,18 @@ What it contributes:
 
 - a typed contract between backend and client,
 - automatic serialization validation,
-- self-documenting API structure.
+- self-documenting API structure,
+- explicit persona propagation through session, scan, and chat payloads.
 
 Why Pydantic is being used:
 
 - in FastAPI, Pydantic is the standard way to formalize API payloads.
 
-One subtle weakness:
+One subtle weakness remains:
 
-- `DetectionResponse` uses `List[Dict[str, Any]]` instead of `List[DetectionItem]`,
-- and recommendations likewise use dictionaries instead of `RecommendationItem`.
+- `DetectionResponse` still uses `List[Dict[str, Any]]` instead of strict nested response models for detections and recommendations.
 
-That reduces type strictness.
+That reduces type strictness even though the persona-related contract is now clearer.
 
 Alternative:
 
@@ -355,7 +366,30 @@ Alternative:
 
 That would create tighter coupling and duplicate parsing logic. The wrapper is better.
 
-### 4.2 `src/detection/yolo_world.py`
+### 4.2 `src/detection/fashionnet_detector.py`
+
+This is a major new runtime bridge in the codebase.
+
+Before this addition, the custom FashionNet model existed primarily as a research artifact for training and evaluation. The repository now contains an adapter that allows that model family to participate directly in the deployed application.
+
+What it does:
+
+- loads a FashionNet checkpoint,
+- resolves configuration from checkpoint metadata when available,
+- preprocesses OpenCV frames into the tensor format expected by FashionNet,
+- runs the custom model,
+- postprocesses raw outputs through the custom decoding/NMS pipeline,
+- converts the results back into the same `Detection` / `DetectionResult` abstraction used elsewhere.
+
+Why this file matters architecturally:
+
+- it upgrades FashionNet from "offline experiment" to "runtime backend",
+- it preserves the detector interface contract,
+- it allows the frontend persona switch to map to a genuinely different vision stack.
+
+This is a strong example of adapter-pattern thinking: a custom research model is made deployable by writing a translation layer rather than rewriting the rest of the app.
+
+### 4.3 `src/detection/yolo_world.py`
 
 This is the zero-shot/open-vocabulary backend.
 
@@ -387,7 +421,7 @@ Alternative:
 
 From a research prototype perspective, the current approach prioritizes reproducibility under messy local environments.
 
-### 4.3 `src/detection/camera.py`
+### 4.4 `src/detection/camera.py`
 
 This file implements the real-time session UX.
 
@@ -435,7 +469,7 @@ It:
 
 This is a subtle example of human-centered systems design.
 
-### 4.4 `src/detection/converter.py`
+### 4.5 `src/detection/converter.py`
 
 This file converts DeepFashion2-style annotations into YOLO labels.
 
@@ -468,21 +502,19 @@ But for Ultralytics YOLO, explicit YOLO-format conversion is the most straightfo
 
 ### 5.1 `src/recommendations/catalogue.py`
 
-This file defines a mock catalogue through a `CatalogueItem` dataclass and a hard-coded product list.
+This layer is no longer best understood as a hard-coded Python fixture.
 
-Why this is being used:
+The recommendation catalogue is now designed around an editable external data source:
 
-- the project wants an end-to-end demo without integrating a real commerce backend.
+- `data/mock_store_catalogue_template.json`
 
-This is a common prototyping technique: replace infrastructure dependence with an in-memory fixture.
+Why this is important:
 
-Alternative:
+- it makes the mock store dynamic rather than code-embedded,
+- it allows future stores to replace the catalogue without editing Python,
+- it aligns the recommendation layer more closely with the attributes used by the search/parser subsystem.
 
-- SQLite,
-- a REST product service,
-- a vectorized fashion item embedding database.
-
-The hard-coded catalogue is not scalable, but it is very effective for demonstrating the pipeline.
+The catalogue is therefore becoming an application-facing content layer rather than just a developer convenience.
 
 ### 5.2 `src/recommendations/engine.py`
 
@@ -758,46 +790,36 @@ Why this approach may have been chosen:
 
 For a production frontend this would be too monolithic, but for a thesis prototype it is understandable.
 
-The UI supports two conceptual modes:
+The UI now supports three conceptual layers:
 
-- camera scanning,
-- chat/voice interaction.
+1. a landing screen for persona selection,
+2. a camera-scanning mode,
+3. a chat/voice refinement mode.
 
 The camera experience is tightly aligned with the backend WebSocket state machine.
 
-Important detail:
+Important update:
 
-- the page expects `/api/chat`,
-- but `src/api/main.py` does not define that route in the available code.
+- the page now uses a working `/api/chat` backend route,
+- persona selection is stored client-side and propagated into scan/chat/session calls,
+- the theme changes visually when the user selects `Cruella` or `Edna`,
+- the user can return to the landing screen and reset the active session via a dedicated header control.
 
-So the chat UI is currently an interface stub or an unfinished integration point rather than a complete working feature.
+So the frontend should now be understood as a functioning integrated client rather than a partial interface stub.
 
-That distinction is important when documenting "available code."
+### 8.2 `frontend/static/css/style.css`
 
-### 8.2 `frontend/static/js/app.js`
+This stylesheet is now a primary part of the runtime UI, not just supplementary decoration.
 
-This is a second frontend implementation for the scan flow.
+It encodes:
 
-Its presence suggests an evolution in the UI:
+- the overall visual identity,
+- responsive layout behavior,
+- recommendation modal styling,
+- persona-specific theming,
+- interaction-state styling for scan/chat/recommendation components.
 
-- either the code was refactored from an external JS file into inline JS,
-- or both approaches were experimented with and the inline version is the current active path.
-
-Because `index.html` already contains a full inline script, `app.js` appears auxiliary or legacy rather than the authoritative runtime script.
-
-That is worth noting because it affects maintainability and can confuse new readers.
-
-### 8.3 `frontend/static/css/style.css`
-
-This is supplementary styling rather than the primary stylesheet.
-
-It adds:
-
-- utility classes,
-- responsive rules,
-- extra UI primitives such as badges, toasts, skeletons.
-
-This again suggests the frontend evolved over time and retains some code that is infrastructural or forward-looking rather than fully wired.
+That matters because the current frontend no longer behaves like a neutral utility UI. It presents two distinct model personas visually as well as computationally.
 
 ## 9. Training and evaluation scripts
 
@@ -1088,6 +1110,8 @@ Why validation matters:
 
 The parser therefore acts as a probabilistic front end, while `_validate()` converts it into a more deterministic system component.
 
+In the current integrated application, this LLM path is specifically associated with the `Cruella` persona.
+
 ### 11.7 `LNIAGIA/search_app.py`
 
 This is the CLI frontend for the search subsystem.
@@ -1104,6 +1128,25 @@ It:
 
 From a system-design perspective, this file is the user-facing glue for the retrieval experiment.
 
+### 11.8 `src/api/custom_text_parser.py`
+
+This file introduces a non-LLM parsing path for the integrated app.
+
+Its purpose is not to outperform the LLM parser linguistically; its purpose is to give the `Edna` persona a distinct text-processing behavior that is local, deterministic, and based on handcrafted matching rules.
+
+What it does:
+
+- parses messages against known mappings and vocabulary,
+- handles simple include/exclude detection,
+- supports generic garment synonyms,
+- performs lightweight refinement merging.
+
+Why this matters:
+
+- it creates a meaningful model-family distinction between the two personas,
+- it allows the app to demonstrate a custom NLP-style path instead of always routing through the LLM,
+- it offers a controllable fallback when the project does not yet expose a separate trained text model checkpoint at runtime.
+
 ## 12. Code quality observations and implicit design tradeoffs
 
 ### 12.1 Strengths
@@ -1116,10 +1159,9 @@ From a system-design perspective, this file is the user-facing glue for the retr
 
 ### 12.2 Weaknesses or mismatches
 
-- `frontend/index.html` expects `/api/chat`, but the available backend code does not expose that route.
-- The frontend logic is split between inline JS and `frontend/static/js/app.js`, which may create ambiguity about the source of truth.
 - Some Pydantic schemas are weaker than they could be because nested models are not fully enforced.
 - `LNIAGIA/DB/models.py` is powerful but overloaded; it acts as schema, generator, business rules, and search config simultaneously.
+- The `Edna` text path is currently implemented through a custom deterministic parser adapter rather than a separately deployed trained text model artifact.
 - Some conceptual claims in comments or docs are broader than the currently active implementation, especially around recommendation embeddings and soft include boosting.
 
 These are normal prototype-stage characteristics, not fatal flaws.

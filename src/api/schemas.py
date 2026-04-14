@@ -36,16 +36,19 @@ class DetectionResponse(BaseModel):
     inference_ms:    float
     annotated_frame: Optional[str] = None   # base64 JPEG
     session_id:      Optional[str] = None
+    persona:         Optional[str] = None
 
 
 class SessionStartRequest(BaseModel):
     detected_categories: List[str]
     recommendations: List[Dict[str, Any]] = Field(default_factory=list)
+    persona: str = "cruella"
 
 
 class SessionResponse(BaseModel):
     session_id: str
     mode: str
+    persona: str
     detected_categories: List[str]
     seed_categories: List[str]
     active_filters: Dict[str, Any]
@@ -61,6 +64,7 @@ class ChatRequest(BaseModel):
     message: str
     history: List[ChatMessage] = Field(default_factory=list)
     session_id: Optional[str] = None
+    persona: str = "cruella"
     replace_vision: Optional[bool] = None
     strict: bool = False
     state: Optional[Dict[str, Any]] = None
@@ -79,6 +83,7 @@ class ChatResponse(BaseModel):
     reply: str
     session_id: str
     mode: str
+    persona: str
     active_filters: Dict[str, Any]
     results: List[Dict[str, Any]]
     state: Optional[Dict[str, Any]] = None
