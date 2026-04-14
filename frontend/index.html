@@ -1,278 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FashionSense — Outfit Scanner</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg:#09090d; --surf:#111116; --surf2:#1a1a22; --border:#272733;
-  --accent:#e8ff47; --green:#6bffb8; --red:#ff6b6b;
-  --text:#eeeef5; --muted:#62637a;
-}
-body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
-header { display:flex; align-items:center; justify-content:space-between; padding:14px 28px; border-bottom:1px solid var(--border); background:var(--surf); flex-shrink:0; }
-.logo { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; letter-spacing:.06em; color:var(--accent); }
-.logo span { font-family:'DM Sans',sans-serif; font-size:.75rem; color:var(--muted); letter-spacing:.18em; margin-left:10px; font-weight:300; }
-.pill { display:flex; align-items:center; gap:8px; background:var(--surf2); border:1px solid var(--border); border-radius:100px; padding:5px 14px; font-family:'DM Mono',monospace; font-size:.72rem; color:var(--muted); }
-.dot { width:7px; height:7px; border-radius:50%; background:var(--border); transition:all .3s; }
-.dot.live     { background:var(--green); box-shadow:0 0 8px var(--green); animation:blink 2s infinite; }
-.dot.scanning { background:var(--accent); box-shadow:0 0 8px var(--accent); animation:blink .8s infinite; }
-.dot.error    { background:var(--red); }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-main { flex:1; display:grid; grid-template-columns:1fr 360px; min-height:0; }
-
-/* ── Camera ── */
-.cam { position:relative; background:#000; display:flex; align-items:center; justify-content:center; border-right:1px solid var(--border); overflow:hidden; }
-#feed { width:100%; height:100%; object-fit:contain; display:none; }
-
-/* Corner brackets */
-.brk { position:absolute; width:36px; height:36px; opacity:0; transition:opacity .4s; }
-.brk.tl{top:16px;left:16px;  border-top:2px solid var(--accent);border-left:2px solid var(--accent);}
-.brk.tr{top:16px;right:16px; border-top:2px solid var(--accent);border-right:2px solid var(--accent);}
-.brk.bl{bottom:16px;left:16px;  border-bottom:2px solid var(--accent);border-left:2px solid var(--accent);}
-.brk.br{bottom:16px;right:16px; border-bottom:2px solid var(--accent);border-right:2px solid var(--accent);}
-.cam.active .brk { opacity:.5; }
-
-/* Flash overlay — sits on top of everything in the camera area */
-#flash {
-  position:absolute; inset:0; background:#fff;
-  opacity:0; pointer-events:none; z-index:20;
-  border-radius:0;
-}
-#flash.go {
-  animation:flashAnim 0.55s ease-out forwards;
-}
-@keyframes flashAnim {
-  0%   { opacity: 0.95; }
-  30%  { opacity: 0.7;  }
-  100% { opacity: 0;    }
-}
-
-/* Frozen-frame label shown after flash */
-#frozen-label {
-  position:absolute; bottom:18px; left:50%; transform:translateX(-50%);
-  background:rgba(9,9,13,.75); border:1px solid var(--accent);
-  color:var(--accent); font-family:'DM Mono',monospace; font-size:.7rem;
-  letter-spacing:.14em; padding:5px 14px; border-radius:100px;
-  opacity:0; pointer-events:none; z-index:15; transition:opacity .3s;
-  white-space:nowrap;
-}
-#frozen-label.show { opacity:1; }
-
-.idle { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; background:rgba(9,9,13,.92); transition:opacity .4s; z-index:10; }
-.idle.hidden { opacity:0; pointer-events:none; }
-.idle-icon  { font-size:3.5rem; opacity:.2; }
-.idle-title { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:.14em; color:var(--muted); }
-.idle-sub   { font-size:.8rem; color:var(--muted); opacity:.5; }
-
-/* ── Panel ── */
-.panel { background:var(--surf); display:flex; flex-direction:column; overflow:hidden; }
-.psec { padding:20px 22px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.plbl { font-family:'DM Mono',monospace; font-size:.62rem; letter-spacing:.2em; color:var(--muted); text-transform:uppercase; margin-bottom:14px; }
-.steps { display:flex; gap:6px; margin-bottom:14px; }
-.step { flex:1; height:3px; border-radius:2px; background:var(--border); transition:background .4s; }
-.step.done   { background:var(--green); }
-.step.active { background:var(--accent); animation:sa 1s infinite alternate; }
-@keyframes sa { from{opacity:.4} to{opacity:1} }
-.phase-lbl { font-family:'DM Mono',monospace; font-size:.7rem; color:var(--muted); margin-bottom:14px; }
-.phase-lbl em { color:var(--accent); font-style:normal; font-weight:500; }
-#btn-start { width:100%; padding:12px; background:var(--accent); color:#000; border:none; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.95rem; font-weight:700; cursor:pointer; letter-spacing:.04em; transition:filter .2s,transform .1s; }
-#btn-start:hover  { filter:brightness(.9); }
-#btn-start:active { transform:scale(.98); }
-#btn-start:disabled { opacity:.35; cursor:not-allowed; filter:none; }
-.actions { display:none; gap:10px; margin-top:12px; }
-.actions.show { display:flex; }
-.abtn { flex:1; padding:11px 8px; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; cursor:pointer; transition:all .2s; }
-.abtn-retry { background:transparent; border:1px solid var(--accent); color:var(--accent); }
-.abtn-retry:hover { background:rgba(232,255,71,.08); }
-.abtn-more  { background:var(--surf2); border:1px solid var(--border); color:var(--text); }
-.abtn-more:hover  { border-color:var(--muted); }
-.tags { display:flex; flex-wrap:wrap; gap:7px; min-height:36px; }
-.tag { display:flex; align-items:center; gap:6px; background:var(--surf2); border:1px solid var(--border); border-radius:6px; padding:4px 10px; font-size:.75rem; font-weight:500; animation:ti .2s ease; }
-@keyframes ti { from{opacity:0;transform:scale(.85)} to{opacity:1;transform:none} }
-.tdot  { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-.tconf { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); }
-.notag { color:var(--muted); font-size:.8rem; font-style:italic; }
-.recs-hdr  { padding:16px 22px 0; flex-shrink:0; }
-.recs-list { flex:1; overflow-y:auto; padding:12px 22px 20px; display:flex; flex-direction:column; gap:10px; }
-.recs-list::-webkit-scrollbar { width:4px; }
-.recs-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-.card { background:var(--surf2); border:1px solid var(--border); border-radius:10px; padding:13px 14px; display:flex; align-items:flex-start; gap:12px; cursor:pointer; transition:border-color .2s,background .2s; animation:ci .25s ease; }
-@keyframes ci { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:none} }
-.card:hover { border-color:var(--accent); background:rgba(232,255,71,.03); }
-.cthumb { width:44px; height:56px; border-radius:7px; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
-.cinfo  { flex:1; min-width:0; }
-.cname  { font-weight:600; font-size:.85rem; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.ccat   { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); margin-bottom:5px; }
-.cwhy   { font-size:.7rem; color:var(--green); opacity:.85; margin-bottom:5px; }
-.cprice { font-family:'DM Mono',monospace; font-size:.82rem; color:var(--accent); font-weight:500; }
-.ph     { color:var(--muted); font-size:.8rem; font-style:italic; text-align:center; padding:28px 0; }
-
-/* ── Header right section ── */
-.hdr-right { display:flex; align-items:center; gap:14px; }
-.view-toggle { display:flex; background:var(--surf2); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
-.vtab { background:none; border:none; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:.78rem; font-weight:500; padding:6px 16px; cursor:pointer; transition:all .2s; white-space:nowrap; }
-.vtab:hover { color:var(--text); }
-.vtab.active { background:var(--accent); color:#000; font-weight:600; }
-
-/* ── Chat View ── */
-.chat-view { display:none; flex-direction:column; background:var(--bg); border-right:1px solid var(--border); }
-.chat-view.active { display:flex; }
-.cam.active-view { display:flex; }
-.cam.hidden-view { display:none; }
-
-.chat-messages { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; }
-.chat-messages::-webkit-scrollbar { width:4px; }
-.chat-messages::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
-
-.chat-welcome { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; flex:1; opacity:.6; }
-.chat-welcome-icon { font-size:3rem; }
-.chat-welcome-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:.12em; color:var(--muted); }
-.chat-welcome-sub { font-size:.8rem; color:var(--muted); text-align:center; max-width:280px; line-height:1.5; }
-
-.chat-bubble { max-width:80%; padding:10px 14px; border-radius:12px; font-size:.85rem; line-height:1.5; word-wrap:break-word; animation:ci .2s ease; }
-.chat-bubble.user { align-self:flex-end; background:var(--accent); color:#000; border-bottom-right-radius:4px; }
-.chat-bubble.bot { align-self:flex-start; background:var(--surf2); border:1px solid var(--border); color:var(--text); border-bottom-left-radius:4px; }
-.chat-bubble.bot .typing-dots { display:inline-flex; gap:4px; }
-.chat-bubble.bot .typing-dots span { width:6px; height:6px; border-radius:50%; background:var(--muted); animation:blink 1.4s infinite; }
-.chat-bubble.bot .typing-dots span:nth-child(2) { animation-delay:.2s; }
-.chat-bubble.bot .typing-dots span:nth-child(3) { animation-delay:.4s; }
-
-.chat-input-bar { display:flex; align-items:center; gap:8px; padding:12px 16px; border-top:1px solid var(--border); background:var(--surf); flex-shrink:0; }
-.chat-input { flex:1; background:var(--surf2); border:1px solid var(--border); border-radius:8px; padding:10px 14px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.85rem; outline:none; transition:border-color .2s; }
-.chat-input:focus { border-color:var(--accent); }
-.chat-input::placeholder { color:var(--muted); }
-.send-btn { width:38px; height:38px; border-radius:8px; background:var(--accent); color:#000; border:none; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:filter .2s,transform .1s; flex-shrink:0; }
-.send-btn:hover { filter:brightness(.9); }
-.send-btn:active { transform:scale(.94); }
-.mic-btn { width:38px; height:38px; border-radius:8px; background:var(--surf2); border:1px solid var(--border); color:var(--muted); cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; transition:all .2s; flex-shrink:0; }
-.mic-btn:hover { border-color:var(--muted); color:var(--text); }
-.mic-btn.listening { background:var(--red); border-color:var(--red); color:#fff; animation:blink 1s infinite; }
-.mic-select { background:var(--surf2); border:1px solid var(--border); border-radius:6px; color:var(--muted); font-family:'DM Mono',monospace; font-size:.65rem; padding:4px 6px; max-width:120px; cursor:pointer; outline:none; }
-.mic-select:focus { border-color:var(--accent); }
-
-/* Confidence slider */
-.conf-row {
-  display:flex; align-items:center; gap:10px; margin-top:14px;
-  padding-top:14px; border-top:1px solid var(--border);
-}
-.conf-row label { font-family:'DM Mono',monospace; font-size:.65rem; color:var(--muted); letter-spacing:.1em; white-space:nowrap; }
-.conf-row input[type=range] {
-  flex:1; accent-color:var(--accent); height:4px; cursor:pointer;
-}
-.conf-val {
-  font-family:'DM Mono',monospace; font-size:.78rem;
-  color:var(--accent); font-weight:500; min-width:36px; text-align:right;
-}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FashionSense - Outfit Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" as="style" onload="this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-<header>
-  <span class="logo">FashionSense <span>OUTFIT SCANNER</span></span>
-  <div class="hdr-right">
-    <div class="view-toggle">
-      <button class="vtab active" id="tab-cam" onclick="switchView('camera')">&#128247; Camera</button>
-      <button class="vtab" id="tab-chat" onclick="switchView('chat')">&#128172; Chat</button>
-    </div>
-    <div class="pill"><div class="dot" id="dot"></div><span id="status">Ready</span></div>
-  </div>
-</header>
-<main>
-  <div class="cam" id="cam">
-    <div class="brk tl"></div><div class="brk tr"></div>
-    <div class="brk bl"></div><div class="brk br"></div>
-    <img id="feed" alt="Camera"/>
-    <!-- Flash overlay -->
-    <div id="flash"></div>
-    <!-- Frozen frame label -->
-    <div id="frozen-label">&#128247; OUTFIT CAPTURED</div>
-    <div class="idle" id="idle">
-      <div class="idle-icon">&#x1F457;</div>
-      <div class="idle-title">READY TO SCAN</div>
-      <div class="idle-sub">Press "Start Scan" to detect your outfit</div>
-    </div>
-  </div>
+  <a href="#cam" class="skip-link">Skip to camera</a>
 
-  <!-- ── Chat View ── -->
-  <div class="chat-view" id="chat-view">
-    <div class="chat-messages" id="chat-messages">
-      <div class="chat-welcome">
-        <div class="chat-welcome-icon">&#128172;</div>
-        <div class="chat-welcome-title">FashionSense Assistant</div>
-        <div class="chat-welcome-sub">Ask me anything about fashion, outfit recommendations, or styling tips.</div>
+  <header>
+    <span class="logo">FashionSense <span>OUTFIT SCANNER</span></span>
+    <div class="hdr-right">
+      <div class="view-toggle">
+        <button class="vtab active" id="tab-cam" onclick="switchView('camera')"><i class="fas fa-camera"></i> Camera</button>
+        <button class="vtab" id="tab-chat" onclick="switchView('chat')"><i class="fas fa-message"></i> Chat</button>
+      </div>
+      <div class="pill"><div class="dot" id="dot"></div><span id="status">Ready</span></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="cam" id="cam">
+      <div class="brk tl"></div>
+      <div class="brk tr"></div>
+      <div class="brk bl"></div>
+      <div class="brk br"></div>
+      <img id="feed" alt="Camera feed">
+      <div id="flash"></div>
+      <div id="frozen-label"><i class="fas fa-camera"></i> OUTFIT CAPTURED</div>
+      <div class="idle" id="idle">
+        <div class="idle-icon"><i class="fas fa-shirt"></i></div>
+        <div class="idle-title">READY TO SCAN</div>
+        <div class="idle-sub">Press "Start Scan" to detect your outfit</div>
       </div>
     </div>
-    <div class="chat-input-bar">
-      <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Voice input">&#127908;</button>
-      <select class="mic-select" id="mic-select" title="Choose microphone"></select>
-      <input type="text" class="chat-input" id="chat-input" placeholder="Type a message..." autocomplete="off"
-             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"/>
-      <button class="send-btn" id="send-btn" onclick="sendChat()">&#10148;</button>
+
+    <div class="chat-view" id="chat-view">
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-welcome">
+          <div class="chat-welcome-icon"><i class="fas fa-message"></i></div>
+          <div class="chat-welcome-title">FashionSense Assistant</div>
+          <div class="chat-welcome-sub">Ask for different colors, styles, formality, or tell it to ignore the scan entirely.</div>
+        </div>
+      </div>
+      <div class="chat-input-bar">
+        <button class="mic-btn" id="mic-btn" onclick="toggleVoice()" title="Voice input"><i class="fas fa-microphone"></i></button>
+        <select class="mic-select" id="mic-select" title="Choose microphone"></select>
+        <input
+          type="text"
+          class="chat-input"
+          id="chat-input"
+          placeholder="Type a message..."
+          autocomplete="off"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"
+        >
+        <button class="send-btn" id="send-btn" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+      </div>
     </div>
+
+    <aside class="panel">
+      <div class="psec">
+        <div class="plbl">Scan Controls</div>
+        <div class="steps"><div class="step" id="s1"></div><div class="step" id="s2"></div><div class="step" id="s3"></div></div>
+        <div class="phase-lbl" id="plbl">Press start to begin</div>
+        <button id="btn-start" onclick="startScan()"><i class="fas fa-play"></i> Start Scan</button>
+        <div class="actions" id="actions">
+          <button class="abtn abtn-retry" onclick="sendCmd('retry')"><i class="fas fa-rotate-right"></i> Retry Scan</button>
+          <button class="abtn abtn-more" onclick="sendCmd('more_recs')"><i class="fas fa-sparkles"></i> More Suggestions</button>
+        </div>
+
+        <div class="conf-row">
+          <label for="conf-slider">MIN CONF</label>
+          <input type="range" id="conf-slider" min="10" max="95" value="60" oninput="updateConf(this.value)">
+          <span class="conf-val" id="conf-val">60%</span>
+        </div>
+      </div>
+
+      <div class="psec">
+        <div class="plbl">Detected Clothing</div>
+        <div class="tags" id="tags"><span class="notag">Nothing detected yet</span></div>
+      </div>
+
+      <div class="recs-hdr">
+        <div class="recs-headline">
+          <div class="plbl">Store Recommendations</div>
+          <div class="recs-actions">
+            <button class="recs-scroll-btn" id="recs-scroll-left" type="button" onclick="scrollRecommendations(-1)" disabled aria-label="Scroll recommendations left">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="recs-scroll-btn" id="recs-scroll-right" type="button" onclick="scrollRecommendations(1)" disabled aria-label="Scroll recommendations right">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="recs-carousel">
+        <div class="recs-list" id="recs">
+          <div class="ph">Recommendations will appear here after a scan or chat refinement.</div>
+        </div>
+      </div>
+      </div>
+    </aside>
+  </main>
+
+  <div class="modal-shell" id="recommendations-modal" aria-hidden="true">
+    <div class="modal-backdrop" onclick="toggleRecommendationsModal(false)"></div>
+    <section class="rec-modal" role="dialog" aria-modal="true" aria-labelledby="rec-modal-title">
+      <button class="modal-close" type="button" onclick="toggleRecommendationsModal(false)" aria-label="Close recommendations window">
+        <i class="fas fa-xmark"></i>
+      </button>
+      <div class="rec-modal-header">
+        <div>
+          <div class="plbl">Store Recommendations</div>
+          <h2 id="rec-modal-title">Your Recommended Pieces</h2>
+        </div>
+        <p id="rec-modal-subtitle">Select an item to inspect its details.</p>
+      </div>
+      <div class="rec-modal-body">
+        <div class="rec-modal-list" id="rec-modal-list"></div>
+        <div class="rec-detail" id="rec-detail">
+          <div class="ph">Recommendation details will appear here.</div>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <aside class="panel">
-    <div class="psec">
-      <div class="plbl">Scan Controls</div>
-      <div class="steps"><div class="step" id="s1"></div><div class="step" id="s2"></div><div class="step" id="s3"></div></div>
-      <div class="phase-lbl" id="plbl">Press start to begin</div>
-      <button id="btn-start" onclick="startScan()">&#9654; Start Scan</button>
-      <div class="actions" id="actions">
-        <button class="abtn abtn-retry" onclick="sendCmd('retry')">&#x1F504; Retry Scan</button>
-        <button class="abtn abtn-more"  onclick="sendCmd('more_recs')">&#x2728; More Suggestions</button>
-      </div>
-
-      <!-- Confidence threshold slider -->
-      <div class="conf-row">
-        <label>MIN CONF</label>
-        <input type="range" id="conf-slider" min="10" max="95" value="60"
-               oninput="updateConf(this.value)"/>
-        <span class="conf-val" id="conf-val">60%</span>
-      </div>
-    </div>
-    <div class="psec">
-      <div class="plbl">Detected Clothing</div>
-      <div class="tags" id="tags"><span class="notag">Nothing detected yet</span></div>
-    </div>
-    <div class="recs-hdr"><div class="plbl">Store Recommendations</div></div>
-    <div class="recs-list" id="recs"><div class="ph">Recommendations appear after scanning</div></div>
-  </aside>
-</main>
 <script>
-const WS_URL='ws://'+location.host+'/ws/camera';
-const COLORS={short_sleeve_top:'#ff6464',long_sleeve_top:'#ffa03c',short_sleeve_outwear:'#50c878',long_sleeve_outwear:'#28b4c8',vest:'#b450ff',sling:'#ff50b4',shorts:'#64b4ff',trousers:'#3c50c8',skirt:'#dcb428',short_sleeve_dress:'#ff7850',long_sleeve_dress:'#8c3cc8',vest_dress:'#c86496',sling_dress:'#64c8b4'};
-const EMOJI={short_sleeve_top:'👕',long_sleeve_top:'👔',short_sleeve_outwear:'🧥',long_sleeve_outwear:'🧥',vest:'🦺',sling:'👗',shorts:'🩳',trousers:'👖',skirt:'👗',short_sleeve_dress:'👗',long_sleeve_dress:'👗',vest_dress:'👗',sling_dress:'👗'};
+const WS_URL = 'ws://' + location.host + '/ws/camera';
+
+function initHelpers() {
+  const lazyTargets = document.querySelectorAll('img[data-src], source[data-srcset]');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        if (el.dataset.src) {
+          el.src = el.dataset.src;
+          el.removeAttribute('data-src');
+        }
+        if (el.dataset.srcset) {
+          el.srcset = el.dataset.srcset;
+          el.removeAttribute('data-srcset');
+        }
+        obs.unobserve(el);
+      });
+    }, { rootMargin: '200px 0px' });
+    lazyTargets.forEach((target) => io.observe(target));
+  } else {
+    lazyTargets.forEach((el) => {
+      if (el.dataset.src) el.src = el.dataset.src;
+      if (el.dataset.srcset) el.srcset = el.dataset.srcset;
+    });
+  }
+
+  warmupChat();
+  connectCamera();
+}
+
+function initReveal() {
+  const els = document.querySelectorAll('.reveal');
+  if (!els.length) return;
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    els.forEach((el) => observer.observe(el));
+  } else {
+    els.forEach((el) => el.classList.add('visible'));
+  }
+}
+
+function initCardTilt() {
+  const cards = document.querySelectorAll('.card');
+  cards.forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
+      const rect = card.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (event.clientX - cx) / rect.width;
+      const dy = (event.clientY - cy) / rect.height;
+      card.style.transform =
+        `perspective(900px) translateZ(0) rotateX(${(-dy * 6).toFixed(2)}deg) rotateY(${(dx * 6).toFixed(2)}deg) translateY(-6px)`;
+    });
+    card.addEventListener('pointerleave', () => {
+      card.style.transform = '';
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initHelpers();
+  initReveal();
+  initCardTilt();
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && recsModal.classList.contains('open')) {
+      toggleRecommendationsModal(false);
+    }
+  });
+});
+
+const COLORS = {
+  short_sleeve_top: '#ff6464',
+  long_sleeve_top: '#ffa03c',
+  short_sleeve_outwear: '#50c878',
+  long_sleeve_outwear: '#28b4c8',
+  vest: '#b450ff',
+  sling: '#ff50b4',
+  shorts: '#64b4ff',
+  trousers: '#3c50c8',
+  skirt: '#dcb428',
+  short_sleeve_dress: '#ff7850',
+  long_sleeve_dress: '#8c3cc8',
+  vest_dress: '#c86496',
+  sling_dress: '#64c8b4'
+};
+
+const EMOJI = {
+  short_sleeve_top: '<i class="fas fa-shirt"></i>',
+  long_sleeve_top: '<i class="fas fa-shirt"></i>',
+  short_sleeve_outwear: '<i class="fas fa-vest"></i>',
+  long_sleeve_outwear: '<i class="fas fa-vest"></i>',
+  vest: '<i class="fas fa-vest"></i>',
+  sling: '<i class="fas fa-dress"></i>',
+  shorts: '<i class="fas fa-person-hiking"></i>',
+  trousers: '<i class="fas fa-person"></i>',
+  skirt: '<i class="fas fa-dress"></i>',
+  short_sleeve_dress: '<i class="fas fa-dress"></i>',
+  long_sleeve_dress: '<i class="fas fa-dress"></i>',
+  vest_dress: '<i class="fas fa-dress"></i>',
+  sling_dress: '<i class="fas fa-dress"></i>'
+};
 
 let ws = null;
-let frozen = false;   // true while showing the captured still frame
+let frozen = false;
+let currentSessionId = null;
+let currentDetectedCategories = [];
+let currentRecommendations = [];
+let chatHistory = [];
+let chatConversationState = null;
+let currentActiveFilters = {};
+let cameraReady = false;
+let pendingStart = false;
+let cameraSuspended = false;
+let hasShownInitialRecommendationsModal = false;
+let recommendationDetailIndex = 0;
 
-const feed       = document.getElementById('feed');
-const idle       = document.getElementById('idle');
-const cam        = document.getElementById('cam');
-const dot        = document.getElementById('dot');
-const statusEl   = document.getElementById('status');
-const s1         = document.getElementById('s1');
-const s2         = document.getElementById('s2');
-const s3         = document.getElementById('s3');
-const plbl       = document.getElementById('plbl');
-const btnStart   = document.getElementById('btn-start');
-const actions    = document.getElementById('actions');
-const tagsEl     = document.getElementById('tags');
-const recsEl     = document.getElementById('recs');
-const flashEl    = document.getElementById('flash');
-const frozenLbl  = document.getElementById('frozen-label');
+const feed = document.getElementById('feed');
+const idle = document.getElementById('idle');
+const cam = document.getElementById('cam');
+const dot = document.getElementById('dot');
+const statusEl = document.getElementById('status');
+const s1 = document.getElementById('s1');
+const s2 = document.getElementById('s2');
+const s3 = document.getElementById('s3');
+const plbl = document.getElementById('plbl');
+const btnStart = document.getElementById('btn-start');
+const actions = document.getElementById('actions');
+const tagsEl = document.getElementById('tags');
+const recsEl = document.getElementById('recs');
+const flashEl = document.getElementById('flash');
+const frozenLbl = document.getElementById('frozen-label');
+const camEl = document.getElementById('cam');
+const chatView = document.getElementById('chat-view');
+const tabCam = document.getElementById('tab-cam');
+const tabChat = document.getElementById('tab-chat');
+const chatMsgs = document.getElementById('chat-messages');
+const chatInput = document.getElementById('chat-input');
+const micBtn = document.getElementById('mic-btn');
+const micSelect = document.getElementById('mic-select');
+const recsModal = document.getElementById('recommendations-modal');
+const recsScrollLeftBtn = document.getElementById('recs-scroll-left');
+const recsScrollRightBtn = document.getElementById('recs-scroll-right');
+const recsModalList = document.getElementById('rec-modal-list');
+const recDetail = document.getElementById('rec-detail');
+const recModalSubtitle = document.getElementById('rec-modal-subtitle');
+
+let currentView = 'camera';
+let mediaRecorder = null;
+let audioChunks = [];
+let isListening = false;
+let micDevicesLoaded = false;
+let currentAudioMimeType = '';
+const SILENCE_TIMEOUT_MS = 2500;
+const SPEECH_START_THRESHOLD = 0.03;
+const SPEECH_CONTINUE_THRESHOLD = 0.018;
 
 function triggerFlash() {
-  // Remove class first so re-triggering works (e.g. on retry)
   flashEl.classList.remove('go');
-  // Force reflow so the animation restarts cleanly
   void flashEl.offsetWidth;
   flashEl.classList.add('go');
-  // Show frozen label alongside flash
   frozenLbl.classList.add('show');
 }
 
@@ -280,80 +308,200 @@ function hideFrozenLabel() {
   frozenLbl.classList.remove('show');
 }
 
-function startScan() {
-  if (ws) { ws.close(); ws = null; }
-  frozen = false;
-  hideFrozenLabel();
+function connectCamera() {
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+    return;
+  }
 
-  setSt('scanning', 'Connecting...');
+  cameraSuspended = false;
+  setSt('scanning', 'Connecting camera...');
   ws = new WebSocket(WS_URL);
 
   ws.onopen = () => {
-    setSt('live', 'Connected');
-    feed.style.display = 'block';
-    idle.classList.add('hidden');
-    cam.classList.add('active');
-    btnStart.disabled = true;
-    actions.classList.remove('show');
-    setSteps('capturing');
+    setSt('scanning', 'Camera handshake...');
   };
 
-  ws.onmessage = (e) => {
-    const m = JSON.parse(e.data);
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
 
-    if (m.type === 'frame') {
-      if (m.phase === 'capturing') {
-        if (m.flash) {
-          // This is the LAST frame before analysing — freeze it and flash
-          feed.src = 'data:image/jpeg;base64,' + m.frame;
-          frozen = true;
-          triggerFlash();
-          setSt('scanning', 'Captured!');
-          setSteps('analysing');
-        } else if (!frozen) {
-          // Normal live frame — only update if not frozen
-          feed.src = 'data:image/jpeg;base64,' + m.frame;
-          setSt('scanning', 'Scanning... ' + m.countdown + 's');
-          setSteps('capturing');
-        }
-      } else if (m.phase === 'analysing') {
-        // Keep the frozen frame visible during analysing — don't update feed.src
-        setSt('scanning', 'Analysing...');
-        setSteps('analysing');
+    if (msg.type === 'ready') {
+      cameraReady = true;
+      if (!pendingStart && !actions.classList.contains('show')) {
+        setSt('idle', 'Camera ready');
       }
+      if (pendingStart) {
+        ws.send(JSON.stringify({ cmd: 'start' }));
+        pendingStart = false;
+        beginCaptureUi();
+      }
+      return;
+    }
 
-    } else if (m.type === 'results') {
-      frozen = false;
-      hideFrozenLabel();
-      setSt('live', 'Done');
-      setSteps('results');
-      renderTags(m.detections || []);
-      renderRecs(m.recommendations || []);
-      actions.classList.add('show');
-      plbl.textContent = 'Choose an action below';
+    handleCameraMessage(msg);
+  };
 
-    } else if (m.type === 'error') {
-      setSt('error', 'Error');
+  ws.onerror = () => {
+    cameraReady = false;
+    if (cameraSuspended) {
+      return;
+    }
+    setSt('error', 'Camera failed');
+    resetIdle();
+  };
+
+  ws.onclose = () => {
+    cameraReady = false;
+    ws = null;
+    if (cameraSuspended) {
+      return;
+    }
+    if (!actions.classList.contains('show')) {
+      setSt('error', 'Camera offline');
       resetIdle();
     }
   };
+}
 
-  ws.onerror = () => { setSt('error', 'Failed'); resetIdle(); };
-  ws.onclose = () => { if (!actions.classList.contains('show')) resetIdle(); };
+function disconnectCamera() {
+  cameraSuspended = true;
+  cameraReady = false;
+  pendingStart = false;
+  frozen = false;
+  hideFrozenLabel();
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+    ws.close();
+  } else {
+    ws = null;
+  }
+  feed.removeAttribute('src');
+  feed.style.display = 'none';
+  idle.classList.remove('hidden');
+  cam.classList.remove('active');
+  btnStart.disabled = false;
+  actions.classList.remove('show');
+  s1.className = 'step';
+  s2.className = 'step';
+  s3.className = 'step';
+  plbl.textContent = 'Press start to begin';
+  setSt('idle', 'Camera paused');
+}
+
+function beginCaptureUi() {
+  feed.style.display = 'block';
+  idle.classList.add('hidden');
+  cam.classList.add('active');
+  btnStart.disabled = true;
+  actions.classList.remove('show');
+  setSteps('capturing');
+  setSt('scanning', 'Starting scan...');
+}
+
+function handleCameraMessage(msg) {
+  if (msg.type === 'frame') {
+    if (msg.phase === 'preview') {
+      if (!frozen) {
+        feed.style.display = 'block';
+        feed.src = 'data:image/jpeg;base64,' + msg.frame;
+        idle.classList.add('hidden');
+        cam.classList.remove('active');
+      }
+      return;
+    }
+
+    if (msg.phase === 'capturing') {
+      if (msg.flash) {
+        feed.src = 'data:image/jpeg;base64,' + msg.frame;
+        frozen = true;
+        triggerFlash();
+        setSt('scanning', 'Captured!');
+        setSteps('analysing');
+      } else if (!frozen) {
+        feed.src = 'data:image/jpeg;base64,' + msg.frame;
+        setSt('scanning', 'Scanning... ' + msg.countdown + 's');
+        setSteps('capturing');
+      }
+    } else if (msg.phase === 'analysing') {
+      setSt('scanning', 'Analysing...');
+      setSteps('analysing');
+    }
+  } else if (msg.type === 'results') {
+    frozen = false;
+    hideFrozenLabel();
+    chatConversationState = null;
+    currentActiveFilters = {};
+    if (msg.annotated_frame) {
+      feed.style.display = 'block';
+      feed.src = 'data:image/jpeg;base64,' + msg.annotated_frame;
+    }
+    setSt('live', 'Done');
+    setSteps('results');
+    renderTags(msg.detections || []);
+    renderRecs(msg.recommendations || [], { autoOpen: !hasShownInitialRecommendationsModal });
+    currentDetectedCategories = msg.dominant || (msg.detections || []).map((d) => d.class_name);
+    currentRecommendations = msg.recommendations || [];
+    initializeSearchSession(currentDetectedCategories, currentRecommendations);
+    actions.classList.add('show');
+    plbl.textContent = 'Choose an action below';
+  } else if (msg.type === 'error') {
+    setSt('error', 'Error');
+    resetIdle();
+  }
+}
+
+function startScan() {
+  frozen = false;
+  currentSessionId = null;
+  currentDetectedCategories = [];
+  currentRecommendations = [];
+  chatHistory = [];
+  chatConversationState = null;
+  currentActiveFilters = {};
+  hasShownInitialRecommendationsModal = false;
+  recommendationDetailIndex = 0;
+  toggleRecommendationsModal(false);
+  hideFrozenLabel();
+  pendingStart = true;
+  if (!ws || ws.readyState === WebSocket.CLOSED) {
+    connectCamera();
+    return;
+  }
+  if (cameraReady && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ cmd: 'start' }));
+    pendingStart = false;
+    beginCaptureUi();
+  } else {
+    setSt('scanning', 'Preparing camera...');
+  }
 }
 
 function sendCmd(cmd) {
-  if (!ws || ws.readyState !== 1) { startScan(); return; }
+  if (!ws || ws.readyState !== 1) {
+    startScan();
+    return;
+  }
+
   ws.send(JSON.stringify({ cmd }));
 
   if (cmd === 'retry') {
     frozen = false;
+    currentSessionId = null;
+    currentDetectedCategories = [];
+    currentRecommendations = [];
+    chatHistory = [];
+    chatConversationState = null;
+    currentActiveFilters = {};
+    hasShownInitialRecommendationsModal = false;
+    recommendationDetailIndex = 0;
+    toggleRecommendationsModal(false);
     hideFrozenLabel();
     actions.classList.remove('show');
     tagsEl.innerHTML = '<span class="notag">Scanning...</span>';
     recsEl.innerHTML = '<div class="ph">Scanning your outfit...</div>';
-    setSteps('capturing');
-    setSt('scanning', 'Starting...');
+    recsScrollLeftBtn.disabled = true;
+    recsScrollRightBtn.disabled = true;
+    recsModalList.innerHTML = '';
+    recDetail.innerHTML = '<div class="ph">Recommendation details will appear here.</div>';
+    beginCaptureUi();
   } else {
     recsEl.innerHTML = '<div class="ph">Finding new suggestions...</div>';
     setSt('live', 'Loading...');
@@ -361,78 +509,269 @@ function sendCmd(cmd) {
 }
 
 function renderTags(dets) {
-  if (!dets.length) { tagsEl.innerHTML = '<span class="notag">No clothing detected</span>'; return; }
+  if (!dets.length) {
+    tagsEl.innerHTML = '<span class="notag">No clothing detected</span>';
+    return;
+  }
+
   const seen = {};
-  dets.forEach(d => {
-    if (!seen[d.class_name] || seen[d.class_name].confidence < d.confidence) seen[d.class_name] = d;
+  dets.forEach((d) => {
+    if (!seen[d.class_name] || seen[d.class_name].confidence < d.confidence) {
+      seen[d.class_name] = d;
+    }
   });
-  tagsEl.innerHTML = Object.values(seen).map(d => {
+
+  tagsEl.innerHTML = Object.values(seen).map((d) => {
     const col = COLORS[d.class_name] || '#888';
     const lbl = d.class_name.replace(/_/g, ' ');
     const conf = Math.round(d.confidence * 100);
     return '<div class="tag"><div class="tdot" style="background:' + col + '"></div><span>' + lbl + '</span><span class="tconf">' + conf + '%</span></div>';
   }).join('');
+
+  animateStagger('#tags', '.tag');
 }
 
-function renderRecs(recs) {
-  if (!recs.length) { recsEl.innerHTML = '<div class="ph">No matches - try retrying</div>'; return; }
-  recsEl.innerHTML = recs.map(r =>
-    '<div class="card"><div class="cthumb">' + (EMOJI[r.category] || '👔') + '</div>' +
+function renderRecs(recs, options = {}) {
+  const autoOpen = Boolean(options.autoOpen);
+
+  if (!recs.length) {
+    currentRecommendations = [];
+    recsEl.innerHTML = '<div class="ph">No matches - try retrying</div>';
+    recsScrollLeftBtn.disabled = true;
+    recsScrollRightBtn.disabled = true;
+    recsModalList.innerHTML = '';
+    recDetail.innerHTML = '<div class="ph">Recommendation details will appear here.</div>';
+    recModalSubtitle.textContent = 'Select an item to inspect its details.';
+    toggleRecommendationsModal(false);
+    return;
+  }
+
+  currentRecommendations = recs;
+  recommendationDetailIndex = 0;
+  recsScrollLeftBtn.disabled = false;
+  recsScrollRightBtn.disabled = false;
+
+  recsEl.innerHTML = recs.map((r, index) =>
+    '<button class="card rec-card-button" type="button" onclick="openRecommendationDetail(' + index + ', true)"><div class="cthumb">' + (EMOJI[r.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
     '<div class="cinfo"><div class="cname">' + esc(r.name) + '</div>' +
     '<div class="ccat">' + (r.category || '').replace(/_/g, ' ') + '</div>' +
     '<div class="cwhy">' + esc(r.reason) + '</div>' +
-    '<div class="cprice">' + esc(r.price) + '</div></div></div>'
+    '<div class="cprice">' + esc(r.price) + '</div></div></button>'
   ).join('');
+
+  recsEl.scrollTo({ left: 0, behavior: 'auto' });
+  renderRecommendationsModal(recs);
+  animateStagger('#recs', '.card');
+
+  if (autoOpen) {
+    hasShownInitialRecommendationsModal = true;
+    toggleRecommendationsModal(true);
+  }
 }
 
-function setSteps(p) {
-  s1.className = s2.className = s3.className = 'step';
-  if (p === 'capturing') { s1.classList.add('active'); plbl.innerHTML = '<em>Scanning</em> your outfit...'; }
-  else if (p === 'analysing') { s1.classList.add('done'); s2.classList.add('active'); plbl.innerHTML = '<em>Analysing</em> detections...'; }
-  else if (p === 'results')   { s1.classList.add('done'); s2.classList.add('done'); s3.classList.add('done'); }
+function renderRecommendationsModal(recs) {
+  recsModalList.innerHTML = recs.map((rec, index) => {
+    const active = index === recommendationDetailIndex ? ' active' : '';
+    const category = (rec.category || 'item').replace(/_/g, ' ');
+    return (
+      '<button class="rec-modal-item' + active + '" type="button" onclick="openRecommendationDetail(' + index + ')">' +
+      '<div class="rec-modal-thumb">' + (EMOJI[rec.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
+      '<div class="rec-modal-copy">' +
+      '<div class="rec-modal-name">' + esc(rec.name) + '</div>' +
+      '<div class="rec-modal-category">' + esc(category) + '</div>' +
+      '<div class="rec-modal-price">' + esc(rec.price) + '</div>' +
+      '</div></button>'
+    );
+  }).join('');
+
+  openRecommendationDetail(recommendationDetailIndex);
+}
+
+function extractIncludeFilters(source) {
+  if (!source || typeof source !== 'object') return {};
+  if (source.include && typeof source.include === 'object') {
+    return source.include || {};
+  }
+  const candidateKeys = Object.keys(source);
+  const looksLikeFlatInclude = candidateKeys.some((key) => Array.isArray(source[key]));
+  return looksLikeFlatInclude ? source : {};
+}
+
+function getActiveIncludeFilters() {
+  const directInclude = extractIncludeFilters(currentActiveFilters);
+  if (Object.keys(directInclude).length) return directInclude;
+
+  const stateFilters = chatConversationState && typeof chatConversationState === 'object'
+    ? chatConversationState.filters
+    : null;
+  const stateInclude = extractIncludeFilters(stateFilters);
+  if (Object.keys(stateInclude).length) return stateInclude;
+
+  return {};
+}
+
+function normalizeComparableValue(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function attributeMatchesUserIntent(field, value, recommendation) {
+  const include = getActiveIncludeFilters();
+  const desired = include && Array.isArray(include[field]) ? include[field] : null;
+  if (!desired || !desired.length) return false;
+
+  const currentValue = normalizeComparableValue(value);
+  const desiredValues = desired.map(normalizeComparableValue);
+  if (field === 'type' && recommendation && recommendation.category) {
+    return desiredValues.includes(normalizeComparableValue(recommendation.category));
+  }
+  return desiredValues.includes(currentValue);
+}
+
+function buildDetailRow(label, value, field, recommendation) {
+  const highlight = attributeMatchesUserIntent(field, value, recommendation) ? ' match' : '';
+  const badge = highlight ? '<em class="match-badge">match</em>' : '';
+  return '<div class="rec-detail-row' + highlight + '"><span>' + esc(label) + '</span>' + badge + '<strong>' + esc(value) + '</strong></div>';
+}
+
+function openRecommendationDetail(index, openModal = false) {
+  if (!currentRecommendations.length || !currentRecommendations[index]) return;
+
+  recommendationDetailIndex = index;
+  const rec = currentRecommendations[index];
+  const metadata = rec.metadata && typeof rec.metadata === 'object' ? rec.metadata : {};
+  const sizes = Array.isArray(rec.sizes) ? rec.sizes.filter(Boolean) : [];
+  const stockStatus = rec.stock_status ? String(rec.stock_status).replace(/_/g, ' ') : null;
+  const detailRows = Object.entries(metadata).map(([key, value]) =>
+    buildDetailRow(key.replace(/_/g, ' '), value, key, rec)
+  ).join('');
+  const overviewRows = [
+    buildDetailRow('type', (rec.category || 'item').replace(/_/g, ' '), 'type', rec),
+    rec.brand ? buildDetailRow('brand', rec.brand, 'brand', rec) : '',
+    rec.sku ? buildDetailRow('sku', rec.sku, 'sku', rec) : '',
+    stockStatus ? buildDetailRow('stock', stockStatus, 'stock_status', rec) : '',
+    sizes.length ? buildDetailRow('sizes', sizes.join(', '), 'sizes', rec) : ''
+  ].filter(Boolean).join('');
+
+  recDetail.innerHTML =
+    '<div class="rec-detail-hero">' +
+    '<div class="rec-detail-icon">' + (EMOJI[rec.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
+    '<div class="rec-detail-copy">' +
+    '<h3>' + esc(rec.name) + '</h3>' +
+    '<div class="rec-detail-category">' + esc((rec.category || 'item').replace(/_/g, ' ')) + '</div>' +
+    '<div class="rec-detail-price">' + esc(rec.price) + '</div>' +
+    '</div></div>' +
+    (overviewRows ? '<div class="rec-detail-section"><div class="rec-detail-label">Store details</div><div class="rec-detail-grid">' + overviewRows + '</div></div>' : '') +
+    '<div class="rec-detail-section"><div class="rec-detail-label">Why it fits</div><p>' + esc(rec.reason || 'Recommended from your search context.') + '</p></div>' +
+    '<div class="rec-detail-section"><div class="rec-detail-label">Description</div><p>' + esc(rec.description || 'No extra product description is available for this item yet.') + '</p></div>' +
+    '<div class="rec-detail-grid">' + (
+      detailRows || '<div class="ph">No extra attributes available for this recommendation.</div>'
+    ) + '</div>';
+
+  recModalSubtitle.textContent = currentRecommendations.length + ' recommendation(s) ready to explore.';
+  Array.from(recsModalList.querySelectorAll('.rec-modal-item')).forEach((item, itemIndex) => {
+    item.classList.toggle('active', itemIndex === index);
+  });
+
+  if (openModal) {
+    toggleRecommendationsModal(true);
+  }
+}
+
+function scrollRecommendations(direction) {
+  const card = recsEl.querySelector('.rec-card-button');
+  const step = card ? card.getBoundingClientRect().width + 14 : 280;
+  const maxScroll = Math.max(0, recsEl.scrollWidth - recsEl.clientWidth);
+  const current = recsEl.scrollLeft;
+  let target = current + direction * step;
+
+  if (direction > 0 && current >= maxScroll - 8) {
+    target = 0;
+  } else if (direction < 0 && current <= 8) {
+    target = maxScroll;
+  } else {
+    target = Math.max(0, Math.min(target, maxScroll));
+  }
+
+  recsEl.scrollTo({
+    left: target,
+    behavior: 'smooth'
+  });
+}
+
+function toggleRecommendationsModal(open) {
+  const shouldOpen = Boolean(open);
+  if (shouldOpen && !currentRecommendations.length) return;
+
+  recsModal.classList.toggle('open', shouldOpen);
+  recsModal.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+  document.body.classList.toggle('modal-open', shouldOpen);
+}
+
+function animateStagger(containerSelector, childSelector, opts = { delay: 80, start: 0 }) {
+  const container = document.querySelector(containerSelector);
+  if (!container) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const children = container.querySelectorAll(childSelector);
+  children.forEach((child, index) => {
+    child.classList.remove('stagger');
+    child.style.animationDelay = (opts.start + index * opts.delay) + 'ms';
+    void child.offsetWidth;
+    child.classList.add('stagger');
+  });
+}
+
+function setSteps(phase) {
+  s1.className = 'step';
+  s2.className = 'step';
+  s3.className = 'step';
+
+  if (phase === 'capturing') {
+    s1.classList.add('active');
+    plbl.innerHTML = '<em>Scanning</em> your outfit...';
+  } else if (phase === 'analysing') {
+    s1.classList.add('done');
+    s2.classList.add('active');
+    plbl.innerHTML = '<em>Analysing</em> detections...';
+  } else if (phase === 'results') {
+    s1.classList.add('done');
+    s2.classList.add('done');
+    s3.classList.add('done');
+  }
 }
 
 function setSt(state, text) {
   dot.className = 'dot';
-  if (state === 'live')     dot.classList.add('live');
+  if (state === 'live') dot.classList.add('live');
   if (state === 'scanning') dot.classList.add('scanning');
-  if (state === 'error')    dot.classList.add('error');
+  if (state === 'error') dot.classList.add('error');
   statusEl.textContent = text;
 }
 
 function resetIdle() {
   frozen = false;
+  pendingStart = false;
   hideFrozenLabel();
-  feed.style.display = 'none';
-  idle.classList.remove('hidden');
+  feed.style.display = 'block';
+  idle.classList.add('hidden');
   cam.classList.remove('active');
   btnStart.disabled = false;
   actions.classList.remove('show');
-  s1.className = s2.className = s3.className = 'step';
+  s1.className = 'step';
+  s2.className = 'step';
+  s3.className = 'step';
   plbl.textContent = 'Press start to begin';
   setSt('idle', 'Ready');
 }
 
-function esc(s) {
-  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function esc(value) {
+  return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function updateConf(val) {
   document.getElementById('conf-val').textContent = val + '%';
-  // Push new threshold to the backend immediately
-  fetch('/api/conf/' + (val / 100), { method: 'POST' })
-    .catch(() => {});  // silently ignore if server not ready
+  fetch('/api/conf/' + (val / 100), { method: 'POST' }).catch(() => {});
 }
-
-/* ── View switching ── */
-const camEl      = document.getElementById('cam');
-const chatView   = document.getElementById('chat-view');
-const tabCam     = document.getElementById('tab-cam');
-const tabChat    = document.getElementById('tab-chat');
-const chatMsgs   = document.getElementById('chat-messages');
-const chatInput  = document.getElementById('chat-input');
-const micBtn     = document.getElementById('mic-btn');
-let currentView  = 'camera';
 
 function switchView(view) {
   currentView = view;
@@ -441,7 +780,9 @@ function switchView(view) {
     chatView.classList.remove('active');
     tabCam.classList.add('active');
     tabChat.classList.remove('active');
+    connectCamera();
   } else {
+    disconnectCamera();
     camEl.style.display = 'none';
     chatView.classList.add('active');
     tabCam.classList.remove('active');
@@ -450,11 +791,7 @@ function switchView(view) {
   }
 }
 
-/* ── Chat ── */
-let chatHistory = []; // {role, content}
-
 function addChatBubble(text, sender) {
-  // Remove welcome message on first real message
   const welcome = chatMsgs.querySelector('.chat-welcome');
   if (welcome) welcome.remove();
 
@@ -484,6 +821,43 @@ function removeTypingIndicator() {
   if (el) el.remove();
 }
 
+function pickSupportedAudioMimeType() {
+  const candidates = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/ogg;codecs=opus',
+    'audio/mp4',
+    ''
+  ];
+  return candidates.find((candidate) => !candidate || MediaRecorder.isTypeSupported(candidate)) || '';
+}
+
+function computeRmsLevel(analyser, buffer) {
+  analyser.getByteTimeDomainData(buffer);
+  let sumSquares = 0;
+  for (let i = 0; i < buffer.length; i += 1) {
+    const normalized = (buffer[i] - 128) / 128;
+    sumSquares += normalized * normalized;
+  }
+  return Math.sqrt(sumSquares / buffer.length);
+}
+
+function extractApiError(data, fallback) {
+  if (!data) return fallback;
+  if (typeof data.detail === 'string' && data.detail.trim()) return data.detail;
+  if (typeof data.message === 'string' && data.message.trim()) return data.message;
+  if (typeof data.reply === 'string' && data.reply.trim()) return data.reply;
+  if (Array.isArray(data.detail)) {
+    const parts = data.detail.map((entry) => {
+      if (typeof entry === 'string') return entry;
+      if (entry && typeof entry.msg === 'string') return entry.msg;
+      return '';
+    }).filter(Boolean);
+    if (parts.length) return parts.join(' ');
+  }
+  return fallback;
+}
+
 function sendChat() {
   const text = chatInput.value.trim();
   if (!text) return;
@@ -497,163 +871,247 @@ function sendChat() {
   fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: text, history: chatHistory })
+    body: JSON.stringify({
+      message: text,
+      history: chatHistory,
+      session_id: currentSessionId,
+      state: chatConversationState,
+      detected_categories: currentDetectedCategories,
+      recommendations: currentRecommendations
+    })
   })
-    .then(r => r.json())
-    .then(d => {
+    .then((response) => response.json().then((data) => ({ ok: response.ok, status: response.status, data })))
+    .then(({ ok, status, data }) => {
+      if (!ok) {
+        throw new Error(extractApiError(data, 'Chat failed (HTTP ' + status + ')'));
+      }
       removeTypingIndicator();
-      const reply = d.reply || d.message || d.response || 'Sorry, I could not process that.';
+      const reply = data.reply || data.message || data.response || 'Sorry, I could not process that.';
+      if (data.session_id) currentSessionId = data.session_id;
+      if (data.state) chatConversationState = data.state;
+      if (data.active_filters && Object.keys(extractIncludeFilters(data.active_filters)).length) {
+        currentActiveFilters = data.active_filters;
+      } else if (data.state && data.state.filters && Object.keys(extractIncludeFilters(data.state.filters)).length) {
+        currentActiveFilters = data.state.filters;
+      }
       addChatBubble(reply, 'bot');
       chatHistory.push({ role: 'assistant', content: reply });
+      if (Array.isArray(data.results) && data.results.length) renderRecs(data.results);
     })
-    .catch(() => {
+    .catch((error) => {
       removeTypingIndicator();
-      addChatBubble('Connection error. Please try again.', 'bot');
+      addChatBubble(error && error.message ? error.message : 'Connection error. Please try again.', 'bot');
     });
 }
 
-/* ── Voice input (MediaRecorder → backend transcription) ── */
-let mediaRecorder = null;
-let audioChunks = [];
-let isListening = false;
-const micSelect = document.getElementById('mic-select');
-
-// Populate mic device list
 async function loadMicDevices() {
-  // Need a brief getUserMedia call first to get permission, then enumerate
   try {
     const tmp = await navigator.mediaDevices.getUserMedia({ audio: true });
-    tmp.getTracks().forEach(t => t.stop());
-  } catch(_) {}
+    tmp.getTracks().forEach((track) => track.stop());
+  } catch (_) {}
+
   const devices = await navigator.mediaDevices.enumerateDevices();
-  const mics = devices.filter(d => d.kind === 'audioinput');
+  const mics = devices.filter((device) => device.kind === 'audioinput');
   micSelect.innerHTML = '';
-  mics.forEach(d => {
+
+  mics.forEach((device) => {
     const opt = document.createElement('option');
-    opt.value = d.deviceId;
-    // Filter out virtual devices by default — put real ones first
-    const label = d.label || ('Mic ' + (micSelect.length + 1));
-    opt.textContent = label.length > 30 ? label.slice(0, 28) + '…' : label;
+    opt.value = device.deviceId;
+    const label = device.label || ('Mic ' + (micSelect.length + 1));
+    opt.textContent = label.length > 30 ? label.slice(0, 28) + '...' : label;
     opt.title = label;
     micSelect.appendChild(opt);
   });
-  // Try to select a non-virtual device by default
-  const real = mics.find(d => !d.label.toLowerCase().includes('virtual'));
+
+  const real = mics.find((device) => !device.label.toLowerCase().includes('virtual'));
   if (real) micSelect.value = real.deviceId;
-  console.log('[Voice] Mics found:', mics.map(d => d.label));
+  console.log('[Voice] Mics found:', mics.map((device) => device.label));
 }
-loadMicDevices();
 
-function toggleVoice() {
-  if (isListening) {
-    // Stop recording → send to backend
-    mediaRecorder.stop();
-  } else {
-    if (currentView !== 'chat') switchView('chat');
-    const deviceId = micSelect.value;
-    navigator.mediaDevices.getUserMedia({
-      audio: { deviceId: deviceId ? { exact: deviceId } : undefined, echoCancellation: true, noiseSuppression: true, sampleRate: 16000 }
-    })
-      .then(stream => {
-        // Log which mic device we got
-        const track = stream.getAudioTracks()[0];
-        console.log('[Voice] Mic track:', track.label, track.getSettings());
-
-        // Monitor audio levels to verify mic is working
-        const actx = new AudioContext();
-        const src = actx.createMediaStreamSource(stream);
-        const analyser = actx.createAnalyser();
-        analyser.fftSize = 256;
-        src.connect(analyser);
-        const buf = new Uint8Array(analyser.frequencyBinCount);
-        const levelCheck = setInterval(() => {
-          analyser.getByteFrequencyData(buf);
-          const avg = buf.reduce((a,b) => a+b, 0) / buf.length;
-          console.log('[Voice] Audio level:', Math.round(avg));
-        }, 500);
-
-        isListening = true;
-        micBtn.classList.add('listening');
-        micBtn.title = 'Listening... click to stop';
-        chatInput.value = '';
-        chatInput.placeholder = 'Listening...';
-        audioChunks = [];
-
-        // Pick a supported mime type
-        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
-        const opts = mimeType ? { mimeType, audioBitsPerSecond: 128000 } : { audioBitsPerSecond: 128000 };
-        mediaRecorder = new MediaRecorder(stream, opts);
-        console.log('[Voice] MediaRecorder mimeType:', mediaRecorder.mimeType, 'state:', mediaRecorder.state);
-
-        mediaRecorder.ondataavailable = (e) => {
-          console.log('[Voice] Chunk received:', e.data.size, 'bytes');
-          if (e.data.size > 0) audioChunks.push(e.data);
-        };
-        mediaRecorder.onstop = () => {
-          clearInterval(levelCheck);
-          actx.close();
-          console.log('[Voice] Recording stopped, chunks:', audioChunks.length, 'total:', audioChunks.reduce((a,b)=>a+b.size, 0), 'bytes');
-          // Stop all mic tracks so the browser indicator goes away
-          stream.getTracks().forEach(t => t.stop());
-          stopVoiceUI();
-
-          const blob = new Blob(audioChunks, { type: 'audio/webm' });
-          if (blob.size < 1000) return; // too short, ignore
-
-          chatInput.placeholder = 'Transcribing...';
-          const form = new FormData();
-          form.append('audio', blob, 'voice.webm');
-
-          fetch('/api/transcribe', { method: 'POST', body: form })
-            .then(r => r.json())
-            .then(d => {
-              console.log('[Voice] Transcribe response:', d);
-              chatInput.placeholder = 'Type a message...';
-              // Accept text from common response shapes
-              const text = (d.text || d.transcript || d.transcription || d.message || '').trim();
-              if (text) {
-                // Put text in input and send as chat message
-                chatInput.value = text;
-                addChatBubble(text, 'user');
-                chatHistory.push({ role: 'user', content: text });
-                chatInput.value = '';
-
-                addTypingIndicator();
-                fetch('/api/chat', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ message: text, history: chatHistory })
-                })
-                  .then(r => r.json())
-                  .then(c => {
-                    removeTypingIndicator();
-                    const reply = c.reply || c.message || c.response || 'Sorry, I could not process that.';
-                    addChatBubble(reply, 'bot');
-                    chatHistory.push({ role: 'assistant', content: reply });
-                  })
-                  .catch(() => {
-                    removeTypingIndicator();
-                    addChatBubble('Connection error. Please try again.', 'bot');
-                  });
-              } else {
-                addChatBubble('Could not understand audio. Try again.', 'bot');
-              }
-            })
-            .catch((err) => {
-              console.error('[Voice] Transcribe failed:', err);
-              chatInput.placeholder = 'Type a message...';
-              addChatBubble('Transcription failed. Is the /api/transcribe endpoint running?', 'bot');
-            });
-        };
-        // timeslice=250ms forces ondataavailable every 250ms instead of only on stop
-        mediaRecorder.start(250);
-      })
-      .catch(() => {
-        addChatBubble('Microphone access denied. Please allow mic permissions.', 'bot');
-      });
+async function toggleVoice() {
+  if (!micDevicesLoaded) {
+    await loadMicDevices();
+    micDevicesLoaded = true;
   }
+
+  if (isListening) {
+    mediaRecorder.stop();
+    return;
+  }
+
+  if (currentView !== 'chat') switchView('chat');
+
+  const deviceId = micSelect.value;
+  navigator.mediaDevices.getUserMedia({
+    audio: {
+      deviceId: deviceId ? { exact: deviceId } : undefined,
+      echoCancellation: true,
+      noiseSuppression: true,
+      sampleRate: 16000
+    }
+  })
+    .then((stream) => {
+      const track = stream.getAudioTracks()[0];
+      console.log('[Voice] Mic track:', track.label, track.getSettings());
+
+      const actx = new AudioContext();
+      const src = actx.createMediaStreamSource(stream);
+      const analyser = actx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.2;
+      src.connect(analyser);
+      const buf = new Uint8Array(analyser.fftSize);
+      let speechDetected = false;
+      let lastSoundAt = null;
+      const levelCheck = setInterval(() => {
+        const rms = computeRmsLevel(analyser, buf);
+        console.log('[Voice] Audio level:', rms.toFixed(4));
+
+        if (!speechDetected && rms >= SPEECH_START_THRESHOLD) {
+          speechDetected = true;
+          lastSoundAt = Date.now();
+          chatInput.placeholder = 'Listening... speech detected';
+          return;
+        }
+
+        if (!speechDetected) {
+          return;
+        }
+
+        if (rms >= SPEECH_CONTINUE_THRESHOLD) {
+          lastSoundAt = Date.now();
+          return;
+        }
+
+        if (
+          isListening &&
+          mediaRecorder &&
+          mediaRecorder.state === 'recording' &&
+          lastSoundAt !== null &&
+          Date.now() - lastSoundAt >= SILENCE_TIMEOUT_MS
+        ) {
+          chatInput.placeholder = 'Silence detected, sending...';
+          mediaRecorder.stop();
+        }
+      }, 500);
+
+      isListening = true;
+      micBtn.classList.add('listening');
+      micBtn.title = 'Listening... click to stop';
+      chatInput.value = '';
+      chatInput.placeholder = 'Listening... starts auto-send after speech + 5s silence';
+      audioChunks = [];
+
+      const mimeType = pickSupportedAudioMimeType();
+      currentAudioMimeType = mimeType || 'audio/webm';
+      const opts = mimeType ? { mimeType, audioBitsPerSecond: 128000 } : { audioBitsPerSecond: 128000 };
+      mediaRecorder = new MediaRecorder(stream, opts);
+      console.log('[Voice] MediaRecorder mimeType:', mediaRecorder.mimeType, 'state:', mediaRecorder.state);
+
+      mediaRecorder.ondataavailable = (event) => {
+        console.log('[Voice] Chunk received:', event.data.size, 'bytes');
+        if (event.data.size > 0) audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        clearInterval(levelCheck);
+        actx.close();
+        console.log('[Voice] Recording stopped, chunks:', audioChunks.length, 'total:', audioChunks.reduce((a, b) => a + b.size, 0), 'bytes');
+        stream.getTracks().forEach((streamTrack) => streamTrack.stop());
+        stopVoiceUI();
+
+        const blob = new Blob(audioChunks, { type: currentAudioMimeType || 'audio/webm' });
+        if (blob.size < 1000) {
+          chatInput.placeholder = 'Type a message...';
+          addChatBubble('The recording was too short. Please hold the microphone a bit longer.', 'bot');
+          return;
+        }
+
+        chatInput.placeholder = 'Transcribing...';
+        const form = new FormData();
+        const extension =
+          currentAudioMimeType.includes('ogg') ? 'ogg' :
+          currentAudioMimeType.includes('mp4') ? 'm4a' :
+          'webm';
+        form.append('audio', blob, 'voice.' + extension);
+
+        fetch('/api/transcribe', { method: 'POST', body: form })
+          .then((response) => {
+            return response.json().then((data) => ({ ok: response.ok, status: response.status, data }));
+          })
+          .then(({ ok, status, data }) => {
+            if (!ok) {
+              const detail = data && (data.detail || data.message);
+              if (status === 503) {
+                throw new Error(detail || 'Voice model is still loading. Please wait a moment and try again.');
+              }
+              throw new Error(detail || ('Transcription failed (HTTP ' + status + ')'));
+            }
+            return data;
+          })
+          .then((data) => {
+            console.log('[Voice] Transcribe response:', data);
+            chatInput.placeholder = 'Type a message...';
+            const text = (data.text || data.transcript || data.transcription || data.message || '').trim();
+
+            if (!text) {
+              addChatBubble('Could not understand audio. Try again.', 'bot');
+              return;
+            }
+
+            chatInput.value = text;
+            addChatBubble(text, 'user');
+            chatHistory.push({ role: 'user', content: text });
+            chatInput.value = '';
+
+            addTypingIndicator();
+            fetch('/api/chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                message: text,
+                history: chatHistory,
+                session_id: currentSessionId,
+                state: chatConversationState,
+                detected_categories: currentDetectedCategories,
+                recommendations: currentRecommendations
+              })
+            })
+              .then((response) => response.json().then((data) => ({ ok: response.ok, status: response.status, data })))
+              .then(({ ok, status, data: chatData }) => {
+                if (!ok) {
+                  throw new Error(extractApiError(chatData, 'Chat failed (HTTP ' + status + ')'));
+                }
+                removeTypingIndicator();
+                const reply = chatData.reply || chatData.message || chatData.response || 'Sorry, I could not process that.';
+                if (chatData.session_id) currentSessionId = chatData.session_id;
+                if (chatData.state) chatConversationState = chatData.state;
+                if (chatData.active_filters && Object.keys(extractIncludeFilters(chatData.active_filters)).length) {
+                  currentActiveFilters = chatData.active_filters;
+                } else if (chatData.state && chatData.state.filters && Object.keys(extractIncludeFilters(chatData.state.filters)).length) {
+                  currentActiveFilters = chatData.state.filters;
+                }
+                addChatBubble(reply, 'bot');
+                chatHistory.push({ role: 'assistant', content: reply });
+                if (Array.isArray(chatData.results) && chatData.results.length) renderRecs(chatData.results);
+              })
+              .catch((error) => {
+                removeTypingIndicator();
+                addChatBubble(error && error.message ? error.message : 'Connection error. Please try again.', 'bot');
+              });
+          })
+          .catch((err) => {
+            console.error('[Voice] Transcribe failed:', err);
+            chatInput.placeholder = 'Type a message...';
+            addChatBubble('Transcription failed: ' + (err.message || 'unknown error'), 'bot');
+          });
+      };
+
+      mediaRecorder.start(250);
+    })
+    .catch(() => {
+      addChatBubble('Microphone access denied. Please allow mic permissions.', 'bot');
+    });
 }
 
 function stopVoiceUI() {
@@ -662,16 +1120,34 @@ function stopVoiceUI() {
   micBtn.title = 'Voice input';
 }
 
-// On page load, sync slider to whatever the server currently has
 fetch('/api/conf')
-  .then(r => r.json())
-  .then(d => {
-    const pct = Math.round(d.conf_thres * 100);
+  .then((response) => response.json())
+  .then((data) => {
+    const pct = Math.round(data.conf_thres * 100);
     document.getElementById('conf-slider').value = pct;
     document.getElementById('conf-val').textContent = pct + '%';
   })
   .catch(() => {});
 
+function initializeSearchSession(detectedCategories, recommendations) {
+  fetch('/api/session/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      detected_categories: detectedCategories || [],
+      recommendations: recommendations || []
+    })
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.session_id) currentSessionId = data.session_id;
+    })
+    .catch(() => {});
+}
+
+function warmupChat() {
+  fetch('/api/chat/warmup', { method: 'POST' }).catch(() => {});
+}
 </script>
 </body>
 </html>

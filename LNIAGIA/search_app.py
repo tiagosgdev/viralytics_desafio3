@@ -350,7 +350,7 @@ def run_conversation_model(
         if message.upper() == "NEW":
             current_query = base_query
             current_filters = base_filters
-            
+
         else:
             updated = refine_query(
                 previous_query=current_query,

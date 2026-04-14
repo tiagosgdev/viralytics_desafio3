@@ -92,15 +92,12 @@ class RecommendationEngine:
                 if item.id in seen_ids:
                     continue
                 seen_ids.add(item.id)
-                results.append({
-                    "id":        item.id,
-                    "name":      item.name,
-                    "category":  item.category,
-                    "price":     item.price,
-                    "image_url": item.image_url,
-                    "reason":    self._reason(detected_categories, cat),
-                    "score":     round(score, 2),
-                })
+                results.append(
+                    item.to_recommendation(
+                        reason=self._reason(detected_categories, cat),
+                        score=score,
+                    )
+                )
                 if len(results) >= self.top_k:
                     break
             if len(results) >= self.top_k:
@@ -114,15 +111,7 @@ class RecommendationEngine:
         """Fallback — return trending items when nothing is detected."""
         items = random.sample(CATALOGUE, min(self.top_k, len(CATALOGUE)))
         return [
-            {
-                "id":        i.id,
-                "name":      i.name,
-                "category":  i.category,
-                "price":     i.price,
-                "image_url": i.image_url,
-                "reason":    "Trending this week",
-                "score":     0.5,
-            }
+            i.to_recommendation(reason="Trending this week", score=0.5)
             for i in items
         ]
 

@@ -96,14 +96,18 @@ def build_targets(
     targets:     torch.Tensor,
     img_size:    int = 640,
     num_classes: int = 13,
+    multi_cell:  bool = False,
 ) -> List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
     """
     Assign ground-truth boxes to grid cells across all 3 prediction scales.
 
     Parameters
     ----------
-    preds   : list of 3 prediction tensors [(B,5+NC,80,80), (B,5+NC,40,40), (B,5+NC,20,20)]
-    targets : (N, 6) — each row: [batch_idx, class_id, cx, cy, w, h]  (coords normalised 0-1)
+    preds       : list of 3 prediction tensors [(B,5+NC,80,80), (B,5+NC,40,40), (B,5+NC,20,20)]
+    targets     : (N, 6) — each row: [batch_idx, class_id, cx, cy, w, h]  (coords normalised 0-1)
+    multi_cell  : if True, assign each GT to the center cell + adjacent cells
+                  when the center is near a boundary (within 0.5 grid units).
+                  Increases positive training signal by ~2-3x.
 
     Returns
     -------
@@ -136,12 +140,27 @@ def build_targets(
                 cx, cy, w, h = t[2], t[3], t[4], t[5]
                 gi, gj = int(cx.item()), int(cy.item())   # grid cell
 
-                if 0 <= gi < gs and 0 <= gj < gs:
-                    obj_mask[bi, gj, gi]       = 1
-                    noobj_mask[bi, gj, gi]     = 0
-                    target_box[bi, gj, gi]     = torch.stack([cx - gi, cy - gj, w, h])
-                    if cls < num_classes:
-                        target_cls[bi, gj, gi, cls] = 1.0
+                # Build list of cells to assign this GT to
+                cells = [(gi, gj)]
+
+                if multi_cell:
+                    fx, fy = cx.item() - gi, cy.item() - gj
+                    if fx < 0.5 and gi > 0:
+                        cells.append((gi - 1, gj))
+                    elif fx >= 0.5 and gi < gs - 1:
+                        cells.append((gi + 1, gj))
+                    if fy < 0.5 and gj > 0:
+                        cells.append((gi, gj - 1))
+                    elif fy >= 0.5 and gj < gs - 1:
+                        cells.append((gi, gj + 1))
+
+                for ci, cj in cells:
+                    if 0 <= ci < gs and 0 <= cj < gs:
+                        obj_mask[bi, cj, ci]       = 1
+                        noobj_mask[bi, cj, ci]     = 0
+                        target_box[bi, cj, ci]     = torch.stack([cx - ci, cy - cj, w, h])
+                        if cls < num_classes:
+                            target_cls[bi, cj, ci, cls] = 0.95
 
         results.append((obj_mask, noobj_mask, target_box, target_cls))
 
@@ -156,23 +175,25 @@ class FashionNetLoss(nn.Module):
     """
     Combined detection loss for FashionNet.
 
-    λ_box = 0.05  — lower weight; CIoU already gives strong signal
+    λ_box = 5.0   — strong box regression signal (critical for mAP)
     λ_obj = 1.0   — high weight; objectness is the hardest part to learn
     λ_cls = 0.5   — moderate; classification on top of correct localisation
     """
 
     def __init__(self,
                  num_classes: int = 13,
-                 lambda_box:  float = 0.05,
+                 lambda_box:  float = 5.0,
                  lambda_obj:  float = 1.0,
                  lambda_cls:  float = 0.5,
-                 img_size:    int = 640):
+                 img_size:    int = 640,
+                 multi_cell:  bool = False):
         super().__init__()
         self.num_classes = num_classes
         self.lambda_box  = lambda_box
         self.lambda_obj  = lambda_obj
         self.lambda_cls  = lambda_cls
         self.img_size    = img_size
+        self.multi_cell  = multi_cell
         self.bce         = nn.BCEWithLogitsLoss()
 
     def forward(
@@ -196,7 +217,8 @@ class FashionNetLoss(nn.Module):
         loss_cls = torch.tensor(0., device=device)
 
         scale_targets = build_targets(preds, targets,
-                                      self.img_size, self.num_classes)
+                                      self.img_size, self.num_classes,
+                                      self.multi_cell)
 
         for pred, (obj_mask, noobj_mask, tgt_box, tgt_cls) in zip(preds, scale_targets):
             B, C, gs, _ = pred.shape
@@ -218,6 +240,9 @@ class FashionNetLoss(nn.Module):
                 tgt_boxes  = tgt_box[obj_mask_bool]
                 iou        = bbox_iou(pred_boxes, tgt_boxes, ciou=True)
                 loss_box   = loss_box + (1 - iou).mean()
+
+                # IoU-aware objectness: use CIoU as soft target instead of 1.0
+                obj_mask[obj_mask_bool] = iou.detach().clamp(0)
 
                 # ── Class loss (only on positives) ───────────────────
                 loss_cls = loss_cls + self.bce(

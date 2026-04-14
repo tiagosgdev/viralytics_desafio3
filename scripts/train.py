@@ -25,6 +25,7 @@ def parse_args():
         help="YOLOv8 variant (n=nano … l=large)",
     )
     p.add_argument("--epochs", type=int, default=50)
+    p.add_argument("--patience", type=int, default=10, help="Early stopping patience (0 to disable)")
     p.add_argument("--batch", type=int, default=16)
     p.add_argument("--imgsz", type=int, default=640)
     p.add_argument("--data", default="data/sample_dataset/yolo/dataset.yaml")
@@ -69,8 +70,10 @@ def main():
         model = YOLO(f"{args.model}.pt")
         tag = "pretrained"
     print(
-        f"\n🚀  Starting training ({tag}): {args.model}  |  epochs={args.epochs}  |  batch={args.batch}\n"
+        f"\n🚀  Starting training ({tag}): {args.model}  |  epochs={args.epochs}  |  "
+        f"batch={args.batch}  |  patience={args.patience}\n"
     )
+    
 
     # ── Train ─────────────────────────────────────────────────────────────
     results = model.train(
@@ -87,6 +90,7 @@ def main():
             else f"{args.model}_fashion_scratch"
         ),
         exist_ok=False,
+        patience=args.patience,
         # Augmentation settings (important for clothing variety)
         hsv_h=0.015,  # hue shift
         hsv_s=0.7,  # saturation shift
