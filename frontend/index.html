@@ -290,6 +290,8 @@ let pendingStart = false;
 let cameraSuspended = false;
 let hasShownInitialRecommendationsModal = false;
 let recommendationDetailIndex = 0;
+let hasChatIntroLoaded = false;
+let introRequestInFlight = false;
 
 const feed = document.getElementById('feed');
 const landingScreen = document.getElementById('landing-screen');
@@ -595,7 +597,7 @@ function renderRecs(recs, options = {}) {
   recsScrollRightBtn.disabled = false;
 
   recsEl.innerHTML = recs.map((r, index) =>
-    '<button class="card rec-card-button" type="button" onclick="openRecommendationDetail(' + index + ', true)"><div class="cthumb">' + (EMOJI[r.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
+    '<button class="card rec-card-button" type="button" onclick="openRecommendationDetail(' + index + ', true)">' + buildRecommendationThumb(r, 'cthumb') +
     '<div class="cinfo"><div class="cname">' + esc(r.name) + '</div>' +
     '<div class="ccat">' + (r.category || '').replace(/_/g, ' ') + '</div>' +
     '<div class="cwhy">' + esc(r.reason) + '</div>' +
@@ -618,7 +620,7 @@ function renderRecommendationsModal(recs) {
     const category = (rec.category || 'item').replace(/_/g, ' ');
     return (
       '<button class="rec-modal-item' + active + '" type="button" onclick="openRecommendationDetail(' + index + ')">' +
-      '<div class="rec-modal-thumb">' + (EMOJI[rec.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
+      buildRecommendationThumb(rec, 'rec-modal-thumb') +
       '<div class="rec-modal-copy">' +
       '<div class="rec-modal-name">' + esc(rec.name) + '</div>' +
       '<div class="rec-modal-category">' + esc(category) + '</div>' +
@@ -697,7 +699,7 @@ function openRecommendationDetail(index, openModal = false) {
 
   recDetail.innerHTML =
     '<div class="rec-detail-hero">' +
-    '<div class="rec-detail-icon">' + (EMOJI[rec.category] || '<i class="fas fa-shirt"></i>') + '</div>' +
+    buildRecommendationThumb(rec, 'rec-detail-icon') +
     '<div class="rec-detail-copy">' +
     '<h3>' + esc(rec.name) + '</h3>' +
     '<div class="rec-detail-category">' + esc((rec.category || 'item').replace(/_/g, ' ')) + '</div>' +
@@ -811,6 +813,32 @@ function esc(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function escAttr(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function buildRecommendationThumb(rec, baseClass) {
+  const icon = EMOJI[rec.category] || '<i class="fas fa-shirt"></i>';
+  const imageUrl = rec && rec.image_url ? String(rec.image_url).trim() : '';
+  const classes = imageUrl ? (baseClass + ' thumb-media has-image') : (baseClass + ' thumb-media');
+
+  if (!imageUrl) {
+    return '<div class="' + classes + '"><div class="thumb-fallback">' + icon + '</div></div>';
+  }
+
+  return (
+    '<div class="' + classes + '">' +
+    '<img class="thumb-img" src="' + escAttr(imageUrl) + '" alt="' + escAttr(rec.name || 'Clothing item') + '" loading="lazy" onerror="this.parentNode.classList.remove(\'has-image\'); this.remove();">' +
+    '<div class="thumb-fallback">' + icon + '</div>' +
+    '</div>'
+  );
+}
+
 function updateConf(val) {
   document.getElementById('conf-val').textContent = val + '%';
   if (!selectedPersona) return;
@@ -832,7 +860,67 @@ function switchView(view) {
     tabCam.classList.remove('active');
     tabChat.classList.add('active');
     chatInput.focus();
+    requestPersonaIntro();
   }
+}
+
+function requestPersonaIntro() {
+  if (!selectedPersona || hasChatIntroLoaded || introRequestInFlight) {
+    return;
+  }
+  if (chatHistory.length > 0) {
+    hasChatIntroLoaded = true;
+    return;
+  }
+
+  introRequestInFlight = true;
+  addTypingIndicator();
+
+  fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: '',
+      persona: selectedPersona,
+      assistant_mode: selectedPersona,
+      history: chatHistory,
+      session_id: currentSessionId,
+      state: chatConversationState,
+      detected_categories: currentDetectedCategories,
+      recommendations: currentRecommendations
+    })
+  })
+    .then((response) => response.json().then((data) => ({ ok: response.ok, status: response.status, data })))
+    .then(({ ok, status, data }) => {
+      if (!ok) {
+        throw new Error(extractApiError(data, 'Chat intro failed (HTTP ' + status + ')'));
+      }
+
+      removeTypingIndicator();
+      const reply = data.reply || data.message || data.response || 'Hello. Tell me your style goal.';
+      if (data.session_id) currentSessionId = data.session_id;
+      if (data.state) chatConversationState = data.state;
+      if (data.active_filters && Object.keys(extractIncludeFilters(data.active_filters)).length) {
+        currentActiveFilters = data.active_filters;
+      } else if (data.state && data.state.filters && Object.keys(extractIncludeFilters(data.state.filters)).length) {
+        currentActiveFilters = data.state.filters;
+      }
+
+      addChatBubble(reply, 'bot');
+      chatHistory.push({ role: 'assistant', content: reply });
+      hasChatIntroLoaded = true;
+
+      if (Array.isArray(data.results) && data.results.length) {
+        renderRecs(data.results);
+      }
+    })
+    .catch((error) => {
+      removeTypingIndicator();
+      addChatBubble(error && error.message ? error.message : 'Connection error. Please try again.', 'bot');
+    })
+    .finally(() => {
+      introRequestInFlight = false;
+    });
 }
 
 function addChatBubble(text, sender) {
@@ -909,6 +997,8 @@ function sendChat() {
   const text = chatInput.value.trim();
   if (!text) return;
 
+  hasChatIntroLoaded = true;
+
   chatInput.value = '';
   addChatBubble(text, 'user');
   chatHistory.push({ role: 'user', content: text });
@@ -921,6 +1011,7 @@ function sendChat() {
     body: JSON.stringify({
       message: text,
       persona: selectedPersona,
+      assistant_mode: selectedPersona,
       history: chatHistory,
       session_id: currentSessionId,
       state: chatConversationState,
@@ -1119,6 +1210,7 @@ async function toggleVoice() {
               body: JSON.stringify({
                 message: text,
                 persona: selectedPersona,
+                assistant_mode: selectedPersona,
                 history: chatHistory,
                 session_id: currentSessionId,
                 state: chatConversationState,
@@ -1232,6 +1324,8 @@ function resetPersonaState() {
   currentActiveFilters = {};
   hasShownInitialRecommendationsModal = false;
   recommendationDetailIndex = 0;
+  hasChatIntroLoaded = false;
+  introRequestInFlight = false;
   tagsEl.innerHTML = '<span class="notag">Nothing detected yet</span>';
   recsEl.innerHTML = '<div class="ph">Recommendations will appear here after a scan or chat refinement.</div>';
   recsScrollLeftBtn.disabled = true;

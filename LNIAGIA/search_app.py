@@ -74,10 +74,34 @@ FLEXIBLE_MARKERS = {
     "not strict",
     "anything close",
     "creative",
+    "versatile",
 }
 
 YES_WORDS = {"yes", "y", "sure", "ok", "okay", "go ahead"}
 NO_WORDS = {"no", "n", "nah", "nope"}
+
+CONFIRM_MARKERS = {
+    "confirm",
+    "correct",
+    "that's right",
+    "thats right",
+    "looks good",
+    "sounds good",
+    "go ahead",
+    "search now",
+    "run the search",
+    "why not",
+}
+REVISE_MARKERS = {
+    "change",
+    "adjust",
+    "modify",
+    "different",
+    "not right",
+    "not correct",
+    "wrong",
+    "update it",
+}
 
 SEARCH_MARKERS = {
     "search",
@@ -132,6 +156,118 @@ FASHION_MARKERS = {
 }
 
 DETAIL_FIELDS = ["type", "color", "style", "pattern", "fit", "occasion", "season", "material", "brand"]
+
+TYPE_DISPLAY_MAP = {
+    "short_sleeve_top": "T-shirt",
+    "long_sleeve_top": "long-sleeve shirt",
+    "long_sleeve_outwear": "jacket",
+    "vest": "vest",
+    "shorts": "shorts",
+    "trousers": "trousers",
+    "skirt": "skirt",
+    "short_sleeve_dress": "short-sleeve dress",
+    "long_sleeve_dress": "long-sleeve dress",
+    "vest_dress": "sleeveless dress",
+    "sling_dress": "slip dress",
+}
+
+FIT_DISPLAY_MAP = {
+    "slim fit": "slim",
+    "slim_fit": "slim",
+    "regular_fit": "regular",
+    "regular": "regular",
+    "relaxed": "relaxed",
+    "loose_fit": "loose",
+    "loose": "loose",
+    "relaxed_fit": "relaxed",
+    "oversized": "oversized",
+    "tailored": "tailored",
+    "fitted": "fitted",
+    "athletic": "athletic",
+    "baggy": "baggy",
+    "cropped": "cropped",
+}
+
+GENDER_DISPLAY_MAP = {
+    "male": "men",
+    "female": "women",
+    "unisex": "any gender",
+}
+
+AGE_GROUP_DISPLAY_MAP = {
+    "baby": "babies",
+    "child": "children",
+    "teenager": "teenagers",
+    "young adult": "young adults",
+    "adult": "adults",
+    "senior": "seniors",
+}
+
+SUMMARY_PRIMARY_FIELDS = [
+    "type",
+    "color",
+    "fit",
+    "style",
+    "pattern",
+    "material",
+    "occasion",
+    "season",
+    "brand",
+    "gender",
+    "age_group",
+]
+
+FIELD_DISPLAY_LABEL = {
+    "age_group": "age group",
+    "sleeve_style": "sleeve style",
+    "hem_style": "hem style",
+    "waist_style": "waist style",
+    "leg_style": "leg style",
+    "dress_style": "dress style",
+    "outwear_pockets": "pockets",
+    "bottom_pockets": "pockets",
+}
+
+FIELD_INCLUDE_TEMPLATE = {
+    "style": "with a {values} style",
+    "pattern": "with a {values} pattern",
+    "fit": "with a {values} fit",
+    "material": "in {values}",
+    "occasion": "for {values}",
+    "season": "for {values}",
+    "brand": "from {values}",
+    "gender": "for {values}",
+    "age_group": "for {values}",
+    "neckline": "with a {values}",
+    "collar": "with a {values} collar",
+    "sleeve_style": "with {values} sleeves",
+    "hem_style": "with a {values} hem",
+    "closure": "with a {values} closure",
+    "hood": "with {values}",
+    "insulation": "with {values} insulation",
+    "waterproof": "with {values}",
+    "outwear_pockets": "with {values}",
+    "waist": "in waist size {values}",
+    "waist_style": "with a {values} waist",
+    "rise": "with a {values} rise",
+    "length": "in {values} length",
+    "leg_style": "with a {values} leg cut",
+    "bottom_pockets": "with {values}",
+    "dress_style": "in a {values} silhouette",
+}
+
+FIELD_EXCLUDE_TEMPLATE = {
+    "fit": "not {values}",
+    "type": "excluding {values}",
+    "color": "excluding {values} colors",
+    "style": "without {values} style",
+    "pattern": "without {values} pattern",
+    "material": "excluding {values} materials",
+    "brand": "not from {values}",
+    "gender": "excluding {values}",
+    "age_group": "excluding {values}",
+    "waterproof": "excluding {values} items",
+}
 
 _PROMPTS_DIR = _SCRIPT_DIR / "query_parsing" / "prompts"
 _PERSONA_PROMPT_CACHE: dict[str, str] = {}
@@ -274,9 +410,9 @@ def _extract_strict_preference(message: str, awaiting_strictness: bool = False) 
         return None
 
     if awaiting_strictness:
-        if lowered in YES_WORDS:
+        if lowered in YES_WORDS or any(lowered.startswith(f"{word} ") for word in YES_WORDS) or "why not" in lowered:
             return STRICTNESS_STRICT
-        if lowered in NO_WORDS:
+        if lowered in NO_WORDS or any(lowered.startswith(f"{word} ") for word in NO_WORDS):
             return STRICTNESS_FLEXIBLE
 
     for marker in FLEXIBLE_MARKERS:
@@ -286,6 +422,28 @@ def _extract_strict_preference(message: str, awaiting_strictness: bool = False) 
     for marker in STRICT_MARKERS:
         if marker in lowered:
             return STRICTNESS_STRICT
+
+    return None
+
+
+def _extract_confirmation_signal(message: str, awaiting_confirmation: bool = False) -> str | None:
+    lowered = message.strip().lower()
+    if not lowered:
+        return None
+
+    if awaiting_confirmation:
+        if lowered in YES_WORDS or any(lowered.startswith(f"{word} ") for word in YES_WORDS) or "why not" in lowered:
+            return "confirm"
+        if lowered in NO_WORDS or any(lowered.startswith(f"{word} ") for word in NO_WORDS):
+            return "revise"
+
+    for marker in CONFIRM_MARKERS:
+        if marker in lowered:
+            return "confirm"
+
+    for marker in REVISE_MARKERS:
+        if marker in lowered:
+            return "revise"
 
     return None
 
@@ -351,6 +509,169 @@ def _ensure_type_filter(filters: dict, detected_type: str | None) -> dict:
 
     include["type"] = _dedupe_preserve_order([detected_type] + [v for v in current if isinstance(v, str)])
     return normalized
+
+
+def _ordered_filter_fields(block: dict) -> list[str]:
+    ordered = [field for field in DETAIL_FIELDS if field in block]
+    ordered += sorted(field for field in block.keys() if field not in DETAIL_FIELDS)
+    return ordered
+
+
+def _format_filter_values(values: Any) -> list[str]:
+    if not isinstance(values, list):
+        return []
+    cleaned = []
+    for value in values:
+        if not isinstance(value, str):
+            continue
+        text = value.strip().replace("_", " ")
+        if text:
+            cleaned.append(text)
+    return cleaned
+
+
+def _humanize_filter_value(field: str, value: str) -> str:
+    raw = value.strip()
+    if not raw:
+        return ""
+
+    key = raw.lower().replace("-", "_").replace(" ", "_")
+    if field == "type":
+        return TYPE_DISPLAY_MAP.get(key, raw.replace("_", " "))
+    if field == "fit":
+        return FIT_DISPLAY_MAP.get(key, raw.replace("_", " "))
+    if field == "gender":
+        lookup = raw.lower().replace("_", " ")
+        return GENDER_DISPLAY_MAP.get(lookup, raw.replace("_", " "))
+    if field == "age_group":
+        lookup = raw.lower().replace("_", " ")
+        return AGE_GROUP_DISPLAY_MAP.get(lookup, raw.replace("_", " "))
+    if field == "hood" and key == "none":
+        return "no hood"
+    if field == "waterproof":
+        if key == "none":
+            return "non-waterproof"
+        if key == "water_resistant":
+            return "water-resistant"
+    if field in {"outwear_pockets", "bottom_pockets"} and key == "none":
+        return "no pockets"
+    if field == "brand":
+        return raw
+    return raw.replace("_", " ")
+
+
+def _join_readable(values: list[str], conjunction: str = "or") -> str:
+    filtered = [v for v in values if v]
+    if not filtered:
+        return ""
+    if len(filtered) == 1:
+        return filtered[0]
+    if len(filtered) == 2:
+        return f"{filtered[0]} {conjunction} {filtered[1]}"
+    return f"{', '.join(filtered[:-1])}, {conjunction} {filtered[-1]}"
+
+
+def _summary_field_order(block: dict) -> list[str]:
+    ordered = [field for field in SUMMARY_PRIMARY_FIELDS if field in block]
+    ordered.extend(field for field in _ordered_filter_fields(block) if field not in ordered)
+    return ordered
+
+
+def _display_field_name(field: str) -> str:
+    return FIELD_DISPLAY_LABEL.get(field, field.replace("_", " "))
+
+
+def _build_include_fragment(field: str, values_text: str) -> str:
+    template = FIELD_INCLUDE_TEMPLATE.get(field)
+    if template:
+        return template.format(values=values_text)
+    return f"with {_display_field_name(field)} {values_text}"
+
+
+def _build_exclude_fragment(field: str, values_text: str) -> str:
+    template = FIELD_EXCLUDE_TEMPLATE.get(field)
+    if template:
+        return template.format(values=values_text)
+    return f"excluding {_display_field_name(field)} {values_text}"
+
+
+def _compose_include_phrase(include: dict, query: str) -> str:
+    types = [_humanize_filter_value("type", v) for v in _format_filter_values(include.get("type"))][:3]
+    colors = [_humanize_filter_value("color", v) for v in _format_filter_values(include.get("color"))][:3]
+    fits = [_humanize_filter_value("fit", v) for v in _format_filter_values(include.get("fit"))][:3]
+
+    type_text = _join_readable(types)
+    color_text = _join_readable(colors)
+    fit_text = _join_readable(fits)
+
+    if type_text and color_text:
+        base = f"{color_text} {type_text}"
+    elif type_text:
+        base = type_text
+    elif color_text:
+        base = f"clothing in {color_text}"
+    else:
+        base = query.strip() if query.strip() else "clothing recommendations"
+
+    extras = []
+    if fit_text:
+        extras.append(_build_include_fragment("fit", fit_text))
+
+    for field in _summary_field_order(include):
+        if field in {"type", "color", "fit"}:
+            continue
+        values = [_humanize_filter_value(field, v) for v in _format_filter_values(include.get(field))][:3]
+        values_text = _join_readable(values)
+        if not values_text:
+            continue
+        extras.append(_build_include_fragment(field, values_text))
+
+    if extras:
+        return f"{base} {', '.join(extras)}"
+    return base
+
+
+def _compose_exclude_phrase(exclude: dict) -> str:
+    fragments = []
+    for field in _summary_field_order(exclude):
+        values = [_humanize_filter_value(field, v) for v in _format_filter_values(exclude.get(field))][:3]
+        values_text = _join_readable(values)
+        if not values_text:
+            continue
+        fragments.append(_build_exclude_fragment(field, values_text))
+
+    return _join_readable(fragments, conjunction="and")
+
+
+def _build_requirements_summary(query: str, filters: dict) -> str:
+    normalized = _normalize_filter_payload(filters)
+    include = normalized.get("include", {})
+    exclude = normalized.get("exclude", {})
+
+    include_text = _compose_include_phrase(include, query)
+    exclude_text = _compose_exclude_phrase(exclude)
+
+    if exclude_text:
+        return f"{include_text}, {exclude_text}"
+    return include_text
+
+
+def _build_confirmation_prompt(mode: str, summary: str) -> str:
+    if _normalize_assistant_mode(mode) == "edna":
+        return (
+            f"Here is your brief: {summary}. Confirm if this is correct and I will search, "
+            "or tell me what to change."
+        )
+    return (
+        f"Darling, here is your brief: {summary}. Confirm if this is correct and I will search, "
+        "or tell me what to change."
+    )
+
+
+def _build_revision_prompt(mode: str) -> str:
+    if _normalize_assistant_mode(mode) == "edna":
+        return "Fine. Tell me exactly what to change, and I will update the brief before searching."
+    return "Darling, perfect. Tell me what to change and I will update the brief before we search."
 
 
 def _missing_detail_fields(filters: dict) -> list[str]:
@@ -523,7 +844,7 @@ def _build_ranked_results(hits: list) -> list[dict[str, Any]]:
 
         item_data = sqlite_items_by_id.get(item_id)
         if item_data is None:
-            item_data = {"id": raw_item_id, **payload}
+            item_data = {"id": raw_item_id, "error": "Item details not found in SQL database."}
 
         ranked_results.append(
             {
@@ -535,6 +856,63 @@ def _build_ranked_results(hits: list) -> list[dict[str, Any]]:
         )
 
     return ranked_results
+
+
+def search_detected_items(
+    detected_categories: list[str] | None,
+    strict: bool = False,
+) -> tuple[list[dict[str, Any]], str | None]:
+    """
+    Returns ranked DB items for a set of detected categories.
+
+    This is intended for API/FE integration paths that need real catalogue items
+    without running the full conversational confirmation flow.
+    """
+
+    detected = _dedupe_preserve_order(
+        [
+            str(cat).strip().lower()
+            for cat in (detected_categories or [])
+            if isinstance(cat, str) and str(cat).strip()
+        ]
+    )
+
+    filters = {
+        "include": {"type": detected} if detected else {},
+        "exclude": {},
+    }
+
+    if detected:
+        query = (
+            "The user is wearing "
+            + ", ".join(cat.replace("_", " ") for cat in detected)
+            + ". Find complementary clothing recommendations."
+        )
+    else:
+        query = "Find versatile clothing recommendations for everyday wear."
+
+    db_ready, db_error = _ensure_vector_db_ready()
+    if not db_ready:
+        return [], db_error
+
+    global _CONVERSATION_MODEL
+    if _CONVERSATION_MODEL is None:
+        try:
+            _CONVERSATION_MODEL = _load_model()
+        except Exception as exc:
+            return [], f"Embedding model load failed ({exc})."
+
+    try:
+        hits = filtered_search(
+            query,
+            filters,
+            _CONVERSATION_MODEL,
+            strict=bool(strict),
+        )
+    except Exception as exc:
+        return [], f"Search failed ({exc})."
+
+    return _build_ranked_results(hits), None
 
 
 def _parse_with_mode(mode: str, message: str) -> tuple[dict, str, str | None]:
@@ -606,6 +984,7 @@ def _build_state_payload(
     assistant_mode: str,
     parser_source: str,
     awaiting_strictness: bool,
+    awaiting_confirmation: bool = False,
     strict_default: bool,
 ) -> dict[str, Any]:
     return {
@@ -616,6 +995,7 @@ def _build_state_payload(
         "assistant_mode": _normalize_assistant_mode(assistant_mode),
         "parser_source": parser_source,
         "awaiting_strictness": bool(awaiting_strictness),
+        "awaiting_confirmation": bool(awaiting_confirmation),
         "started": True,
     }
 
@@ -814,7 +1194,9 @@ def run_conversation_model(
     if strict and strict_preference == STRICTNESS_UNKNOWN:
         strict_preference = STRICTNESS_STRICT
 
-    awaiting_strictness = bool(state.get("awaiting_strictness"))
+    was_awaiting_strictness = bool(state.get("awaiting_strictness"))
+    awaiting_strictness = was_awaiting_strictness
+    awaiting_confirmation = bool(state.get("awaiting_confirmation"))
     parser_source = str(state.get("parser_source") or "none")
 
     message = (user_input or "").strip()
@@ -840,6 +1222,7 @@ def run_conversation_model(
                 assistant_mode=mode,
                 parser_source=parser_source,
                 awaiting_strictness=awaiting_strictness,
+                awaiting_confirmation=awaiting_confirmation,
                 strict_default=strict,
             ),
         }
@@ -850,6 +1233,7 @@ def run_conversation_model(
         current_filters = _ensure_type_filter(base_filters, detected)
         strict_preference = STRICTNESS_UNKNOWN
         awaiting_strictness = False
+        awaiting_confirmation = False
         parser_source = "reset"
         reply = _generate_persona_reply(
             mode,
@@ -870,19 +1254,24 @@ def run_conversation_model(
                 assistant_mode=mode,
                 parser_source=parser_source,
                 awaiting_strictness=awaiting_strictness,
+                awaiting_confirmation=awaiting_confirmation,
                 strict_default=strict,
             ),
         }
 
     explicit_search = _is_explicit_search_request(message)
     strict_signal = _extract_strict_preference(message, awaiting_strictness=awaiting_strictness)
+    confirmation_signal = _extract_confirmation_signal(message, awaiting_confirmation=awaiting_confirmation)
+
     if strict_signal is not None:
         strict_preference = strict_signal
         awaiting_strictness = False
 
     if (
         strict_signal is None
+        and confirmation_signal is None
         and not awaiting_strictness
+        and not awaiting_confirmation
         and not explicit_search
         and not _is_probably_fashion_related(message)
     ):
@@ -905,13 +1294,18 @@ def run_conversation_model(
                 assistant_mode=mode,
                 parser_source=parser_source,
                 awaiting_strictness=awaiting_strictness,
+                awaiting_confirmation=awaiting_confirmation,
                 strict_default=strict,
             ),
         }
 
     parser_warning = None
     short_strict_answer = strict_signal is not None and len(message.split()) <= 5
-    should_update_with_parser = not (awaiting_strictness and short_strict_answer and _has_filters(current_filters))
+    short_confirmation_answer = confirmation_signal is not None and len(message.split()) <= 6
+    should_update_with_parser = not (
+        (was_awaiting_strictness and short_strict_answer and _has_filters(current_filters))
+        or (awaiting_confirmation and short_confirmation_answer and _has_filters(current_filters))
+    )
 
     if should_update_with_parser:
         current_query, current_filters, parser_source, parser_warning = _update_state_with_message(
@@ -924,9 +1318,8 @@ def run_conversation_model(
         current_filters = _ensure_type_filter(current_filters, detected)
 
     filter_count = _count_filter_values(current_filters)
-
     needs_more_detail = filter_count == 0 or (filter_count <= 1 and not explicit_search)
-    if needs_more_detail and strict_signal is None and not awaiting_strictness:
+    if needs_more_detail and strict_signal is None and confirmation_signal is None and not awaiting_strictness:
         detail_fields = _missing_detail_fields(current_filters)
         reply = _generate_persona_reply(
             mode,
@@ -948,6 +1341,7 @@ def run_conversation_model(
                 assistant_mode=mode,
                 parser_source=parser_source,
                 awaiting_strictness=False,
+                awaiting_confirmation=False,
                 strict_default=strict,
             ),
         }
@@ -973,9 +1367,78 @@ def run_conversation_model(
                 assistant_mode=mode,
                 parser_source=parser_source,
                 awaiting_strictness=True,
+                awaiting_confirmation=False,
                 strict_default=strict,
             ),
         }
+
+    resolved_strictness_turn = was_awaiting_strictness and strict_signal is not None
+    if not resolved_strictness_turn:
+        if awaiting_confirmation:
+            if confirmation_signal == "confirm" or explicit_search:
+                awaiting_confirmation = False
+            elif confirmation_signal == "revise" and not should_update_with_parser:
+                reply = _build_revision_prompt(mode)
+                return {
+                    "ok": True,
+                    "reply": reply,
+                    "mode": mode,
+                    "action": "confirm_edit",
+                    "results": [],
+                    "warning": parser_warning,
+                    "state": _build_state_payload(
+                        query=current_query,
+                        filters=current_filters,
+                        strict_preference=strict_preference,
+                        assistant_mode=mode,
+                        parser_source=parser_source,
+                        awaiting_strictness=False,
+                        awaiting_confirmation=False,
+                        strict_default=strict,
+                    ),
+                }
+            else:
+                summary = _build_requirements_summary(current_query, current_filters)
+                reply = _build_confirmation_prompt(mode, summary)
+                return {
+                    "ok": True,
+                    "reply": reply,
+                    "mode": mode,
+                    "action": "confirm_requirements",
+                    "results": [],
+                    "warning": parser_warning,
+                    "state": _build_state_payload(
+                        query=current_query,
+                        filters=current_filters,
+                        strict_preference=strict_preference,
+                        assistant_mode=mode,
+                        parser_source=parser_source,
+                        awaiting_strictness=False,
+                        awaiting_confirmation=True,
+                        strict_default=strict,
+                    ),
+                }
+        else:
+            summary = _build_requirements_summary(current_query, current_filters)
+            reply = _build_confirmation_prompt(mode, summary)
+            return {
+                "ok": True,
+                "reply": reply,
+                "mode": mode,
+                "action": "confirm_requirements",
+                "results": [],
+                "warning": parser_warning,
+                "state": _build_state_payload(
+                    query=current_query,
+                    filters=current_filters,
+                    strict_preference=strict_preference,
+                    assistant_mode=mode,
+                    parser_source=parser_source,
+                    awaiting_strictness=False,
+                    awaiting_confirmation=True,
+                    strict_default=strict,
+                ),
+            }
 
     if strict_preference == STRICTNESS_UNKNOWN:
         reply = _generate_persona_reply(
@@ -998,6 +1461,7 @@ def run_conversation_model(
                 assistant_mode=mode,
                 parser_source=parser_source,
                 awaiting_strictness=True,
+                awaiting_confirmation=False,
                 strict_default=strict,
             ),
         }
@@ -1026,6 +1490,7 @@ def run_conversation_model(
                 assistant_mode=mode,
                 parser_source=parser_source,
                 awaiting_strictness=False,
+                awaiting_confirmation=False,
                 strict_default=search_is_strict,
             ),
         }
@@ -1055,6 +1520,7 @@ def run_conversation_model(
                     assistant_mode=mode,
                     parser_source=parser_source,
                     awaiting_strictness=False,
+                    awaiting_confirmation=False,
                     strict_default=search_is_strict,
                 ),
             }
@@ -1087,6 +1553,7 @@ def run_conversation_model(
                 assistant_mode=mode,
                 parser_source=parser_source,
                 awaiting_strictness=False,
+                awaiting_confirmation=False,
                 strict_default=search_is_strict,
             ),
         }
@@ -1118,6 +1585,7 @@ def run_conversation_model(
             assistant_mode=mode,
             parser_source=parser_source,
             awaiting_strictness=False,
+            awaiting_confirmation=False,
             strict_default=search_is_strict,
         ),
     }

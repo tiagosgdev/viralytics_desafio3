@@ -28,7 +28,7 @@ import base64
 import json
 import os
 import time
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import cv2
 import numpy as np
@@ -52,12 +52,14 @@ class CameraStream:
         self,
         detector:    BaseDetector,
         recommender: RecommendationEngine,
+        recommendation_resolver: Optional[Callable[[List[str]], List[dict]]] = None,
         source:      int | str = 0,
         width:       int = 1280,
         height:      int = 720,
     ):
         self.detector    = detector
         self.recommender = recommender
+        self.recommendation_resolver = recommendation_resolver
         self.source      = source
         self.width       = width
         self.height      = height
@@ -101,7 +103,7 @@ class CameraStream:
                     if conf >= threshold
                 }
                 dominant_cats = self._dominant_categories(filtered)
-                recs = self.recommender.recommend(dominant_cats)
+                recs = self._resolve_recommendations(dominant_cats)
                 final_detections, final_b64 = self._build_final_results_frame(last_frame, filtered)
 
                 await send(json.dumps({
@@ -129,7 +131,7 @@ class CameraStream:
                 elif cmd == "more_recs":
                     # Keep same outfit detections, cycle through new recs
                     while True:
-                        new_recs = self.recommender.recommend(dominant_cats)
+                        new_recs = self._resolve_recommendations(dominant_cats)
                         await send(json.dumps({
                             "type": "results",
                             "detections": [
@@ -331,6 +333,16 @@ class CameraStream:
             cat for cat, _ in
             sorted(accumulated.items(), key=lambda x: x[1], reverse=True)[:5]
         ]
+
+    def _resolve_recommendations(self, categories: List[str]) -> List[dict]:
+        if self.recommendation_resolver is not None:
+            try:
+                resolved = self.recommendation_resolver(categories)
+                if isinstance(resolved, list):
+                    return resolved
+            except Exception as exc:
+                print(f"Warning: DB recommendation resolver failed: {exc}")
+        return self.recommender.recommend(categories)
 
     def _draw_capture_overlay(
         self, frame: np.ndarray, result: DetectionResult, countdown: int

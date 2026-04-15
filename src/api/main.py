@@ -152,6 +152,21 @@ def _persona_text_backend(persona: str) -> str:
     return PERSONA_CONFIGS[key].text_backend
 
 
+def _db_backed_recommendations_sync(detected_categories: list[str]) -> list[dict]:
+    """Resolve recommendations from LNIAGIA search_app against the real DB."""
+    try:
+        from LNIAGIA.search_app import search_detected_items
+    except Exception as exc:
+        print(f"⚠️  Could not import DB search helper: {exc}")
+        return []
+
+    ranked_results, warning = search_detected_items(detected_categories, strict=False)
+    if warning:
+        print(f"⚠️  DB recommendation warning: {warning}")
+
+    return _format_conversation_results(ranked_results)
+
+
 @app.on_event("startup")
 async def startup():
     global detector, recommender, camera, whisper_model, search_service
@@ -186,7 +201,12 @@ async def startup():
     recommender = RecommendationEngine(top_k=5)
     search_service = UnifiedSearchService(recommender)
     cameras_by_persona = {
-        key: CameraStream(detector_instance, recommender, source=0)
+        key: CameraStream(
+            detector_instance,
+            recommender,
+            recommendation_resolver=_db_backed_recommendations_sync,
+            source=0,
+        )
         for key, detector_instance in detectors_by_persona.items()
     }
     camera = cameras_by_persona["cruella"]
@@ -301,7 +321,9 @@ async def _detect_image_impl(file: UploadFile, persona: str = "cruella") -> Dete
     active_detector = _resolve_detector(persona)
     result = active_detector.detect(frame)
     cats   = list({d.class_name for d in result.detections})
-    recs   = recommender.recommend(cats)
+    recs = await run_in_threadpool(_db_backed_recommendations_sync, cats)
+    if not isinstance(recs, list):
+        recs = []
     session = search_service.create_session(cats, recs, persona=persona)
 
     # Encode annotated frame
@@ -372,7 +394,11 @@ def _format_conversation_results(raw_results: list[dict]) -> list[dict]:
                 "reason": reason,
                 "score": round(float(entry.get("score", 0.0)), 4),
                 "brand": brand,
-                "description": item.get("description"),
+                "description": (
+                    item.get("description")
+                    or item.get("short_description")
+                    or item.get("summary")
+                ),
                 "metadata": {
                     key: item.get(key)
                     for key in (
@@ -408,6 +434,7 @@ async def _run_conversation_search(payload: ConversationRequest) -> dict:
         user_input=payload.message,
         conversation_state=payload.state,
         strict=payload.strict,
+        assistant_mode=payload.assistant_mode,
     )
 
     if not result.get("ok", False):
@@ -426,20 +453,15 @@ async def search_conversation(payload: ConversationRequest, persona: str = "crue
 
     The frontend should send `state` from the previous response to keep context.
     """
-    if _persona_text_backend(persona) == "custom":
-        session = search_service.create_session(
-            detected_categories=[payload.detected_type],
-            recommendations=None,
-            persona=persona,
-        )
-        return search_service.refine(
-            session_id=session.id,
-            message=payload.message or "",
-            replace_vision=False,
-            parser_backend="custom",
+    return await _run_conversation_search(
+        ConversationRequest(
+            detected_type=payload.detected_type,
+            message=payload.message,
+            strict=payload.strict,
+            assistant_mode=payload.assistant_mode or normalize_persona(persona),
             state=payload.state,
         )
-    return await _run_conversation_search(payload)
+    )
 
 
 @app.post("/api/detect/image", response_model=DetectionResponse)
@@ -572,56 +594,42 @@ async def chat(payload: ChatRequest):
             persona = session.persona
 
     detected_type = _get_detected_type(session_id, payload.detected_categories)
-    if detected_type and _persona_text_backend(persona) == "llm":
-        conversation_result = await _run_conversation_search(
-            ConversationRequest(
-                detected_type=detected_type,
-                message=payload.message,
-                strict=payload.strict,
-                state=payload.state,
-            )
-        )
-        results = _format_conversation_results(conversation_result.get("results", []))
-        state = conversation_result.get("state") or {}
-        active_filters = state.get("filters") if isinstance(state.get("filters"), dict) else {}
-        mode = "override" if payload.replace_vision else "vision"
-
-        reply = (
-            f"I replaced the scan context and used your message as the main search direction. "
-            f"I found {len(results)} option(s) to explore next."
-            if mode == "override"
-            else f"I refined the results using the scanned clothing context. "
-                 f"I found {len(results)} option(s) to explore next."
-        )
-        if not results:
-            reply = (
-                "I couldn't find strong matches from that refinement. Try a more specific request."
-            )
-
-        return ChatResponse(
-            reply=reply,
-            session_id=session_id,
-            mode=mode,
-            persona=persona,
-            active_filters=active_filters,
-            results=results,
-            state=state,
+    conversation_result = await _run_conversation_search(
+        ConversationRequest(
+            detected_type=detected_type,
+            message=payload.message,
             strict=payload.strict,
-            warning=None,
+            assistant_mode=payload.assistant_mode or persona,
+            state=payload.state,
         )
-
-    fallback = search_service.refine(
-        session_id=session_id,
-        message=payload.message,
-        history=[
-            message.model_dump() if hasattr(message, "model_dump") else message.dict()
-            for message in payload.history
-        ],
-        replace_vision=payload.replace_vision,
-        parser_backend=_persona_text_backend(persona),
-        state=payload.state,
     )
-    return ChatResponse(**fallback)
+
+    results = _format_conversation_results(conversation_result.get("results", []))
+    state = conversation_result.get("state") or {}
+    active_filters = state.get("filters") if isinstance(state.get("filters"), dict) else {}
+    mode = "override" if payload.replace_vision else "vision"
+
+    reply = str(conversation_result.get("reply") or "I processed your request.")
+    warning = conversation_result.get("warning")
+    strict_value = payload.strict
+    if isinstance(state, dict) and isinstance(state.get("strict"), bool):
+        strict_value = state.get("strict")
+
+    model_mode = conversation_result.get("mode")
+    if isinstance(model_mode, str) and model_mode.strip():
+        persona = normalize_persona(model_mode)
+
+    return ChatResponse(
+        reply=reply,
+        session_id=session_id,
+        mode=mode,
+        persona=persona,
+        active_filters=active_filters,
+        results=results,
+        state=state,
+        strict=strict_value,
+        warning=warning,
+    )
 
 
 @app.websocket("/ws/camera")

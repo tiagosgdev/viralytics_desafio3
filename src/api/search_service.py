@@ -1,15 +1,31 @@
 from __future__ import annotations
 
+import sys
 import uuid
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Dict, List, Optional
 
 from src.api.custom_text_parser import parse_custom_query
 from src.api.personas import normalize_persona
 from src.recommendations.engine import RecommendationEngine
 
+# Ensure legacy LNIAGIA modules that use absolute imports like "DB.*" are importable.
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_LNIAGIA_DIR = _PROJECT_ROOT / "LNIAGIA"
+if _LNIAGIA_DIR.exists() and str(_LNIAGIA_DIR) not in sys.path:
+    sys.path.insert(0, str(_LNIAGIA_DIR))
+
 try:
-    from LNIAGIA.llm_query_parser import OLLAMA_MODEL, parse_query
+    from LNIAGIA.query_parsing.llm_query_parser import OLLAMA_MODEL, parse_query
+except Exception as exc:  # pragma: no cover - optional parser stack
+    parse_query = None
+    _PARSER_IMPORT_ERROR = exc
+    OLLAMA_MODEL = "unavailable"
+else:
+    _PARSER_IMPORT_ERROR = None
+
+try:
     from LNIAGIA.DB.vector.VectorDBManager import (
         EMBEDDING_MODEL_NAME,
         _collection_exists,
@@ -17,17 +33,17 @@ try:
         _load_model,
         filtered_search,
     )
-except Exception as exc:  # pragma: no cover - optional integration stack
-    parse_query = None
+except Exception as exc:  # pragma: no cover - optional vector stack
     filtered_search = None
     _load_model = None
     _get_client = None
     _collection_exists = None
     EMBEDDING_MODEL_NAME = "unavailable"
-    OLLAMA_MODEL = "unavailable"
-    _IMPORT_ERROR = exc
+    _VECTOR_IMPORT_ERROR = exc
 else:
-    _IMPORT_ERROR = None
+    _VECTOR_IMPORT_ERROR = None
+
+_IMPORT_ERROR = _VECTOR_IMPORT_ERROR or _PARSER_IMPORT_ERROR
 
 
 OVERRIDE_MARKERS = (

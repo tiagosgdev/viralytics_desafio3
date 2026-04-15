@@ -1088,6 +1088,33 @@ body[data-persona='cruella'] .rec-modal-item.active {
   font-size: 1.35rem;
 }
 
+.thumb-media {
+  position: relative;
+  overflow: hidden;
+}
+
+.thumb-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.thumb-media.has-image .thumb-img {
+  display: block;
+}
+
+.thumb-media.has-image .thumb-fallback {
+  display: none;
+}
+
 body[data-persona='cruella'] .cthumb,
 body[data-persona='cruella'] .rec-modal-thumb,
 body[data-persona='cruella'] .rec-detail-icon {
