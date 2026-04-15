@@ -19,7 +19,6 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
-from typing import List
 
 import cv2
 import numpy as np
@@ -38,9 +37,11 @@ from src.api.schemas import (
     SessionResponse,
     SessionStartRequest,
 )
+from src.api.personas import PERSONA_CONFIGS, normalize_persona
 from src.api.search_service import UnifiedSearchService
 from src.detection.camera import CameraStream
 from src.detection.detector import BaseDetector, FashionDetector
+from src.detection.fashionnet_detector import FashionNetDetector
 from src.detection.yolo_world import YOLOWorldDetector
 from src.recommendations.engine import RecommendationEngine
 
@@ -105,6 +106,8 @@ recommender : RecommendationEngine = None
 camera      : CameraStream       = None
 whisper_model = None
 search_service: UnifiedSearchService = None
+detectors_by_persona: dict[str, BaseDetector] = {}
+cameras_by_persona: dict[str, CameraStream] = {}
 
 
 DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "yolov8").lower()
@@ -131,26 +134,68 @@ def _find_ffmpeg_exe() -> str | None:
     return None
 
 
+def _find_fashionnet_weights() -> str | None:
+    candidate = PROJECT_ROOT / "models" / "weights" / "fashionnet" / "best.pt"
+    return str(candidate) if candidate.exists() else None
+
+
+def _resolve_detector(persona: str) -> BaseDetector:
+    return detectors_by_persona.get(normalize_persona(persona)) or detector
+
+
+def _resolve_camera(persona: str) -> CameraStream:
+    return cameras_by_persona.get(normalize_persona(persona)) or camera
+
+
+def _persona_text_backend(persona: str) -> str:
+    key = normalize_persona(persona)
+    return PERSONA_CONFIGS[key].text_backend
+
+
 @app.on_event("startup")
 async def startup():
     global detector, recommender, camera, whisper_model, search_service
+    global detectors_by_persona, cameras_by_persona
 
     if DETECTOR_BACKEND == "yolo_world":
         print("\n🚀  Starting with YOLO-World zero-shot detector")
-        detector = YOLOWorldDetector(conf_thres=0.15)
+        cruella_detector = YOLOWorldDetector(conf_thres=0.15)
     else:
         weights = WEIGHTS_PATH
         print(f"\n🚀  Loading model from: {weights}")
-        detector = FashionDetector(weights=weights, conf_thres=0.60)
+        cruella_detector = FashionDetector(weights=weights, conf_thres=0.60)
+
+    fashionnet_weights = _find_fashionnet_weights()
+    if fashionnet_weights:
+        print(f"\n🧵  Loading FashionNet from: {fashionnet_weights}")
+        try:
+            edna_detector = FashionNetDetector(weights=fashionnet_weights, conf_thres=0.35)
+        except Exception as exc:
+            print(f"⚠️  FashionNet failed to load, falling back to Cruella detector: {exc}")
+            edna_detector = cruella_detector
+    else:
+        print("⚠️  No FashionNet checkpoint found, Edna will reuse Cruella vision backend")
+        edna_detector = cruella_detector
+
+    detector = cruella_detector
+    detectors_by_persona = {
+        "cruella": cruella_detector,
+        "edna": edna_detector,
+    }
 
     recommender = RecommendationEngine(top_k=5)
     search_service = UnifiedSearchService(recommender)
-    camera      = CameraStream(detector, recommender, source=0)
-    try:
-        camera.warmup()
-        print("📷  Camera warmed and ready")
-    except Exception as e:
-        print(f"⚠️  Camera warmup failed: {e}")
+    cameras_by_persona = {
+        key: CameraStream(detector_instance, recommender, source=0)
+        for key, detector_instance in detectors_by_persona.items()
+    }
+    camera = cameras_by_persona["cruella"]
+    for key, camera_instance in cameras_by_persona.items():
+        try:
+            camera_instance.warmup()
+            print(f"📷  Camera warmed and ready for {key}")
+        except Exception as e:
+            print(f"⚠️  Camera warmup failed for {key}: {e}")
 
     # Load Whisper for voice transcription in a background thread
     # (can be slow on first run — downloads model weights)
@@ -179,9 +224,9 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    global camera
-    if camera is not None:
-        camera.shutdown()
+    global cameras_by_persona
+    for camera_instance in cameras_by_persona.values():
+        camera_instance.shutdown()
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────
@@ -201,13 +246,16 @@ async def health():
 
 @app.post("/api/session/start", response_model=SessionResponse)
 async def start_session(payload: SessionStartRequest):
+    persona = normalize_persona(payload.persona)
     session = search_service.create_session(
         detected_categories=payload.detected_categories,
         recommendations=payload.recommendations,
+        persona=persona,
     )
     return SessionResponse(
         session_id=session.id,
         mode=session.mode,
+        persona=session.persona,
         detected_categories=session.detected_categories,
         seed_categories=session.seed_categories,
         active_filters=session.active_filters,
@@ -226,6 +274,7 @@ async def get_session(session_id: str):
     return SessionResponse(
         session_id=session.id,
         mode=session.mode,
+        persona=session.persona,
         detected_categories=session.detected_categories,
         seed_categories=session.seed_categories,
         active_filters=session.active_filters,
@@ -238,8 +287,9 @@ async def warmup_chat():
     return search_service.warmup()
 
 
-async def _detect_image_impl(file: UploadFile) -> DetectionResponse:
+async def _detect_image_impl(file: UploadFile, persona: str = "cruella") -> DetectionResponse:
     """Shared implementation for image/mobile scan uploads."""
+    persona = normalize_persona(persona)
     contents = await file.read()
     arr   = np.frombuffer(contents, np.uint8)
     frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
@@ -248,13 +298,14 @@ async def _detect_image_impl(file: UploadFile) -> DetectionResponse:
         from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Could not decode image")
 
-    result = detector.detect(frame)
+    active_detector = _resolve_detector(persona)
+    result = active_detector.detect(frame)
     cats   = list({d.class_name for d in result.detections})
     recs   = recommender.recommend(cats)
-    session = search_service.create_session(cats, recs)
+    session = search_service.create_session(cats, recs, persona=persona)
 
     # Encode annotated frame
-    annotated = detector.draw(frame, result)
+    annotated = active_detector.draw(frame, result)
     _, buf    = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
     b64_frame = base64.b64encode(buf).decode("utf-8")
 
@@ -272,6 +323,7 @@ async def _detect_image_impl(file: UploadFile) -> DetectionResponse:
         inference_ms    = round(result.inference_ms, 1),
         annotated_frame = b64_frame,
         session_id      = session.id,
+        persona         = persona,
     )
 
 
@@ -356,7 +408,6 @@ async def _run_conversation_search(payload: ConversationRequest) -> dict:
         user_input=payload.message,
         conversation_state=payload.state,
         strict=payload.strict,
-        assistant_mode=payload.assistant_mode,
     )
 
     if not result.get("ok", False):
@@ -369,40 +420,54 @@ async def _run_conversation_search(payload: ConversationRequest) -> dict:
 
 
 @app.post("/api/search/conversation")
-async def search_conversation(payload: ConversationRequest):
+async def search_conversation(payload: ConversationRequest, persona: str = "cruella"):
     """
     HTTP conversation step for the LNIAGIA search flow.
 
     The frontend should send `state` from the previous response to keep context.
     """
+    if _persona_text_backend(persona) == "custom":
+        session = search_service.create_session(
+            detected_categories=[payload.detected_type],
+            recommendations=None,
+            persona=persona,
+        )
+        return search_service.refine(
+            session_id=session.id,
+            message=payload.message or "",
+            replace_vision=False,
+            parser_backend="custom",
+            state=payload.state,
+        )
     return await _run_conversation_search(payload)
 
 
 @app.post("/api/detect/image", response_model=DetectionResponse)
-async def detect_image(file: UploadFile = File(...)):
+async def detect_image(persona: str = "cruella", file: UploadFile = File(...)):
     """
     Accepts an uploaded image, runs detection, returns detections + recommendations.
     """
-    return await _detect_image_impl(file)
+    return await _detect_image_impl(file, persona=persona)
 
 
 @app.post("/api/mobile/scan", response_model=DetectionResponse)
-async def mobile_scan(file: UploadFile = File(...)):
+async def mobile_scan(persona: str = "cruella", file: UploadFile = File(...)):
     """
     Mobile-friendly alias for image scan uploads from native clients.
     """
-    return await _detect_image_impl(file)
+    return await _detect_image_impl(file, persona=persona)
 
 
 
 @app.get("/api/conf")
-async def get_conf():
+async def get_conf(persona: str = "cruella"):
     """Return the current confidence threshold."""
-    return {"conf_thres": round(detector.conf_thres, 2)}
+    active_detector = _resolve_detector(persona)
+    return {"conf_thres": round(active_detector.conf_thres, 2), "persona": normalize_persona(persona)}
 
 
 @app.post("/api/conf/{value}")
-async def set_conf(value: float):
+async def set_conf(value: float, persona: str = "cruella"):
     """
     Update the detection confidence threshold live (0.01 – 0.99).
     Affects both the live camera stream and result filtering.
@@ -410,8 +475,9 @@ async def set_conf(value: float):
     from fastapi import HTTPException
     if not (0.01 <= value <= 0.99):
         raise HTTPException(status_code=400, detail="conf must be between 0.01 and 0.99")
-    detector.conf_thres = value
-    return {"conf_thres": round(detector.conf_thres, 2)}
+    active_detector = _resolve_detector(persona)
+    active_detector.conf_thres = value
+    return {"conf_thres": round(active_detector.conf_thres, 2), "persona": normalize_persona(persona)}
 
 
 # Common Whisper hallucinations on silence/noise
@@ -491,28 +557,27 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(payload: ChatRequest):
+    persona = normalize_persona(payload.persona)
     session_id = payload.session_id
     if not session_id:
         session = search_service.create_session(
             detected_categories=payload.detected_categories,
             recommendations=payload.recommendations,
+            persona=persona,
         )
         session_id = session.id
+    else:
+        session = search_service.get_session(session_id)
+        if session is not None:
+            persona = session.persona
 
     detected_type = _get_detected_type(session_id, payload.detected_categories)
-    state_mode = None
-    if isinstance(payload.state, dict):
-        state_mode = payload.state.get("assistant_mode")
-
-    use_conversation_flow = bool(detected_type or payload.assistant_mode or state_mode)
-
-    if use_conversation_flow:
+    if detected_type and _persona_text_backend(persona) == "llm":
         conversation_result = await _run_conversation_search(
             ConversationRequest(
                 detected_type=detected_type,
                 message=payload.message,
                 strict=payload.strict,
-                assistant_mode=payload.assistant_mode,
                 state=payload.state,
             )
         )
@@ -521,29 +586,28 @@ async def chat(payload: ChatRequest):
         active_filters = state.get("filters") if isinstance(state.get("filters"), dict) else {}
         mode = "override" if payload.replace_vision else "vision"
 
-        reply = conversation_result.get("reply")
-        if not isinstance(reply, str) or not reply.strip():
+        reply = (
+            f"I replaced the scan context and used your message as the main search direction. "
+            f"I found {len(results)} option(s) to explore next."
+            if mode == "override"
+            else f"I refined the results using the scanned clothing context. "
+                 f"I found {len(results)} option(s) to explore next."
+        )
+        if not results:
             reply = (
-                f"I replaced the scan context and used your message as the main search direction. "
-                f"I found {len(results)} option(s) to explore next."
-                if mode == "override"
-                else f"I refined the results using the scanned clothing context. "
-                     f"I found {len(results)} option(s) to explore next."
+                "I couldn't find strong matches from that refinement. Try a more specific request."
             )
-            if not results:
-                reply = (
-                    "I couldn't find strong matches from that refinement. Try a more specific request."
-                )
 
         return ChatResponse(
             reply=reply,
             session_id=session_id,
             mode=mode,
+            persona=persona,
             active_filters=active_filters,
             results=results,
             state=state,
             strict=payload.strict,
-            warning=conversation_result.get("warning"),
+            warning=None,
         )
 
     fallback = search_service.refine(
@@ -554,8 +618,10 @@ async def chat(payload: ChatRequest):
             for message in payload.history
         ],
         replace_vision=payload.replace_vision,
+        parser_backend=_persona_text_backend(persona),
+        state=payload.state,
     )
-    return ChatResponse(**fallback, state=payload.state)
+    return ChatResponse(**fallback)
 
 
 @app.websocket("/ws/camera")
@@ -573,7 +639,9 @@ async def websocket_camera(ws: WebSocket):
       { cmd: "more_recs" }  — keep outfit, get new recommendations
     """
     await ws.accept()
-    print("🔌  WebSocket client connected")
+    persona = normalize_persona(ws.query_params.get("persona"))
+    active_camera = _resolve_camera(persona)
+    print(f"🔌  WebSocket client connected ({persona})")
 
     async def send(text: str):
         try:
@@ -588,10 +656,10 @@ async def websocket_camera(ws: WebSocket):
             return None
 
     try:
-        await camera.run_session(send, receive)
+        await active_camera.run_session(send, receive)
     except WebSocketDisconnect:
         pass
     except Exception as e:
         print(f"⚠️  WebSocket error: {e}")
     finally:
-        print("🔌  WebSocket client disconnected")
+        print(f"🔌  WebSocket client disconnected ({persona})")

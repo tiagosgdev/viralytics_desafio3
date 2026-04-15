@@ -1,5 +1,5 @@
 """
-scripts/visualize_results.py
+scripts/evaluation/visualize_results.py
 ─────────────────────────────
 Visualization script for FashionNet evaluation results.
 
@@ -12,13 +12,13 @@ Generates:
 
 Usage:
     # Single experiment:
-    python scripts/visualize_results.py \
+    python scripts/evaluation/visualize_results.py \
         --metrics_json models/weights/fashionnet/metrics.json \
         --history_json models/weights/fashionnet/history.json \
         --output_dir results/plots/fashionnet
 
     # Compare experiments:
-    python scripts/visualize_results.py \
+    python scripts/evaluation/visualize_results.py \
         --exp_dirs models/weights/exp1 models/weights/exp2 \
         --output_dir results/plots/comparison
 """

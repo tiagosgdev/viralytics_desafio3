@@ -1,11 +1,11 @@
 """
-scripts/analyze_raw_dataset.py
+scripts/data_prep/analyze_raw_dataset.py
 ──────────────────────────────
 Analyse the raw DeepFashion2 dataset from the pre-built CSV dataframes.
-Produces 7 figures in docs/ and prints a per-class summary table.
+Produces 7 figures in docs/figures/raw_dataset/ and prints a per-class summary table.
 
 Usage:
-    python scripts/analyze_raw_dataset.py
+    python scripts/data_prep/analyze_raw_dataset.py
 """
 
 import argparse
@@ -244,7 +244,7 @@ def main():
         "--val_csv",
         default="data/raw/DeepFashion2/img_info_dataframes/validation.csv",
     )
-    parser.add_argument("--output_dir", default="docs")
+    parser.add_argument("--output_dir", default="docs/figures/raw_dataset")
     args = parser.parse_args()
 
     output_dir = Path(args.output_dir)

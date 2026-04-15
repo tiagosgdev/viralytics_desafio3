@@ -1,5 +1,5 @@
 """
-scripts/sample_balanced.py
+scripts/data_prep/sample_balanced.py
 ──────────────────────────
 Balanced sampler for DeepFashion2.
 
@@ -8,7 +8,7 @@ remaining class with occlusion-stratified sampling, splits into
 train/val/test (70/15/15), copies images, and produces YOLO-format output.
 
 Usage:
-    python scripts/sample_balanced.py \
+    python scripts/data_prep/sample_balanced.py \
         --train_csv data/raw/DeepFashion2/img_info_dataframes/train.csv \
         --val_csv   data/raw/DeepFashion2/img_info_dataframes/validation.csv \
         --img_dirs  data/raw/train/image data/raw/validation/image \

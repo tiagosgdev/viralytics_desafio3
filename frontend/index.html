@@ -14,9 +14,34 @@
 <body>
   <a href="#cam" class="skip-link">Skip to camera</a>
 
+  <section class="landing-screen" id="landing-screen" aria-labelledby="landing-title">
+    <div class="landing-panel">
+      <div class="landing-eyebrow">Choose Your Stylist</div>
+      <h1 id="landing-title">How should FashionSense think today?</h1>
+      <p class="landing-copy">
+        Cruella uses the trained YOLO detector with the LLM-powered search flow. Edna uses the custom FashionNet
+        detector with the local custom text parser.
+      </p>
+      <div class="landing-options">
+        <button class="landing-option cruella" type="button" onclick="selectPersona('cruella')">
+          <span class="landing-name">Cruella</span>
+          <span class="landing-meta">YOLO vision + LLM text</span>
+        </button>
+        <button class="landing-option edna" type="button" onclick="selectPersona('edna')">
+          <span class="landing-name">Edna</span>
+          <span class="landing-meta">FashionNet vision + custom text</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
   <header>
     <span class="logo">FashionSense <span>OUTFIT SCANNER</span></span>
     <div class="hdr-right">
+      <div class="persona-chip" id="persona-chip" hidden></div>
+      <button class="persona-reset-btn" id="persona-reset-btn" type="button" onclick="returnToPersonaSelection()" hidden>
+        <i class="fas fa-arrows-rotate"></i> Switch Stylist
+      </button>
       <div class="view-toggle">
         <button class="vtab active" id="tab-cam" onclick="switchView('camera')"><i class="fas fa-camera"></i> Camera</button>
         <button class="vtab" id="tab-chat" onclick="switchView('chat')"><i class="fas fa-message"></i> Chat</button>
@@ -132,7 +157,11 @@
   </div>
 
 <script>
-const WS_URL = 'ws://' + location.host + '/ws/camera';
+function buildWsUrl() {
+  const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+  const persona = encodeURIComponent(selectedPersona || 'cruella');
+  return protocol + location.host + '/ws/camera?persona=' + persona;
+}
 
 function initHelpers() {
   const lazyTargets = document.querySelectorAll('img[data-src], source[data-srcset]');
@@ -160,6 +189,7 @@ function initHelpers() {
     });
   }
 
+  if (!selectedPersona) return;
   warmupChat();
   connectCamera();
 }
@@ -201,9 +231,12 @@ function initCardTilt() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  initHelpers();
   initReveal();
   initCardTilt();
+  const storedPersona = window.localStorage.getItem('fashionSensePersona');
+  if (storedPersona === 'cruella' || storedPersona === 'edna') {
+    selectPersona(storedPersona);
+  }
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && recsModal.classList.contains('open')) {
       toggleRecommendationsModal(false);
@@ -244,6 +277,7 @@ const EMOJI = {
 };
 
 let ws = null;
+let selectedPersona = null;
 let frozen = false;
 let currentSessionId = null;
 let currentDetectedCategories = [];
@@ -258,6 +292,9 @@ let hasShownInitialRecommendationsModal = false;
 let recommendationDetailIndex = 0;
 
 const feed = document.getElementById('feed');
+const landingScreen = document.getElementById('landing-screen');
+const personaChip = document.getElementById('persona-chip');
+const personaResetBtn = document.getElementById('persona-reset-btn');
 const idle = document.getElementById('idle');
 const cam = document.getElementById('cam');
 const dot = document.getElementById('dot');
@@ -309,13 +346,16 @@ function hideFrozenLabel() {
 }
 
 function connectCamera() {
+  if (!selectedPersona) {
+    return;
+  }
   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
     return;
   }
 
   cameraSuspended = false;
   setSt('scanning', 'Connecting camera...');
-  ws = new WebSocket(WS_URL);
+  ws = new WebSocket(buildWsUrl());
 
   ws.onopen = () => {
     setSt('scanning', 'Camera handshake...');
@@ -449,6 +489,9 @@ function handleCameraMessage(msg) {
 }
 
 function startScan() {
+  if (!selectedPersona) {
+    return;
+  }
   frozen = false;
   currentSessionId = null;
   currentDetectedCategories = [];
@@ -770,7 +813,8 @@ function esc(value) {
 
 function updateConf(val) {
   document.getElementById('conf-val').textContent = val + '%';
-  fetch('/api/conf/' + (val / 100), { method: 'POST' }).catch(() => {});
+  if (!selectedPersona) return;
+  fetch('/api/conf/' + (val / 100) + '?persona=' + encodeURIComponent(selectedPersona), { method: 'POST' }).catch(() => {});
 }
 
 function switchView(view) {
@@ -859,6 +903,9 @@ function extractApiError(data, fallback) {
 }
 
 function sendChat() {
+  if (!selectedPersona) {
+    return;
+  }
   const text = chatInput.value.trim();
   if (!text) return;
 
@@ -873,6 +920,7 @@ function sendChat() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       message: text,
+      persona: selectedPersona,
       history: chatHistory,
       session_id: currentSessionId,
       state: chatConversationState,
@@ -1070,6 +1118,7 @@ async function toggleVoice() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 message: text,
+                persona: selectedPersona,
                 history: chatHistory,
                 session_id: currentSessionId,
                 state: chatConversationState,
@@ -1120,20 +1169,12 @@ function stopVoiceUI() {
   micBtn.title = 'Voice input';
 }
 
-fetch('/api/conf')
-  .then((response) => response.json())
-  .then((data) => {
-    const pct = Math.round(data.conf_thres * 100);
-    document.getElementById('conf-slider').value = pct;
-    document.getElementById('conf-val').textContent = pct + '%';
-  })
-  .catch(() => {});
-
 function initializeSearchSession(detectedCategories, recommendations) {
   fetch('/api/session/start', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      persona: selectedPersona || 'cruella',
       detected_categories: detectedCategories || [],
       recommendations: recommendations || []
     })
@@ -1147,6 +1188,78 @@ function initializeSearchSession(detectedCategories, recommendations) {
 
 function warmupChat() {
   fetch('/api/chat/warmup', { method: 'POST' }).catch(() => {});
+}
+
+function selectPersona(persona) {
+  selectedPersona = persona === 'edna' ? 'edna' : 'cruella';
+  window.localStorage.setItem('fashionSensePersona', selectedPersona);
+  landingScreen.classList.add('hidden');
+  document.body.classList.add('app-started');
+  document.body.dataset.persona = selectedPersona;
+  personaChip.hidden = false;
+  personaResetBtn.hidden = false;
+  personaChip.textContent = selectedPersona === 'edna' ? 'Edna active' : 'Cruella active';
+  resetPersonaState();
+  loadConfidence();
+  initHelpers();
+}
+
+function returnToPersonaSelection() {
+  selectedPersona = null;
+  window.localStorage.removeItem('fashionSensePersona');
+  landingScreen.classList.remove('hidden');
+  document.body.classList.remove('app-started');
+  delete document.body.dataset.persona;
+  personaChip.hidden = true;
+  personaChip.textContent = '';
+  personaResetBtn.hidden = true;
+  resetPersonaState();
+  currentView = 'camera';
+  camEl.style.display = 'flex';
+  chatView.classList.remove('active');
+  tabCam.classList.add('active');
+  tabChat.classList.remove('active');
+  setSt('idle', 'Choose a stylist');
+}
+
+function resetPersonaState() {
+  disconnectCamera();
+  currentSessionId = null;
+  currentDetectedCategories = [];
+  currentRecommendations = [];
+  chatHistory = [];
+  chatConversationState = null;
+  currentActiveFilters = {};
+  hasShownInitialRecommendationsModal = false;
+  recommendationDetailIndex = 0;
+  tagsEl.innerHTML = '<span class="notag">Nothing detected yet</span>';
+  recsEl.innerHTML = '<div class="ph">Recommendations will appear here after a scan or chat refinement.</div>';
+  recsScrollLeftBtn.disabled = true;
+  recsScrollRightBtn.disabled = true;
+  recsModalList.innerHTML = '';
+  recDetail.innerHTML = '<div class="ph">Recommendation details will appear here.</div>';
+  chatMsgs.innerHTML =
+    '<div class="chat-welcome">' +
+    '<div class="chat-welcome-icon"><i class="fas fa-message"></i></div>' +
+    '<div class="chat-welcome-title">FashionSense Assistant</div>' +
+    '<div class="chat-welcome-sub">Ask for different colors, styles, formality, or tell it to ignore the scan entirely.</div>' +
+    '</div>';
+  chatInput.value = '';
+  micBtn.classList.remove('listening');
+  chatInput.placeholder = 'Type a message...';
+  toggleRecommendationsModal(false);
+}
+
+function loadConfidence() {
+  if (!selectedPersona) return;
+  fetch('/api/conf?persona=' + encodeURIComponent(selectedPersona))
+    .then((response) => response.json())
+    .then((data) => {
+      const pct = Math.round(data.conf_thres * 100);
+      document.getElementById('conf-slider').value = pct;
+      document.getElementById('conf-val').textContent = pct + '%';
+    })
+    .catch(() => {});
 }
 </script>
 </body>

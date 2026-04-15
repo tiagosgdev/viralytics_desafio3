@@ -1,12 +1,12 @@
 """
-scripts/train.py
+scripts/training/train.py
 ────────────────
 Fine-tunes a YOLOv8 model on the converted DeepFashion2 sample.
 
 Usage:
-    python scripts/train.py --model yolov8s --epochs 50 --batch 16
-    python scripts/train.py --model yolov8n --epochs 30 --batch 32   # faster / lighter
-    python scripts/train.py --model yolov8s --epochs 50 --no-pretrained  # train from scratch
+    python scripts/training/train.py --model yolov8s --epochs 50 --batch 16
+    python scripts/training/train.py --model yolov8n --epochs 30 --batch 32   # faster / lighter
+    python scripts/training/train.py --model yolov8s --epochs 50 --no-pretrained  # train from scratch
 """
 
 import argparse
@@ -118,7 +118,7 @@ def main():
     print(f"\n✅  Training complete!")
     print(f"   Best weights → {best.resolve()}")
     print(f"\n   Quick test:")
-    print(f"   python scripts/evaluate.py --weights {best}")
+    print(f"   python scripts/evaluation/evaluate.py --weights {best}")
 
 
 if __name__ == "__main__":

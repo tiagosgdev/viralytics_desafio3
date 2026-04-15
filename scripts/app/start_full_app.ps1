@@ -11,7 +11,7 @@ param(
 )
 
 $argsList = @(
-    "scripts/start_full_app.py",
+    "scripts/app/start_full_app.py",
     "--host", $BindHost,
     "--port", $BindPort,
     "--detector-backend", $DetectorBackend

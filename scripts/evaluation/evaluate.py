@@ -1,10 +1,10 @@
 """
-scripts/evaluate.py
+scripts/evaluation/evaluate.py
 ───────────────────
 Evaluates a trained model on the validation set and prints per-class metrics.
 
 Usage:
-    python scripts/evaluate.py --weights models/weights/yolov8s_fashion/weights/best.pt
+    python scripts/evaluation/evaluate.py --weights models/weights/yolov8s_fashion/weights/best.pt
 """
 
 import argparse

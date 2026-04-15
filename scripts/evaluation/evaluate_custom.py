@@ -1,5 +1,5 @@
 """
-scripts/evaluate_custom.py
+scripts/evaluation/evaluate_custom.py
 ──────────────────────────
 Standalone evaluation script for FashionNet checkpoints.
 
@@ -9,8 +9,8 @@ Computes mAP@50, F1, precision, recall, per-class metrics, and a
 Outputs metrics.json alongside the weights (or to --output_dir).
 
 Usage:
-    python scripts/evaluate_custom.py --weights models/weights/fashionnet/best.pt
-    python scripts/evaluate_custom.py --weights models/weights/fashionnet/best.pt --split test --conf 0.25
+    python scripts/evaluation/evaluate_custom.py --weights models/weights/fashionnet/best.pt
+    python scripts/evaluation/evaluate_custom.py --weights models/weights/fashionnet/best.pt --split test --conf 0.25
 """
 
 import argparse
@@ -26,7 +26,7 @@ import torch
 from torch.utils.data import DataLoader
 
 # Allow imports from project root
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.custom_model.model import FashionNet, TinyFashionNet
 from src.custom_model.dataset import (

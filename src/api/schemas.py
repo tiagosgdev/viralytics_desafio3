@@ -13,39 +13,25 @@ class HealthResponse(BaseModel):
     model_loaded: bool
 
 
-class DetectionItem(BaseModel):
-    class_id:   int
-    class_name: str
-    confidence: float
-    bbox:       List[int]   # [x1, y1, x2, y2]
-
-
-class RecommendationItem(BaseModel):
-    id:        str
-    name:      str
-    category:  str
-    price:     str
-    image_url: Optional[str] = None
-    reason:    str
-    score:     float
-
-
 class DetectionResponse(BaseModel):
     detections:      List[Dict[str, Any]]
     recommendations: List[Dict[str, Any]]
     inference_ms:    float
     annotated_frame: Optional[str] = None   # base64 JPEG
     session_id:      Optional[str] = None
+    persona:         Optional[str] = None
 
 
 class SessionStartRequest(BaseModel):
     detected_categories: List[str]
     recommendations: List[Dict[str, Any]] = Field(default_factory=list)
+    persona: str = "cruella"
 
 
 class SessionResponse(BaseModel):
     session_id: str
     mode: str
+    persona: str
     detected_categories: List[str]
     seed_categories: List[str]
     active_filters: Dict[str, Any]
@@ -61,6 +47,7 @@ class ChatRequest(BaseModel):
     message: str
     history: List[ChatMessage] = Field(default_factory=list)
     session_id: Optional[str] = None
+    persona: str = "cruella"
     replace_vision: Optional[bool] = None
     strict: bool = False
     assistant_mode: Optional[str] = None
@@ -81,6 +68,7 @@ class ChatResponse(BaseModel):
     reply: str
     session_id: str
     mode: str
+    persona: str
     active_filters: Dict[str, Any]
     results: List[Dict[str, Any]]
     state: Optional[Dict[str, Any]] = None

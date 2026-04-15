@@ -20,6 +20,22 @@
   --font-mono: 'DM Mono', 'SFMono-Regular', Consolas, monospace;
 }
 
+body[data-persona='cruella'] {
+  --bg: #130b0d;
+  --surface: rgba(34, 16, 20, 0.84);
+  --surface-strong: #1c1013;
+  --surface-soft: #2a161a;
+  --border: rgba(255, 97, 97, 0.18);
+  --text: #f8ece8;
+  --muted: #c9a7a2;
+  --accent: #c54242;
+  --accent-strong: #ff9090;
+  --green: #57b88f;
+  --red: #ff6767;
+  --shadow-sm: 0 14px 32px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 24px 50px rgba(0, 0, 0, 0.34);
+}
+
 *,
 *::before,
 *::after {
@@ -42,8 +58,119 @@ body {
   font-family: var(--font-sans);
 }
 
+body[data-persona='cruella'] {
+  background:
+    radial-gradient(circle at top left, rgba(129, 18, 28, 0.26), transparent 32%),
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.06), transparent 22%),
+    linear-gradient(180deg, #12090c 0%, #241014 100%);
+}
+
 body.modal-open {
   overflow: hidden;
+}
+
+.landing-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.92), transparent 28%),
+    linear-gradient(145deg, rgba(36, 27, 16, 0.9), rgba(83, 58, 29, 0.82));
+  transition: opacity 0.28s ease, visibility 0.28s ease;
+}
+
+.landing-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.landing-panel {
+  width: min(56rem, 100%);
+  padding: clamp(1.8rem, 4vw, 3rem);
+  border-radius: 2rem;
+  color: #fffdf8;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 241, 0.13), rgba(255, 255, 255, 0.03)),
+    rgba(19, 14, 8, 0.48);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(18px);
+}
+
+.landing-eyebrow {
+  margin-bottom: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 246, 229, 0.74);
+}
+
+.landing-panel h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(2.3rem, 4vw, 4rem);
+  line-height: 0.98;
+}
+
+.landing-copy {
+  max-width: 42rem;
+  margin: 1rem 0 0;
+  color: rgba(255, 249, 240, 0.82);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.landing-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.8rem;
+}
+
+.landing-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding: 1.3rem;
+  border-radius: 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.landing-option:hover,
+.landing-option:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.landing-option.cruella {
+  box-shadow: inset 0 0 0 1px rgba(227, 186, 118, 0.08);
+}
+
+.landing-option.edna {
+  box-shadow: inset 0 0 0 1px rgba(169, 214, 211, 0.08);
+}
+
+.landing-name {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+}
+
+.landing-meta {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 246, 229, 0.74);
 }
 
 img {
@@ -94,6 +221,10 @@ header {
   border-bottom: 1px solid var(--border);
 }
 
+body[data-persona='cruella'] header {
+  background: rgba(20, 10, 13, 0.78);
+}
+
 .logo {
   font-family: var(--font-serif);
   font-size: clamp(1.7rem, 2vw, 2.2rem);
@@ -115,12 +246,90 @@ header {
   gap: 0.9rem;
 }
 
+.persona-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.persona-reset-btn {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--text);
+  padding: 0.72rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.persona-reset-btn:hover,
+.persona-reset-btn:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
 .view-toggle {
   display: inline-flex;
   padding: 0.3rem;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.55);
+}
+
+body[data-persona='cruella'] .view-toggle,
+body[data-persona='cruella'] .pill,
+body[data-persona='cruella'] .persona-chip,
+body[data-persona='cruella'] .persona-reset-btn {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body[data-persona='cruella'] .logo,
+body[data-persona='cruella'] .logo span,
+body[data-persona='cruella'] .persona-chip,
+body[data-persona='cruella'] .persona-reset-btn,
+body[data-persona='cruella'] .pill,
+body[data-persona='cruella'] .plbl,
+body[data-persona='cruella'] .phase-lbl,
+body[data-persona='cruella'] .conf-row label,
+body[data-persona='cruella'] .conf-val,
+body[data-persona='cruella'] .notag,
+body[data-persona='cruella'] .tconf,
+body[data-persona='cruella'] .ccat,
+body[data-persona='cruella'] .cwhy,
+body[data-persona='cruella'] .cname,
+body[data-persona='cruella'] .ph,
+body[data-persona='cruella'] .chat-welcome-sub,
+body[data-persona='cruella'] .rec-modal-header p,
+body[data-persona='cruella'] .rec-modal-category,
+body[data-persona='cruella'] .rec-modal-price,
+body[data-persona='cruella'] .rec-detail-category,
+body[data-persona='cruella'] .rec-detail-label,
+body[data-persona='cruella'] .rec-detail-row span,
+body[data-persona='cruella'] .modal-close,
+body[data-persona='cruella'] .recs-scroll-btn,
+body[data-persona='cruella'] .abtn-retry,
+body[data-persona='cruella'] .idle-sub,
+body[data-persona='cruella'] .idle-icon {
+  color: #f8ece8;
+}
+
+body[data-persona='cruella'] .chat-welcome-title,
+body[data-persona='cruella'] .idle-title,
+body[data-persona='cruella'] .rec-detail-copy h3,
+body[data-persona='cruella'] .rec-detail-row strong {
+  color: #fff7f5;
 }
 
 .vtab {
@@ -145,6 +354,11 @@ header {
   background: var(--text);
   color: #fff;
   box-shadow: var(--shadow-sm);
+}
+
+body[data-persona='cruella'] .vtab.active {
+  background: linear-gradient(135deg, #6f131a, #b42a32);
+  color: #fff6f5;
 }
 
 .pill {
@@ -206,6 +420,11 @@ main {
     radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(244, 236, 221, 0.65) 55%, rgba(236, 228, 213, 0.95) 100%);
   border-right: 1px solid var(--border);
   overflow: hidden;
+}
+
+body[data-persona='cruella'] .cam {
+  background:
+    radial-gradient(circle at top, rgba(121, 20, 28, 0.34), rgba(33, 14, 18, 0.82) 58%, rgba(17, 8, 11, 0.98) 100%);
 }
 
 #feed {
@@ -303,6 +522,10 @@ main {
   transition: opacity 0.2s ease;
 }
 
+body[data-persona='cruella'] .idle {
+  background: linear-gradient(180deg, rgba(38, 14, 18, 0.5), rgba(28, 13, 16, 0.72));
+}
+
 .idle.hidden {
   opacity: 0;
   pointer-events: none;
@@ -329,6 +552,10 @@ main {
   flex-direction: column;
   background: rgba(255, 253, 248, 0.78);
   border-right: 1px solid var(--border);
+}
+
+body[data-persona='cruella'] .chat-view {
+  background: rgba(26, 12, 15, 0.9);
 }
 
 .chat-view.active {
@@ -367,6 +594,10 @@ main {
   font-size: 1.4rem;
 }
 
+body[data-persona='cruella'] .chat-welcome-icon {
+  background: rgba(197, 66, 66, 0.16);
+}
+
 .chat-welcome-title {
   font-family: var(--font-serif);
   font-size: 1.8rem;
@@ -392,11 +623,20 @@ main {
   border-bottom-right-radius: 0.4rem;
 }
 
+body[data-persona='cruella'] .chat-bubble.user {
+  background: linear-gradient(135deg, #7d171d, #c13740);
+  color: #fff7f6;
+}
+
 .chat-bubble.bot {
   align-self: flex-start;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--border);
   border-bottom-left-radius: 0.4rem;
+}
+
+body[data-persona='cruella'] .chat-bubble.bot {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .typing-dots {
@@ -429,6 +669,10 @@ main {
   background: rgba(255, 253, 248, 0.96);
 }
 
+body[data-persona='cruella'] .chat-input-bar {
+  background: rgba(20, 10, 13, 0.96);
+}
+
 .chat-input {
   flex: 1;
   min-width: 0;
@@ -437,6 +681,15 @@ main {
   background: rgba(255, 255, 255, 0.9);
   padding: 0.9rem 1rem;
   color: var(--text);
+}
+
+body[data-persona='cruella'] .chat-input,
+body[data-persona='cruella'] .mic-select {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+body[data-persona='cruella'] .chat-input::placeholder {
+  color: #d9bfbb;
 }
 
 .chat-input::placeholder {
@@ -467,9 +720,18 @@ main {
   color: #fff;
 }
 
+body[data-persona='cruella'] .send-btn {
+  background: linear-gradient(135deg, #7d171d, #c13740);
+  color: #fff7f6;
+}
+
 .mic-btn {
   background: rgba(255, 255, 255, 0.82);
   color: var(--text);
+}
+
+body[data-persona='cruella'] .mic-btn {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .mic-btn.listening {
@@ -498,6 +760,10 @@ main {
   display: flex;
   flex-direction: column;
   background: rgba(255, 253, 248, 0.7);
+}
+
+body[data-persona='cruella'] .panel {
+  background: rgba(26, 12, 15, 0.9);
 }
 
 .psec,
@@ -570,6 +836,11 @@ main {
   box-shadow: var(--shadow-sm);
 }
 
+body[data-persona='cruella'] #btn-start {
+  background: linear-gradient(135deg, #7d171d, #c13740);
+  color: #fff7f6;
+}
+
 #btn-start:hover,
 .abtn:hover {
   transform: translateY(-1px);
@@ -602,10 +873,19 @@ main {
   border: 1px solid var(--border);
 }
 
+body[data-persona='cruella'] .abtn-retry {
+  background: rgba(255, 255, 255, 0.05);
+}
+
 .abtn-more {
   background: rgba(159, 123, 73, 0.12);
   color: var(--accent-strong);
   border: 1px solid rgba(159, 123, 73, 0.15);
+}
+
+body[data-persona='cruella'] .abtn-more {
+  background: rgba(197, 66, 66, 0.14);
+  border-color: rgba(255, 113, 113, 0.18);
 }
 
 .conf-row {
@@ -646,6 +926,10 @@ main {
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   font-size: 0.82rem;
+}
+
+body[data-persona='cruella'] .tag {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .tdot {
@@ -693,6 +977,14 @@ main {
   justify-content: center;
 }
 
+body[data-persona='cruella'] .recs-scroll-btn {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body[data-persona='cruella'] .recs-scroll-btn:disabled {
+  color: rgba(248, 236, 232, 0.45);
+}
+
 .recs-scroll-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -727,6 +1019,11 @@ main {
   background: rgba(255, 255, 255, 0.48);
 }
 
+body[data-persona='cruella'] .recs-list > .ph {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 113, 113, 0.18);
+}
+
 .recs-list::-webkit-scrollbar {
   display: none;
 }
@@ -743,6 +1040,10 @@ main {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
+body[data-persona='cruella'] .card {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .rec-card-button {
   width: min(18rem, 100%);
   min-width: min(18rem, 100%);
@@ -753,6 +1054,11 @@ main {
 
 .card:hover {
   border-color: rgba(159, 123, 73, 0.25);
+}
+
+body[data-persona='cruella'] .card:hover,
+body[data-persona='cruella'] .rec-modal-item.active {
+  border-color: rgba(255, 113, 113, 0.42);
 }
 
 .card picture {
@@ -780,6 +1086,12 @@ main {
   border: 1px solid var(--border);
   color: var(--accent-strong);
   font-size: 1.35rem;
+}
+
+body[data-persona='cruella'] .cthumb,
+body[data-persona='cruella'] .rec-modal-thumb,
+body[data-persona='cruella'] .rec-detail-icon {
+  background: linear-gradient(180deg, #3b1a1e, #271115);
 }
 
 .cinfo {
@@ -840,6 +1152,10 @@ main {
   backdrop-filter: blur(8px);
 }
 
+body[data-persona='cruella'] .modal-backdrop {
+  background: rgba(3, 0, 0, 0.76);
+}
+
 .rec-modal {
   position: absolute;
   left: 50%;
@@ -856,6 +1172,10 @@ main {
   overflow: hidden;
 }
 
+body[data-persona='cruella'] .rec-modal {
+  background: linear-gradient(180deg, rgba(27, 12, 15, 0.98), rgba(20, 9, 12, 0.98));
+}
+
 .modal-close {
   position: absolute;
   top: 1rem;
@@ -866,6 +1186,10 @@ main {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.9);
   color: var(--text);
+}
+
+body[data-persona='cruella'] .modal-close {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .rec-modal-header {
@@ -911,6 +1235,11 @@ main {
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.76);
   text-align: left;
+}
+
+body[data-persona='cruella'] .rec-modal-item,
+body[data-persona='cruella'] .rec-detail-row {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .rec-modal-item.active {
@@ -1022,6 +1351,12 @@ main {
   box-shadow: inset 0 0 0 1px rgba(159, 123, 73, 0.14);
 }
 
+body[data-persona='cruella'] .rec-detail-row.match {
+  background: linear-gradient(180deg, rgba(197, 66, 66, 0.18), rgba(255, 255, 255, 0.06));
+  border-color: rgba(255, 113, 113, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(255, 113, 113, 0.14);
+}
+
 .rec-detail-row.match span,
 .rec-detail-row.match strong {
   color: var(--accent-strong);
@@ -1041,6 +1376,10 @@ main {
   font-style: normal;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+body[data-persona='cruella'] .match-badge {
+  background: rgba(197, 66, 66, 0.18);
 }
 
 .rec-detail-row strong {
@@ -1143,6 +1482,14 @@ main {
 }
 
 @media (max-width: 640px) {
+  .landing-screen {
+    padding: 1rem;
+  }
+
+  .landing-options {
+    grid-template-columns: 1fr;
+  }
+
   header {
     padding: 1rem;
   }
@@ -1156,8 +1503,13 @@ main {
     align-items: stretch;
   }
 
+  .persona-chip {
+    justify-content: center;
+  }
+
   .view-toggle,
-  .pill {
+  .pill,
+  .persona-reset-btn {
     width: 100%;
     justify-content: center;
   }

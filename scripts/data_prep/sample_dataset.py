@@ -1,5 +1,5 @@
 """
-scripts/sample_dataset.py
+scripts/data_prep/sample_dataset.py
 ─────────────────────────
 Stratified sampler for DeepFashion2.
 Produces equal N images per clothing category without data manipulation.
@@ -8,7 +8,7 @@ Uses the pre-built CSV dataframes instead of reading individual JSON files,
 reducing annotation parsing from minutes to seconds.
 
 Usage:
-    python scripts/sample_dataset.py \
+    python scripts/data_prep/sample_dataset.py \
         --data_dir  data/raw \
         --csv_path  data/raw/DeepFashion2/img_info_dataframes/train.csv \
         --output_dir data/sample_dataset \
