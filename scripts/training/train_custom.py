@@ -86,6 +86,8 @@ def parse_args():
                    help="Model scale: s (~11.7M), m (~25M), l (~43M)")
     p.add_argument("--mosaic", action="store_true",
                    help="Enable mosaic augmentation (4 images combined per tile)")
+    p.add_argument("--gr", type=float, default=0.0,
+                   help="Objectness target ratio: 0.0 = binary targets, 1.0 = pure IoU soft targets")
     return p.parse_args()
 
 
@@ -115,17 +117,25 @@ def save_checkpoint(model, optimizer, scheduler, epoch, metrics, path: Path,
 
 
 class ModelEMA:
-    """Exponential Moving Average of model weights."""
+    """Exponential Moving Average of model weights with decay warmup."""
     def __init__(self, model, decay=0.9999):
         self.ema = copy.deepcopy(model).eval()
         self.decay = decay
+        self.updates = 0
         for p in self.ema.parameters():
             p.requires_grad_(False)
 
     @torch.no_grad()
     def update(self, model):
-        for ema_p, model_p in zip(self.ema.parameters(), model.parameters()):
-            ema_p.data.mul_(self.decay).add_(model_p.data, alpha=1 - self.decay)
+        self.updates += 1
+        # Warmup: ramp decay from ~0.1 to target over first ~2000 steps (YOLOv5 approach)
+        d = min(self.decay, (1 + self.updates) / (10 + self.updates))
+        # EMA all floating-point state: weights + BN running_mean/var
+        # (skips integer buffers like num_batches_tracked)
+        msd = model.state_dict()
+        for k, v in self.ema.state_dict().items():
+            if v.is_floating_point():
+                v.mul_(d).add_(msd[k], alpha=1 - d)
 
     def state_dict(self):
         return self.ema.state_dict()
@@ -261,6 +271,7 @@ def main():
         lambda_cls=args.lambda_cls,
         img_size=args.imgsz,
         multi_cell=args.multi_cell,
+        gr=args.gr,
     )
 
     # ── Optimiser ─────────────────────────────────────────────────────────
