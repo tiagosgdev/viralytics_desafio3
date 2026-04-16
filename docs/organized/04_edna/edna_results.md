@@ -34,8 +34,8 @@ Source: DeepFashion2 dataset, processed from raw annotations into YOLO format.
 
 Two classes were excluded due to insufficient sample counts for stratified balancing:
 
-- `sling` â€” only 2,307 items (not enough for representative train/val/test)
-- `short_sleeve_outwear` â€” only 685 items
+- `sling` - only 2,307 items (not enough for representative train/val/test)
+- `short_sleeve_outwear` - only 685 items
 
 ### Sampling Strategy
 
@@ -84,7 +84,7 @@ Split ratio: **70% train / 15% val / 15% test** (split by image, not annotation)
 ## Notes on Dataset Design Decisions
 
 - Stratified occlusion sampling ensures the model trains on realistic distributions of
-  visibility â€” not just fully visible garments.
+  visibility - not just fully visible garments.
 - The 70/15/15 split is by image (not instance), so a single multi-garment image is
   entirely in one split, preventing label leakage.
 - sling_dress has the fewest raw images (7,641), which is why it is the cap value for
@@ -100,7 +100,7 @@ The balanced dataset experiments follow at the end.
 
 ## Sample Dataset Experiments (Tests 1â€“5)
 
-### Test 1 â€” YOLOv8L | batch=16 | ~1.311 hours
+### Test 1 - YOLOv8L | batch=16 | ~1.311 hours
 
 | Category | Images | Instances | Precision | Recall | mAP@50 | mAP@50:95 |
 |----------|--------|-----------|-----------|--------|--------|-----------|
@@ -141,7 +141,7 @@ The balanced dataset experiments follow at the end.
 
 ---
 
-### Test 2 â€” YOLOv8L | batch=26 | ~1.316 hours
+### Test 2 - YOLOv8L | batch=26 | ~1.316 hours
 
 | Category | Images | Instances | Precision | Recall | mAP@50 | mAP@50:95 |
 |----------|--------|-----------|-----------|--------|--------|-----------|
@@ -166,9 +166,9 @@ The balanced dataset experiments follow at the end.
 
 ---
 
-### Test 3 â€” YOLO-World Zero-Shot | yolov8s-worldv2 | conf=0.15
+### Test 3 - YOLO-World Zero-Shot | yolov8s-worldv2 | conf=0.15
 
-No fine-tuning â€” open-vocabulary detection via CLIP text embeddings.
+No fine-tuning - open-vocabulary detection via CLIP text embeddings.
 
 | Category | Images | Instances | Precision | Recall | mAP@50 |
 |----------|--------|-----------|-----------|--------|--------|
@@ -190,13 +190,13 @@ No fine-tuning â€” open-vocabulary detection via CLIP text embeddings.
 **Why zero-shot performs poorly on fashion-specific classes:**
 YOLO-World uses CLIP embeddings for open-vocabulary detection. CLIP was trained on
 generic internet text. Common English terms like "trousers" and "shorts" have rich,
-well-defined embeddings â€” those classes score best. Fashion-specific compound terms
+well-defined embeddings - those classes score best. Fashion-specific compound terms
 like "sling", "vest_dress", and "long_sleeve_outwear" appear rarely or ambiguously in
 CLIP's training corpus, resulting in near-zero mAP for those categories.
 
 ---
 
-### Test 4 â€” YOLOv8L | batch=16 | ~1.227 hours (reproducibility check)
+### Test 4 - YOLOv8L | batch=16 | ~1.227 hours (reproducibility check)
 
 Full per-class results (same setup as Test 1, different run):
 
@@ -223,7 +223,7 @@ Full per-class results (same setup as Test 1, different run):
 
 ---
 
-### Test 5 â€” YOLOv8L | batch=16 | No Pretrained Weights | ~1.203 hours
+### Test 5 - YOLOv8L | batch=16 | No Pretrained Weights | ~1.203 hours
 
 Trained from scratch using `--no-pretrained` (random weight initialization, no COCO pretraining).
 
@@ -307,13 +307,13 @@ identical (~1.2h either way).
 | Best class | trousers (0.9149) | trousers (0.5351) |
 | Worst class | short_sleeve_dress (0.5886) | sling (0.0027) |
 
-Zero-shot mAP@50 (0.146) vs fine-tuned (0.767) â€” an expected ~5x gap. YOLO-World is
+Zero-shot mAP@50 (0.146) vs fine-tuned (0.767) - an expected ~5x gap. YOLO-World is
 useful as a no-training baseline or for rapid prototyping, but fine-tuning is essential
 for production-quality fashion detection.
 
 ---
 
-### Test 6 â€” FashionNet (original) vs YOLOv8L
+### Test 6 - FashionNet (original) vs YOLOv8L
 
 Side-by-side evaluation on the same 970-image validation set
 (see `03_fashionnet_experiments/fashionnet_results.md` for FashionNet context).
@@ -345,18 +345,18 @@ Side-by-side evaluation on the same 970-image validation set
 | sling_dress | 0.0028 | 0.7245 |
 
 The gap (0.768 mAP@50) is primarily explained by:
-- **Broken loss weights** in FashionNet (lambda_box=0.05 â€” critical bug; see `fashionnet_pipeline_fixes.md`)
+- **Broken loss weights** in FashionNet (lambda_box=0.05 - critical bug; see `fashionnet_pipeline_fixes.md`)
 - **COCO pretraining** in YOLOv8L vs from-scratch FashionNet
-- **Architectural maturity** â€” YOLOv8 benefits from years of design optimization
+- **Architectural maturity** - YOLOv8 benefits from years of design optimization
 
 FashionNet is faster (3.2ms vs 10.9ms, ~3x) and uses fewer parameters,
 but its detection quality before the pipeline fixes was near zero.
 
 ---
 
-## Balanced Dataset â€” YOLOv8M Baseline
+## Balanced Dataset - YOLOv8M Baseline
 
-### Test â€” YOLOv8M | 50 epochs | batch=16 | ~7.429 hours
+### Test - YOLOv8M | 50 epochs | batch=16 | ~7.429 hours
 
 Evaluated on full balanced val split (11,186 images, 11 classes).
 
@@ -380,8 +380,8 @@ Evaluated on full balanced val split (11,186 images, 11 classes).
 **Summary:** mAP@50 0.5750 | mAP@50:95 0.5207 | Precision 0.5581 | Recall 0.6778
 
 **Why lower than sample dataset results:**
-- Smaller model â€” YOLOv8M (25.8M params) vs YOLOv8L (43.6M params)
-- Harder validation set â€” 11,186 images vs 970, more uniform class distribution
+- Smaller model - YOLOv8M (25.8M params) vs YOLOv8L (43.6M params)
+- Harder validation set - 11,186 images vs 970, more uniform class distribution
 - short_sleeve_top (0.293) and trousers (0.400) dropped the most, likely due to
   increased visual confusion in the balanced, full-scale set
 
@@ -483,7 +483,7 @@ each detection head).
 All experiments use the balanced dataset with `--max_samples 2000 --epochs 20` for fast
 iteration (~10 minutes each). Each adds one change over the previous to isolate individual impact.
 
-### Experiment 1 â€” Baseline (fixed num_classes only)
+### Experiment 1 - Baseline (fixed num_classes only)
 
 Establishes baseline with correct num_classes but **old** lambda_box=0.05 (broken loss).
 
@@ -496,7 +496,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 2 â€” Loss Weights Fix
+### Experiment 2 - Loss Weights Fix
 
 Tests the impact of correcting box loss weight (0.05 â†’ 5.0). Expected to be the single biggest improvement.
 
@@ -509,7 +509,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 3 â€” Loss Fix + Multi-Cell Assignment
+### Experiment 3 - Loss Fix + Multi-Cell Assignment
 
 Tests whether more positive training signal improves convergence.
 
@@ -522,7 +522,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 4 â€” Loss Fix + Multi-Cell + Medium Augmentation
+### Experiment 4 - Loss Fix + Multi-Cell + Medium Augmentation
 
 Tests scale/rotation augmentation impact.
 
@@ -535,7 +535,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 5 â€” Loss Fix + Multi-Cell + Heavy Augmentation
+### Experiment 5 - Loss Fix + Multi-Cell + Heavy Augmentation
 
 Tests if heavy augmentation helps or hurts with limited samples.
 
@@ -548,7 +548,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 6 â€” Best Config + Lower LR + Cosine Schedule
+### Experiment 6 - Best Config + Lower LR + Cosine Schedule
 
 Tests if slower LR with cosine annealing improves convergence stability.
 
@@ -562,7 +562,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 7 â€” Best Config + Dropout
+### Experiment 7 - Best Config + Dropout
 
 Tests regularisation impact on a from-scratch model.
 
@@ -576,7 +576,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 8 â€” Grayscale Only
+### Experiment 8 - Grayscale Only
 
 Tests if removing colour forces the model to learn shape/silhouette features, improving
 discrimination between same-colour clothing types.
@@ -590,7 +590,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 9 â€” Grayscale + Best Config
+### Experiment 9 - Grayscale + Best Config
 
 Combines grayscale with the best configuration from Experiments 3â€“7.
 
@@ -603,7 +603,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 10 â€” Best Config + Warmup
+### Experiment 10 - Best Config + Warmup
 
 Tests if a 3-epoch linear warmup stabilises early training. Requires `--cos_lr` since
 OneCycleLR has its own built-in warmup.
@@ -618,7 +618,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 11 â€” SGD + Momentum
+### Experiment 11 - SGD + Momentum
 
 Tests if SGD with momentum (standard for YOLO detectors) converges better than AdamW.
 SGD is generally slower per epoch but can reach a better final mAP.
@@ -633,7 +633,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 12 â€” Best Config + EMA
+### Experiment 12 - Best Config + EMA
 
 Tests if Exponential Moving Average of model weights improves validation mAP. EMA smooths
 noisy weight updates and is used by default in YOLOv5/v8.
@@ -729,13 +729,13 @@ actual mAP evaluation.
 | exp12_ema | + ema | 20 | 16.4741 | 1.9745 | 0.0066 | 0.9177 |
 
 *exp1 val_loss uses lambda_box=0.05, so the box component is weighted ~100Ã— less than all
-other experiments â€” not directly comparable.
+other experiments - not directly comparable.
 
 ---
 
 ## Ablation Analysis
 
-### Winner: exp4 â€” multi_cell + medium augmentation (val_loss 8.88)
+### Winner: exp4 - multi_cell + medium augmentation (val_loss 8.88)
 
 The combination of multi-cell GT assignment and medium augmentation (scale Â±30%, rotation Â±10%,
 translate Â±10%) gave the best result. It also achieved the lowest raw box loss (1.7275), meaning
@@ -745,25 +745,25 @@ the model is learning to regress boxes more accurately than any other configurat
 
 Removing colour (exp8: 12.62, exp9: 12.82) consistently degraded results. Colour information
 is discriminative for this task. The hypothesis that same-colour confusion was a major problem
-was not supported â€” colour helps more than it hurts overall.
+was not supported - colour helps more than it hurts overall.
 
 ### Heavy augmentation hurts
 
 exp5 (heavy, 12.35) is worse than exp4 (medium, 8.88). With only 2,000 samples at 20 epochs,
-the aggressive scale/rotation/noise in heavy mode is too destructive â€” the model cannot learn
+the aggressive scale/rotation/noise in heavy mode is too destructive - the model cannot learn
 fast enough to handle the increased variance.
 
 ### Smaller changes had no clear benefit
 
-- **Dropout** (exp7: 10.38 vs exp4: 8.88) â€” no benefit, possibly slightly harmful
-- **Warmup** (exp10: 10.38) â€” no measurable improvement at 20 epochs
-- **SGD** (exp11: 12.33) â€” worse than AdamW at this epoch count; SGD typically needs more epochs
-- **EMA** (exp12: 16.47) â€” misleading result; with decay=0.9999 the EMA model requires
+- **Dropout** (exp7: 10.38 vs exp4: 8.88) - no benefit, possibly slightly harmful
+- **Warmup** (exp10: 10.38) - no measurable improvement at 20 epochs
+- **SGD** (exp11: 12.33) - worse than AdamW at this epoch count; SGD typically needs more epochs
+- **EMA** (exp12: 16.47) - misleading result; with decay=0.9999 the EMA model requires
   thousands of batches to warm up and is not effective at 20 epochs
 
 ---
 
-## Full Training â€” fashionnet_balanced_v1
+## Full Training - fashionnet_balanced_v1
 
 ### Setup
 
@@ -821,7 +821,7 @@ the balanced dataset accounts for essentially all of this gain.
 
 ## Considerations for fashionnet_v2
 
-### Option A â€” Merge Similar Classes
+### Option A - Merge Similar Classes
 
 Reduces problem difficulty and increases examples per class. Proposed merges:
 
@@ -837,7 +837,7 @@ Reduces problem difficulty and increases examples per class. Proposed merges:
 
 Reduces from 11 â†’ 7 classes. Requires rebuilding labels and dataset.yaml.
 
-### Option B â€” Add Images to Weakest Classes
+### Option B - Add Images to Weakest Classes
 
 Only useful if classes are visually distinct but underrepresented. Less likely to help for
 short/long sleeve top confusion since the model already has 52K images to learn from.
@@ -881,13 +881,13 @@ The training history shows the model has plateaued, not been cut short:
 
 | Epoch | val_loss | Delta |
 |-------|----------|-------|
-| 86 | 2.8322 | â€” |
+| 86 | 2.8322 | - |
 | 90 | 2.8232 | -0.0090 |
 | 95 | 2.8147 | -0.0085 |
 | 100 | 2.8128 | -0.0019 |
 
 Only 0.0194 drop over the last 15 epochs. The run used `OneCycleLR` (default when `--cos_lr`
-is off), which decayed LR to near-zero well before epoch 100 â€” the model ran its final
+is off), which decayed LR to near-zero well before epoch 100 - the model ran its final
 epochs at effectively zero LR. More epochs on the same config will not meaningfully improve
 results. Switching to `CosineAnnealingLR` (`--cos_lr`) keeps a meaningful LR floor throughout.
 
@@ -897,7 +897,7 @@ results. Switching to `CosineAnnealingLR` (`--cos_lr`) keeps a meaningful LR flo
 
 ### 1. Threshold Tuning (no retraining, ~10 min)
 
-Precision (0.3467) is significantly lower than recall (0.4920) â€” the model over-predicts.
+Precision (0.3467) is significantly lower than recall (0.4920) - the model over-predicts.
 Default conf=0.25 may not be optimal for F1. The threshold sweep (already done, see
 `edna_results.md`) shows conf=0.30 peaks F1 at 0.4123 (+0.0055 over default) at the cost
 of -0.022 mAP. The gain is small but available at zero training cost.
@@ -916,17 +916,17 @@ done
 ### 2. Retrain with Cosine LR + EMA + warmup + lambda_obj (~35h)
 
 edna_1.2m used `OneCycleLR` (the default when `--cos_lr` is off), which decayed LR to
-near-zero well before epoch 100 â€” the model ran its final epochs at effectively zero LR.
-Switching to `CosineAnnealingLR` (`--cos_lr`) keeps a meaningful LR floor throughout â€”
+near-zero well before epoch 100 - the model ran its final epochs at effectively zero LR.
+Switching to `CosineAnnealingLR` (`--cos_lr`) keeps a meaningful LR floor throughout -
 this is the real fix for the plateau.
 
 **New flags:**
-- **`--cos_lr`**: CosineAnnealingLR with `eta_min = lr * 0.01` â€” avoids the near-zero LR
+- **`--cos_lr`**: CosineAnnealingLR with `eta_min = lr * 0.01` - avoids the near-zero LR
   stall that caused the plateau
 - **`--ema`**: was ineffective at 20 epochs (~125 batches). At 100 epochs Ã— 3,263
   batches/epoch = ~326K steps, EMA is fully warmed up and should improve mAP at zero cost
 - **`--warmup_epochs 3`**: stabilises early training when starting from CosineAnnealingLR
-  at full LR â€” zero cost
+  at full LR - zero cost
 - **`--lambda_obj 1.5`**: confusion matrix shows clothing absorbed into background (missed
   detections, not misclassification). Raising objectness weight pushes the model to fire
   more aggressively on potential objects
@@ -969,12 +969,12 @@ against the background.
 | long_sleeve_top | 0.1448 | 2nd weakest |
 
 **Caveat:** the dataset is already balanced (~4-5K images per class). Adding images only
-for weak classes creates imbalance. Keep the gap reasonable â€” adding ~1-2K images per
+for weak classes creates imbalance. Keep the gap reasonable - adding ~1-2K images per
 weak class should help without significantly hurting the stronger classes.
 
 ---
 
-### 4. Class Merge â€” ~~short_sleeve_top + long_sleeve_top â†’ top~~ (not recommended)
+### 4. Class Merge - ~~short_sleeve_top + long_sleeve_top â†’ top~~ (not recommended)
 
 Previously considered but **ruled out after confusion matrix analysis**. Class merging
 only helps when the model confuses one class for another (off-diagonal confusion matrix).
@@ -983,11 +983,11 @@ misclassified as each other. Merging would not fix missed detections.
 
 ---
 
-### 5. Larger Model Scale â€” scale=l (~50h+)
+### 5. Larger Model Scale - scale=l (~50h+)
 
 edna_1.2m uses model_scale=m (~34M params). The FashionNet family also supports scale=l
 (~63M params). Given YOLOv8M (25.8M) outperforms edna_1.2m by ~0.31 mAP despite fewer
-parameters, model capacity alone is not the bottleneck â€” but testing scale=l is worth
+parameters, model capacity alone is not the bottleneck - but testing scale=l is worth
 doing before concluding on architecture limits.
 
 ```bash
@@ -1015,7 +1015,7 @@ required addressing architectural/methodology gaps. These code changes are likel
 
 All changes below are **implemented and included** in the proposed training command above.
 
-### C1. IoU-aware Objectness Targets â€” done (loss.py)
+### C1. IoU-aware Objectness Targets - done (loss.py)
 
 `build_targets` previously set `obj_mask = 1.0` for all positive cells regardless of
 localization quality. Now uses the CIoU between prediction and GT box as a soft objectness
@@ -1025,13 +1025,13 @@ quality. This is how YOLOv5/v8 train objectness.
 **Impact:** highest single improvement available without architectural changes.
 Directly addresses the precision/recall imbalance.
 
-### C2. Mosaic Augmentation â€” done (dataset.py, `--mosaic` flag)
+### C2. Mosaic Augmentation - done (dataset.py, `--mosaic` flag)
 
 4-image mosaic combines training images into one tile: 4Ã— batch diversity, varied object
 scales and positions, implicit small-object training. Uses letterbox resizing to preserve
 aspect ratio (matching the non-mosaic pipeline). Enabled with `--mosaic` flag.
 
-**Impact:** matches YOLOv8 training methodology â€” one of the primary reasons YOLOv8
+**Impact:** matches YOLOv8 training methodology - one of the primary reasons YOLOv8
 trains so effectively.
 
 ### Other Code-Level Fixes Applied
@@ -1046,7 +1046,7 @@ trains so effectively.
 
 | Issue | Location | Fix | Impact |
 |-------|----------|-----|--------|
-| Focal loss gamma=1.5 | loss.py | Try gamma=1.0 to reduce suppression of easy negatives | Small â€” may help recall more than lambda_obj increase |
+| Focal loss gamma=1.5 | loss.py | Try gamma=1.0 to reduce suppression of easy negatives | Small - may help recall more than lambda_obj increase |
 
 ---
 
@@ -1056,11 +1056,11 @@ trains so effectively.
 |----------|-----------|--------|---------------|
 | 1 | Threshold tuning | Done | +0.005 F1 |
 | 2 | C1: IoU-aware objectness targets | Done | Largest available gain |
-| 3 | C2: Mosaic augmentation | Done | High â€” matches YOLOv8 methodology |
+| 3 | C2: Mosaic augmentation | Done | High - matches YOLOv8 methodology |
 | 4 | Retrain with all flags + code changes | **Ready to run** | +0.02â€“0.05 mAP (flags) + C1/C2 gains |
 | 5 | Add images to weak classes | Not started | Directly addresses missed detections |
 | 6 | Scale=l retrain | Not started | Architecture ceiling test |
-| ~~7~~ | ~~Class merge~~ | â€” | Ruled out â€” wrong failure mode |
+| ~~7~~ | ~~Class merge~~ | - | Ruled out - wrong failure mode |
 
 # edna Training Results
 
@@ -1098,7 +1098,7 @@ All evaluations use `scripts/evaluation/evaluate_custom.py`, val split (11,186 i
 | F1 | 0.3594 | **0.3597** |
 | Best val_loss | 3.0591 | **2.6953** |
 | Best epoch | 87 | 63 |
-| Key flags | aug=medium, multi_cell | â€” |
+| Key flags | aug=medium, multi_cell | - |
 
 **Per-class breakdown:**
 
@@ -1122,7 +1122,7 @@ fashionnet_balanced_v1 edges out on mAP@50 and recall, while edna_1m wins on F1 
 
 The aug=medium + multi_cell flags in fashionnet_balanced_v1 provide marginal but real benefit
 for mAP. The significantly lower val_loss of edna_1m_balanced_100 does not translate into
-better detection metrics â€” **val_loss and mAP@50 are not tightly coupled at this training scale.**
+better detection metrics - **val_loss and mAP@50 are not tightly coupled at this training scale.**
 
 ---
 
@@ -1168,37 +1168,129 @@ better detection metrics â€” **val_loss and mAP@50 are not tightly coupled 
 
 ---
 
-## 3-Way Comparison
+## edna_1.3m
 
-| Experiment | mAP@50 | F1 | Best val_loss | Best epoch | Key flags |
-|------------|--------|----|---------------|------------|-----------|
-| fashionnet_balanced_v1 | 0.1930 | 0.3594 | 3.0591 | 87 | aug=medium, multi_cell |
-| edna_1m_balanced_100 | 0.1869 | 0.3597 | 2.6953 | 63 | â€” |
-| **edna_1.2m** | **0.2600** | **0.4068** | 2.8128 | 100 | aug=medium, multi_cell |
+### Setup
 
-**edna_1.2m is a clear improvement over both previous versions:**
-- +0.0670 mAP@50 over fashionnet_balanced_v1
-- +0.0731 mAP@50 over edna_1m_balanced_100
-- F1 improves by +0.0474 vs both
+| Parameter | Value |
+|-----------|-------|
+| Config | aug=medium, multi_cell=true, model_scale=m (~34.07M params), optimizer=adamw |
+| New vs 1.2m | cos_lr, warmup_epochs=3, EMA, mosaic, gr=0.5, IoU-aware objectness, label smoothing, corrected beta1/weight_decay/focal_bce |
+| Dataset | full balanced_dataset, 52,199 training images |
+| Epochs | 100 |
+| Batch | 16 |
+| Device | CUDA, 16GB VRAM |
+| Training time | 2,499m 39s (~41h 39m) |
+| Best val_loss | 2.9268 |
+| Weights | `models/weights/edna_1.3m/best.pt` |
 
-Recall jumps to 0.4920 (highest of the three), suggesting the medium-scale model with
-aug=medium + multi_cell is better at finding objects. Precision (0.3467) remains the
-lowest, meaning more false positives compared to the other two models.
+### edna_1.3m Overall Metrics
 
-Biggest class-level gains over edna_1m_balanced_100:
-- long_sleeve_outwear: +0.0872 AP
-- skirt: +0.0907 AP
-- vest: +0.0789 AP
-- shorts: +0.0509 AP
-- short_sleeve_top: +0.0407 AP
-- long_sleeve_top: +0.0739 AP
+| Metric | Value |
+|--------|-------|
+| mAP@50 | 0.2033 |
+| Precision | **0.4328** |
+| Recall | 0.3574 |
+| F1 | 0.3915 |
 
-Scaling the model (scale=m vs default scale=s in edna_1m) combined with re-enabling
-aug=medium and multi_cell accounts for the gain â€” consistent with the original exp4 finding.
+### edna_1.3m Per-class Breakdown
+
+| Category | AP | Precision | Recall | F1 |
+|----------|----|-----------|--------|----|
+| short_sleeve_top | 0.0883 | 0.258 | 0.278 | 0.268 |
+| long_sleeve_top | 0.0881 | 0.380 | 0.204 | 0.266 |
+| long_sleeve_outwear | 0.3075 | 0.615 | 0.421 | 0.500 |
+| vest | 0.3074 | 0.463 | 0.482 | 0.472 |
+| shorts | 0.3332 | 0.475 | 0.549 | 0.509 |
+| trousers | 0.1500 | 0.367 | 0.382 | 0.374 |
+| skirt | 0.1662 | 0.319 | 0.410 | 0.358 |
+| short_sleeve_dress | 0.2075 | 0.520 | 0.317 | 0.394 |
+| long_sleeve_dress | 0.1765 | 0.485 | 0.291 | 0.364 |
+| vest_dress | 0.1936 | 0.501 | 0.335 | 0.402 |
+| sling_dress | 0.2185 | 0.715 | 0.241 | 0.361 |
+
+### edna_1.3m Analysis
+
+edna_1.3m did **not improve mAP@50 over edna_1.2m** (0.2033 vs 0.2600, -0.0567). However,
+**precision increased significantly** (0.4328 vs 0.3467, +0.0861) while recall dropped
+(0.3574 vs 0.4920, -0.1346). The model is now more conservative — it fires less but is
+more accurate when it does.
+
+This shift is consistent with the IoU-aware objectness targets (gr=0.5): the model learned
+to suppress low-confidence detections, directly improving precision. However, the stricter
+confidence threshold resulted in more missed detections (lower recall), which hurt mAP@50.
+
+The mAP regression likely has two causes:
+1. The obj loss equilibrium (~0.006) reflects the model learning to be selective — at the
+   default conf=0.25 threshold, fewer cells fire, reducing recall disproportionately.
+2. Mosaic augmentation and the corrected focal_bce alpha changed the training distribution
+   significantly, requiring a different confidence threshold for optimal F1/mAP tradeoff.
+
+**Threshold tuning is the recommended next step** — the precision/recall shift suggests
+conf=0.15–0.20 may recover mAP while maintaining the precision gain.
 
 ---
 
-## Threshold Tuning â€” edna_1.2m
+## 4-Way Comparison
+
+| Experiment | mAP@50 | Precision | Recall | F1 | Best val_loss | Key changes |
+|------------|--------|-----------|--------|----|---------------|-------------|
+| fashionnet_balanced_v1 | 0.1930 | 0.3356 | 0.3870 | 0.3594 | 3.0591 | aug=medium, multi_cell |
+| edna_1m_balanced_100 | 0.1869 | 0.3479 | 0.3723 | 0.3597 | 2.6953 | — |
+| **edna_1.2m** | **0.2600** | 0.3467 | **0.4920** | **0.4068** | 2.8128 | scale=m |
+| edna_1.3m | 0.2033 | **0.4328** | 0.3574 | 0.3915 | 2.9268 | cos_lr, EMA, mosaic, IoU-obj, gr=0.5 |
+
+**edna_1.2m remains the best overall** on mAP@50 and F1. edna_1.3m achieves the highest
+precision of any edna run but at the cost of recall. The architectural improvements
+(IoU-aware objectness, mosaic, corrected focal_bce) shifted the precision/recall tradeoff
+rather than lifting it — likely recoverable with threshold tuning.
+
+Biggest class-level changes edna_1.3m vs edna_1.2m:
+- shorts: +0.0042 AP (slight gain)
+- long_sleeve_outwear: -0.0659 AP (regression)
+- trousers: -0.0963 AP (largest regression)
+- sling_dress: -0.0943 AP (large regression, but precision 0.715 — highly selective)
+
+---
+
+## Test Set Evaluation — edna_1.2m vs edna_1.3m
+
+Evaluated both models on the held-out test set (11,186 images, 11 classes) at conf=0.25.
+
+### Overall
+
+| Model | mAP@50 | Precision | Recall | F1 | Detections |
+|-------|--------|-----------|--------|----|------------|
+| **edna_1.2m** | **0.2676** | 0.3456 | **0.4995** | **0.4085** | 17,540 |
+| edna_1.3m | 0.2100 | **0.4360** | 0.3672 | 0.3987 | 10,221 |
+
+The ranking from validation holds on the test set. edna_1.2m leads on mAP@50 (+0.0576)
+and recall; edna_1.3m leads on precision (+0.0904). The precision/recall shift from
+IoU-aware objectness generalises — edna_1.3m fires ~42% fewer detections (10,221 vs 17,540).
+
+### Per-class
+
+| Category | edna_1.2m AP | edna_1.3m AP | Δ AP |
+|----------|-------------|-------------|------|
+| short_sleeve_top | 0.1270 | 0.0773 | -0.0497 |
+| long_sleeve_top | 0.1254 | 0.0838 | -0.0416 |
+| long_sleeve_outwear | 0.4186 | 0.3577 | -0.0609 |
+| vest | 0.3532 | 0.3255 | -0.0277 |
+| shorts | 0.3232 | 0.3178 | -0.0054 |
+| trousers | 0.2810 | 0.1783 | -0.1027 |
+| skirt | 0.1963 | 0.1654 | -0.0309 |
+| short_sleeve_dress | 0.2853 | 0.2333 | -0.0520 |
+| long_sleeve_dress | 0.2257 | 0.1672 | -0.0585 |
+| vest_dress | 0.2656 | 0.1860 | -0.0796 |
+| sling_dress | 0.3421 | 0.2177 | -0.1244 |
+
+edna_1.3m regresses on every class. The largest drops are sling_dress (-0.1244),
+trousers (-0.1027), and vest_dress (-0.0796) — all high-recall classes in edna_1.2m
+that are hurt most by the conservative objectness targets.
+
+---
+
+## Threshold Tuning - edna_1.2m
 
 Evaluated at conf=0.25 through 0.45 to test whether the precision/recall imbalance
 could be corrected without retraining.
@@ -1212,7 +1304,7 @@ could be corrected without retraining.
 | 0.45 | 0.1366 | 0.5349 | 0.2125 | 0.3042 | 4,825 |
 
 **Conclusion:** The F1 peak is at conf=0.30 (+0.0055 over default), but at the cost of
--0.022 mAP@50. The gain is negligible. The low precision is structural â€” the model
+-0.022 mAP@50. The gain is negligible. The low precision is structural - the model
 genuinely produces false positives that no threshold can eliminate without a proportional
 recall loss. Default conf=0.25 remains optimal for mAP; conf=0.30 is marginally better
 for F1 only.
@@ -1227,11 +1319,11 @@ For reference, YOLOv8M trained on the same balanced_dataset reached **0.575 mAP@
 Key differences explaining the gap:
 1. YOLOv8M uses COCO-pretrained weights; edna family trains from scratch
 2. YOLOv8 architecture is years more optimized (CSPDarknet, PANet, decoupled head)
-3. YOLOv8M has ~25.8M params vs edna_1.2m at ~34M â€” more capacity alone does not close the gap
+3. YOLOv8M has ~25.8M params vs edna_1.2m at ~34M - more capacity alone does not close the gap
 
 ---
 
-## Planned Next Runs â€” YOLOv8 on Balanced Dataset
+## Planned Next Runs - YOLOv8 on Balanced Dataset
 
 All previous YOLOv8 weights were trained on `data/sample_dataset`, making them invalid
 as fair comparisons against edna models. These three runs retrain YOLO on the same
@@ -1417,12 +1509,12 @@ Postprocessing must be the exact inverse of this encoding.
 
 ### Logic Flow
 
-1. **Load checkpoint** â€” read `config.json` from weights dir for `num_classes` and `model_scale`,
+1. **Load checkpoint** - read `config.json` from weights dir for `num_classes` and `model_scale`,
    instantiate `FashionNet(num_classes, scale)`, load `state_dict`
-2. **Collect per-image GT** â€” iterate `FashionDataset` with val transforms (deterministic)
+2. **Collect per-image GT** - iterate `FashionDataset` with val transforms (deterministic)
    to get post-augmentation boxes and classes per image
-3. **Batched inference** â€” `model.eval()`, `torch.no_grad()`, call `postprocess()` on predictions
-4. **Match predictions to GT** â€” IoU-based matching:
+3. **Batched inference** - `model.eval()`, `torch.no_grad()`, call `postprocess()` on predictions
+4. **Match predictions to GT** - IoU-based matching:
    - For **mAP/F1**: same-class matching only (standard)
    - For **confusion matrix**: class-agnostic matching by best IoU, then record `cm[gt_class, pred_class]`
 5. **Compute metrics:**
@@ -1533,7 +1625,7 @@ python scripts/evaluation/visualize_results.py \
   --output_dir results/plots/comparison
 ```
 
-# Viralytics / FashionSense â€” Codebase Explanation
+# Viralytics / FashionSense - Codebase Explanation
 
 ## Quick Start
 
@@ -1554,8 +1646,8 @@ This is a small research system combining:
 5. Supporting experimentation code for dataset preparation, training, evaluation, and comparison
 
 The repository mixes two AI paradigms:
-- **Perception** â€” detect what a user is wearing from an image or camera stream
-- **Retrieval / reasoning** â€” search or recommend products based on semantic or symbolic rules
+- **Perception** - detect what a user is wearing from an image or camera stream
+- **Retrieval / reasoning** - search or recommend products based on semantic or symbolic rules
 
 ---
 
@@ -1687,7 +1779,7 @@ Main abstraction boundary. Contains category definitions, visualization colors,
 `Detection` and `DetectionResult` dataclasses, `BaseDetector`, and `FashionDetector`.
 
 **Why the dataclasses matter:** `Detection` and `DetectionResult` decouple the rest of the
-codebase from Ultralytics' raw output types. This is an adapter-pattern design â€” alternative
+codebase from Ultralytics' raw output types. This is an adapter-pattern design - alternative
 backends can be swapped in more easily and testing becomes simpler.
 
 **`FashionDetector`** wraps the Ultralytics `YOLO` object: loads weights, stores inference
@@ -1756,10 +1848,10 @@ blocks (`CSPBlock`), multi-scale backbone (`FashionBackbone`), FPN-like neck (`F
 anchor-free detection head (`DetectionHead`), `FashionNet`, and `TinyFashionNet`.
 
 Architecture is clearly inspired by YOLO-family designs: downsampling backbone, multi-scale
-features (P3, P4, P5), top-down fusion, per-scale prediction heads. This is intentional â€”
+features (P3, P4, P5), top-down fusion, per-scale prediction heads. This is intentional -
 adapting successful detector ideas rather than reinventing from zero.
 
-**`TinyFashionNet`** exists for pipeline verification rather than accuracy â€” a cheap model
+**`TinyFashionNet`** exists for pipeline verification rather than accuracy - a cheap model
 to validate code paths quickly on CPU before committing to long GPU runs.
 
 ### 6.3 `src/custom_model/loss.py`
@@ -1809,7 +1901,7 @@ route. The chat UI is a stub or unfinished integration point.
 
 ### 8.2 `frontend/static/js/app.js`
 
-A second frontend implementation for the scan flow. Appears auxiliary or legacy â€” `index.html`
+A second frontend implementation for the scan flow. Appears auxiliary or legacy - `index.html`
 already contains a full inline script. The source of truth for the active scan flow is the
 inline JS in `index.html`.
 
@@ -1838,7 +1930,7 @@ This is the "engineering baseline" against which the custom detector is compared
 
 Training loop for FashionNet. Exposes all experiment knobs: configurable loss weights,
 augmentation intensity, multi-cell assignment, dropout, optimizer choice, grayscale ablations,
-EMA, warmup, and scheduler variants. Not just a train loop â€” an experiment harness.
+EMA, warmup, and scheduler variants. Not just a train loop - an experiment harness.
 
 ### 9.4 `scripts/evaluation/evaluate.py`
 
@@ -1870,7 +1962,7 @@ justification for design decisions.
 
 Validates basic detector behavior: return type, inference time, output shape, detection list
 structure, bounding-box validity, confidence range. Sanity tests run on blank frames and base
-weights â€” validates pipeline integrity more than semantic accuracy.
+weights - validates pipeline integrity more than semantic accuracy.
 
 ### 10.2 `tests/test_recommendations.py`
 
@@ -1891,12 +1983,12 @@ generator configuration, and retrieval vocabulary source simultaneously.
 ### 11.2 `LNIAGIA/DB/SQLLite/DBManager.py`
 
 Manages a simple SQLite database for item records. SQLite provides structured relational
-storage, while Qdrant provides semantic retrieval â€” a common hybrid pattern.
+storage, while Qdrant provides semantic retrieval - a common hybrid pattern.
 
 ### 11.3 `LNIAGIA/DB/vector/nl_mappings.py`
 
 Maps compact symbolic values to richer natural-language descriptions and synonyms. Embedding
-models work better with semantically rich text â€” `short_sleeve_top` becomes something like
+models work better with semantically rich text - `short_sleeve_top` becomes something like
 "short sleeve top (t-shirt, tee)".
 
 ### 11.4 `LNIAGIA/DB/vector/description_generator.py`
@@ -1910,7 +2002,7 @@ The retrieval engine. Handles embedding model loading (`BAAI/bge-base-en-v1.5`),
 collection management, vector indexing, plain semantic search, and filtered semantic search.
 
 Uses `BGE_QUERY_PREFIX` because BGE models are optimized when queries include an instruction
-prefix â€” a retrieval-quality optimization grounded in model-specific best practice.
+prefix - a retrieval-quality optimization grounded in model-specific best practice.
 
 **Strict vs non-strict search:** strict mode converts constraints into hard metadata filters;
 non-strict mode retrieves broadly and penalizes mismatches. Real users often want negotiable
@@ -1945,7 +2037,7 @@ matches, runs filtered search, prints results.
 ### Known Weaknesses
 
 - `frontend/index.html` expects `/api/chat`, but the backend does not expose that route
-- Frontend logic is split between inline JS and `app.js` â€” ambiguity about the source of truth
+- Frontend logic is split between inline JS and `app.js` - ambiguity about the source of truth
 - Some Pydantic schemas are weaker than needed (nested models not fully enforced)
 - `LNIAGIA/DB/models.py` is overloaded: schema + generator + business rules + search config
 - Some conceptual claims (recommendation embeddings, soft include boosting) are broader than
@@ -1988,7 +2080,7 @@ For a new researcher or evaluator:
 
 This order moves from deployed behavior â†’ training methodology â†’ secondary retrieval research.
 
-# Viralytics / FashionSense â€” Documentation Index
+# Viralytics / FashionSense - Documentation Index
 
 This directory contains the organized documentation for the FashionSense ML project:
 a clothing detection system built on the DeepFashion2 dataset.
@@ -1999,8 +2091,8 @@ a clothing detection system built on the DeepFashion2 dataset.
 
 The project investigates clothing detection from two angles:
 
-1. **YOLOv8 fine-tuning** â€” strong engineering baseline using pretrained COCO weights
-2. **FashionNet (custom)** â€” from-scratch detector research, progressively improved through
+1. **YOLOv8 fine-tuning** - strong engineering baseline using pretrained COCO weights
+2. **FashionNet (custom)** - from-scratch detector research, progressively improved through
    a series of ablation experiments (FashionNet â†’ fashionnet_balanced_v1 â†’ edna family)
 
 Both tracks are evaluated on the same balanced 11-class dataset derived from DeepFashion2.
@@ -2048,14 +2140,14 @@ docs/organized/
 
 For a new reader, the recommended order is:
 
-1. `01_dataset/dataset_analysis.md` â€” understand the data
-2. `02_yolo_experiments/yolo_results.md` â€” understand the strong baseline
-3. `03_fashionnet_experiments/fashionnet_pipeline_fixes.md` â€” understand why FashionNet was poor and what was fixed
-4. `03_fashionnet_experiments/fashionnet_results.md` â€” see the fix impact
-5. `04_edna/edna_results.md` â€” see the scaled-up model results
-6. `04_edna/edna_next_steps.md` â€” understand what to do next
-7. `05_evaluation/evaluation_methodology.md` â€” understand the evaluation infrastructure
-8. `06_codebase/codebase_explanation.md` â€” understand the full system architecture
+1. `01_dataset/dataset_analysis.md` - understand the data
+2. `02_yolo_experiments/yolo_results.md` - understand the strong baseline
+3. `03_fashionnet_experiments/fashionnet_pipeline_fixes.md` - understand why FashionNet was poor and what was fixed
+4. `03_fashionnet_experiments/fashionnet_results.md` - see the fix impact
+5. `04_edna/edna_results.md` - see the scaled-up model results
+6. `04_edna/edna_next_steps.md` - understand what to do next
+7. `05_evaluation/evaluation_methodology.md` - understand the evaluation infrastructure
+8. `06_codebase/codebase_explanation.md` - understand the full system architecture
 
 # Datset Analysis
 
@@ -3418,12 +3510,12 @@ The training history shows the model has plateaued, not been cut short:
 
 | Epoch | val_loss | Î” |
 |-------|----------|---|
-| 86 | 2.8322 | â€” |
+| 86 | 2.8322 | - |
 | 90 | 2.8232 | -0.0090 |
 | 95 | 2.8147 | -0.0085 |
 | 100 | 2.8128 | -0.0019 |
 
-Only 0.0194 drop over the last 15 epochs. The run used `OneCycleLR` (default when `--cos_lr` is off), which decayed LR to near-zero well before epoch 100 â€” the model ran its final epochs at effectively zero LR. More epochs on the same config will not meaningfully improve results. Switching to `CosineAnnealingLR` (`--cos_lr`) keeps a meaningful LR floor throughout.
+Only 0.0194 drop over the last 15 epochs. The run used `OneCycleLR` (default when `--cos_lr` is off), which decayed LR to near-zero well before epoch 100 - the model ran its final epochs at effectively zero LR. More epochs on the same config will not meaningfully improve results. Switching to `CosineAnnealingLR` (`--cos_lr`) keeps a meaningful LR floor throughout.
 
 ---
 
@@ -3431,7 +3523,7 @@ Only 0.0194 drop over the last 15 epochs. The run used `OneCycleLR` (default whe
 
 ### 1. Threshold Tuning (no retraining, quick)
 
-Precision (0.3467) is significantly lower than recall (0.4920) â€” the model over-predicts. The default conf=0.25 may not be optimal. Evaluate at several thresholds to find the F1 sweet spot:
+Precision (0.3467) is significantly lower than recall (0.4920) - the model over-predicts. The default conf=0.25 may not be optimal. Evaluate at several thresholds to find the F1 sweet spot:
 
 ```bash
 for conf in 0.30 0.35 0.40 0.45; do
@@ -3449,14 +3541,14 @@ Expected outcome: higher conf threshold will trade some recall for precision, li
 ### 2. Retrain with Cosine LR + EMA + warmup + lambda_obj
 
 edna_1.2m used `OneCycleLR` (the default when `--cos_lr` is off), which decayed LR to
-near-zero well before epoch 100 â€” the model ran its final epochs at effectively zero LR.
-Switching to `CosineAnnealingLR` (`--cos_lr`) keeps a meaningful LR floor throughout â€”
+near-zero well before epoch 100 - the model ran its final epochs at effectively zero LR.
+Switching to `CosineAnnealingLR` (`--cos_lr`) keeps a meaningful LR floor throughout -
 this is the real fix for the plateau.
 
 **New flags:**
-- **`--cos_lr`**: CosineAnnealingLR with `eta_min = lr * 0.01` â€” avoids the near-zero stall
+- **`--cos_lr`**: CosineAnnealingLR with `eta_min = lr * 0.01` - avoids the near-zero stall
 - **`--ema`**: ineffective at 20 epochs but fully valid at ~326K steps (100 epochs Ã— 3,263 batches)
-- **`--warmup_epochs 3`**: stabilises early training at full LR â€” zero cost
+- **`--warmup_epochs 3`**: stabilises early training at full LR - zero cost
 - **`--lambda_obj 1.5`**: confusion matrix shows clothing absorbed into background (missed
   detections, not misclassification). Raising objectness weight pushes the model to fire
   more aggressively on potential objects
@@ -3498,12 +3590,12 @@ classes gives the model more signal to learn to detect those items against the b
 | long_sleeve_top | 0.1448 |
 
 **Caveat:** the dataset is already balanced (~4-5K images per class). Adding images only
-for weak classes creates imbalance. Keep the gap reasonable â€” ~1-2K extra images per
+for weak classes creates imbalance. Keep the gap reasonable - ~1-2K extra images per
 weak class should help without significantly hurting the stronger classes.
 
 ---
 
-### 4. Class Merge â€” ruled out
+### 4. Class Merge - ruled out
 
 ~~short_sleeve_top + long_sleeve_top â†’ top~~
 
@@ -3518,7 +3610,7 @@ misclassified between classes. Merging would not fix missed detections.
 
 edna_1.2m uses model_scale=m (~34M params). The FashionNet family also supports scale=l
 (~63M params). Given YOLOv8M (25.8M params) outperforms edna_1.2m by ~0.31 mAP despite
-fewer parameters, model capacity alone is not the bottleneck â€” but scale=l is worth
+fewer parameters, model capacity alone is not the bottleneck - but scale=l is worth
 testing before concluding on architecture limits.
 
 ```bash
@@ -3546,14 +3638,14 @@ required addressing architectural/methodology gaps. These code changes are likel
 
 All changes below are **implemented and included** in the proposed training command above.
 
-### C1. IoU-aware Objectness Targets â€” done (loss.py)
+### C1. IoU-aware Objectness Targets - done (loss.py)
 
 `build_targets` previously set `obj_mask = 1.0` for all positive cells regardless of
 localization quality. Now uses CIoU between prediction and GT box as a soft objectness
 target (`obj_mask = iou.detach().clamp(0)`), so confidence correlates with localization
 quality. This is how YOLOv5/v8 train objectness.
 
-### C2. Mosaic Augmentation â€” done (dataset.py, `--mosaic` flag)
+### C2. Mosaic Augmentation - done (dataset.py, `--mosaic` flag)
 
 4-image mosaic combines training images into one tile: 4x batch diversity, varied object
 scales and positions, implicit small-object training. Uses letterbox resizing to preserve
@@ -3585,7 +3677,7 @@ aspect ratio. Enabled with `--mosaic` flag.
 | 4 | Retrain with all flags + code changes | **Ready to run** | +0.02â€“0.05 mAP (flags) + C1/C2 gains |
 | 5 | Add images to weak classes | Not started | Addresses missed detections |
 | 6 | Scale=l retrain | Not started | Architecture ceiling test |
-| ~~7~~ | ~~Class merge~~ | â€” | Ruled out â€” wrong failure mode |
+| ~~7~~ | ~~Class merge~~ | - | Ruled out - wrong failure mode |
 
 # FashionNet Evaluation & Visualization Plan
 
@@ -3593,9 +3685,9 @@ aspect ratio. Enabled with `--mosaic` flag.
 
 FashionNet currently only tracks `val_loss` during training. To properly compare experiments and analyze results, we need:
 
-1. **Post-processing** â€” decode raw grid outputs into usable detection boxes
-2. **Evaluation** â€” compute mAP@50, F1, precision, recall, confusion matrix
-3. **Visualization** â€” generate plots for analysis
+1. **Post-processing** - decode raw grid outputs into usable detection boxes
+2. **Evaluation** - compute mAP@50, F1, precision, recall, confusion matrix
+3. **Visualization** - generate plots for analysis
 
 These must be implemented in order (each depends on the previous).
 
@@ -3606,7 +3698,7 @@ These must be implemented in order (each depends on the previous).
 | Metric | Why |
 |--------|-----|
 | **mAP@50** | Standard detection metric. A prediction is correct only if class is right AND IoU >= 0.5. |
-| **F1** (per-class + macro) | Harmonic mean of precision and recall. Better single summary than precision alone â€” precision can look great if the model only predicts few high-confidence boxes. |
+| **F1** (per-class + macro) | Harmonic mean of precision and recall. Better single summary than precision alone - precision can look great if the model only predicts few high-confidence boxes. |
 | **Precision** | Of all predicted boxes, how many were correct? |
 | **Recall** | Of all ground-truth objects, how many were found? |
 | **Per-class AP** | Identifies which clothing categories are weak. |
@@ -3683,10 +3775,10 @@ Top-level convenience: `decode_predictions` â†’ `nms` per image â†’ so
 
 ### Logic Flow
 
-1. **Load checkpoint** â€” read `config.json` from weights dir for `num_classes` and `model_scale`, instantiate `FashionNet(num_classes, scale)`, load `state_dict`
-2. **Collect per-image GT** â€” iterate `FashionDataset` with val transforms (deterministic) to get post-augmentation boxes and classes per image
-3. **Batched inference** â€” `model.eval()`, `torch.no_grad()`, call `postprocess()` on predictions
-4. **Match predictions to GT** â€” IoU-based matching:
+1. **Load checkpoint** - read `config.json` from weights dir for `num_classes` and `model_scale`, instantiate `FashionNet(num_classes, scale)`, load `state_dict`
+2. **Collect per-image GT** - iterate `FashionDataset` with val transforms (deterministic) to get post-augmentation boxes and classes per image
+3. **Batched inference** - `model.eval()`, `torch.no_grad()`, call `postprocess()` on predictions
+4. **Match predictions to GT** - IoU-based matching:
    - For **mAP/F1**: same-class matching only (standard)
    - For **confusion matrix**: class-agnostic matching by best IoU, then record `cm[gt_class, pred_class]`
 5. **Compute metrics:**
@@ -3889,7 +3981,7 @@ The model has no regularisation beyond weight decay. For a from-scratch model wi
 | `--num_classes` | auto | Read from dataset.yaml, or override |
 | `--dropout` | 0.0 | Dropout rate in detection heads |
 | `--cos_lr` | off | Use CosineAnnealingLR instead of OneCycleLR |
-| `--grayscale` | off | Convert images to grayscale (3ch repeated) â€” tests shape vs colour |
+| `--grayscale` | off | Convert images to grayscale (3ch repeated) - tests shape vs colour |
 | `--warmup_epochs` | 0 | Linear LR warmup before main schedule (0 = disabled) |
 | `--optimizer` | adamw | Optimizer: `adamw` or `sgd` (momentum=0.937, nesterov) |
 | `--ema` | off | Exponential Moving Average of weights (used for val/inference) |
@@ -3900,7 +3992,7 @@ The model has no regularisation beyond weight decay. For a from-scratch model wi
 
 All experiments use the balanced dataset with `--max_samples 2000 --epochs 20` for fast iteration. Compare results using `val_loss` from `history.json` (see How to Compare below). Each adds one change over the previous to isolate individual impact.
 
-### Experiment 1 â€” Baseline (fixed num_classes only)
+### Experiment 1 - Baseline (fixed num_classes only)
 
 Purpose: Establish baseline with correct num_classes but **old** lambda_box=0.05.
 
@@ -3913,7 +4005,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 2 â€” Loss Weights Fix
+### Experiment 2 - Loss Weights Fix
 
 Purpose: Test impact of corrected box loss weight (0.05 â†’ 5.0). **Expected biggest single improvement.**
 
@@ -3926,7 +4018,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 3 â€” Loss Fix + Multi-Cell Assignment
+### Experiment 3 - Loss Fix + Multi-Cell Assignment
 
 Purpose: Test if more positive training signal improves convergence.
 
@@ -3939,7 +4031,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 4 â€” Loss Fix + Multi-Cell + Medium Augmentation
+### Experiment 4 - Loss Fix + Multi-Cell + Medium Augmentation
 
 Purpose: Test scale/rotation augmentation impact.
 
@@ -3952,7 +4044,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 5 â€” Loss Fix + Multi-Cell + Heavy Augmentation
+### Experiment 5 - Loss Fix + Multi-Cell + Heavy Augmentation
 
 Purpose: Test if heavy augmentation helps or hurts with limited samples.
 
@@ -3965,7 +4057,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 6 â€” Best Config + Lower LR + Cosine Schedule
+### Experiment 6 - Best Config + Lower LR + Cosine Schedule
 
 Purpose: Test if slower learning rate with cosine annealing improves convergence stability.
 
@@ -3979,7 +4071,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 7 â€” Best Config + Dropout
+### Experiment 7 - Best Config + Dropout
 
 Purpose: Test regularisation impact on a from-scratch model.
 
@@ -3993,7 +4085,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 8 â€” Grayscale Only
+### Experiment 8 - Grayscale Only
 
 Purpose: Test if removing colour information forces the model to learn shape/silhouette features, improving discrimination between same-colour clothing types. Uses the loss fix from Exp 2 but no other changes, to isolate the grayscale effect.
 
@@ -4006,7 +4098,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 9 â€” Grayscale + Best Config
+### Experiment 9 - Grayscale + Best Config
 
 Purpose: Combine grayscale with the best configuration from Experiments 3-7. Replace flags below with whichever config won.
 
@@ -4019,7 +4111,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 10 â€” Best Config + Warmup
+### Experiment 10 - Best Config + Warmup
 
 Purpose: Test if a 3-epoch linear warmup stabilises early training for a from-scratch model. Requires `--cos_lr` since OneCycleLR has its own built-in warmup.
 
@@ -4033,7 +4125,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 11 â€” SGD + Momentum
+### Experiment 11 - SGD + Momentum
 
 Purpose: Test if SGD with momentum (standard for YOLO detectors) converges better than AdamW for from-scratch CNN training. SGD is generally slower per epoch but can reach a better final mAP.
 
@@ -4047,7 +4139,7 @@ python scripts/training/train_custom.py \
 
 ---
 
-### Experiment 12 â€” Best Config + EMA
+### Experiment 12 - Best Config + EMA
 
 Purpose: Test if Exponential Moving Average of model weights improves validation mAP at effectively zero training cost. EMA smooths out noisy weight updates and is used by default in YOLOv5/v8.
 
@@ -4072,10 +4164,10 @@ The most important metric for diagnosing the same-colour confusion issue. Instea
 ### Precision / Recall
 - **Precision**: of all boxes the model predicted, what fraction were correct? High precision = few false positives.
 - **Recall**: of all ground-truth objects, what fraction did the model find? High recall = few missed detections.
-- There is always a trade-off â€” a model that predicts everything has high recall but low precision.
+- There is always a trade-off - a model that predicts everything has high recall but low precision.
 
 ### val_loss (proxy only)
-Useful for quick iteration during training. Lower is generally better, but val_loss can disagree with mAP â€” a model with lower loss can still produce worse mAP if its confidence thresholds are poorly calibrated. Use val_loss to compare runs quickly, but confirm the winner with actual mAP evaluation.
+Useful for quick iteration during training. Lower is generally better, but val_loss can disagree with mAP - a model with lower loss can still produce worse mAP if its confidence thresholds are poorly calibrated. Use val_loss to compare runs quickly, but confirm the winner with actual mAP evaluation.
 
 ---
 
@@ -4137,36 +4229,36 @@ Then evaluate against YOLOv8 with `scripts/evaluation/compare_models.py`.
 | exp11_sgd | optimizer=sgd, lr=0.01 | 20 | 12.3335 | 2.3561 | 0.0071 | 0.8860 |
 | exp12_ema | + ema | 20 | 16.4741 | 1.9745 | 0.0066 | 0.9177 |
 
-*exp1 val_loss uses lambda_box=0.05 so the box component is weighted ~100x less than all other experiments â€” not directly comparable.
+*exp1 val_loss uses lambda_box=0.05 so the box component is weighted ~100x less than all other experiments - not directly comparable.
 
 ---
 
 ## Analysis
 
-### Winner: exp4 â€” multi_cell + medium augmentation (val_loss 8.88)
+### Winner: exp4 - multi_cell + medium augmentation (val_loss 8.88)
 
 The combination of multi-cell GT assignment and medium augmentation (scale Â±30%, rotation Â±10%, translate Â±10%) gave the best result. This also had the lowest raw box loss (1.7275), meaning the model is learning to regress boxes more accurately.
 
 ### Grayscale hurts
 
-Removing colour (exp8: 12.62, exp9: 12.82) consistently made results worse. Colour information is discriminative for this task â€” clothing categories differ in shape but colour also provides useful signal. The original hypothesis was that same-colour confusion was a problem, but the data suggests colour helps more than it hurts overall.
+Removing colour (exp8: 12.62, exp9: 12.82) consistently made results worse. Colour information is discriminative for this task - clothing categories differ in shape but colour also provides useful signal. The original hypothesis was that same-colour confusion was a problem, but the data suggests colour helps more than it hurts overall.
 
 ### Heavy augmentation hurts
 
-exp5 (heavy) at 12.35 is worse than exp4 (medium) at 8.88. With only 2000 samples at 20 epochs, the aggressive scale/rotation/noise in heavy mode is too destructive â€” the model can't learn fast enough to handle the increased variance.
+exp5 (heavy) at 12.35 is worse than exp4 (medium) at 8.88. With only 2000 samples at 20 epochs, the aggressive scale/rotation/noise in heavy mode is too destructive - the model can't learn fast enough to handle the increased variance.
 
 ### Smaller changes had no clear benefit
 
-- **Dropout** (exp7: 10.38 vs exp4: 8.88) â€” no benefit, possibly slightly harmful
-- **Warmup** (exp10: 10.38) â€” no measurable improvement at 20 epochs
-- **SGD** (exp11: 12.33) â€” worse than AdamW at this epoch count; SGD needs more epochs
-- **EMA** (exp12: 16.47) â€” misleading result; with decay=0.9999 the EMA model needs thousands of batches to warm up. Not useful at 20 epochs.
+- **Dropout** (exp7: 10.38 vs exp4: 8.88) - no benefit, possibly slightly harmful
+- **Warmup** (exp10: 10.38) - no measurable improvement at 20 epochs
+- **SGD** (exp11: 12.33) - worse than AdamW at this epoch count; SGD needs more epochs
+- **EMA** (exp12: 16.47) - misleading result; with decay=0.9999 the EMA model needs thousands of batches to warm up. Not useful at 20 epochs.
 
 ---
 
 ---
 
-## Full Training â€” fashionnet_balanced_v1
+## Full Training - fashionnet_balanced_v1
 
 ### Setup
 
@@ -4218,7 +4310,7 @@ fashionnet_balanced_v1 outperforms the original by **0.2750 mAP@50** across all 
 
 ## Considerations for v2
 
-### Option A â€” Merge similar classes
+### Option A - Merge similar classes
 Reduces problem difficulty and increases examples per class. Proposed merges:
 
 | New class | Merged from |
@@ -4233,7 +4325,7 @@ Reduces problem difficulty and increases examples per class. Proposed merges:
 
 Reduces from 11 â†’ 7 classes. Requires rebuilding labels and dataset.yaml.
 
-### Option B â€” Add images to weakest classes
+### Option B - Add images to weakest classes
 Only useful if classes are visually distinct but underrepresented. Less likely to help for short/long sleeve top confusion since the model already has 52K images to learn from.
 
 ---
@@ -4254,7 +4346,7 @@ python scripts/evaluation/compare_models.py \
 -------  EDNA --------
 ----------------------
 
-## Full Training â€” edna_1m_balanced_100
+## Full Training - edna_1m_balanced_100
 
 ### Setup
 
@@ -4267,7 +4359,7 @@ python scripts/evaluation/compare_models.py \
 - Best val_loss: 2.6953 (epoch 63)
 - Weights: `models/weights/edna_1m_balanced_100/best.pt`
 
-### Evaluation â€” fashionnet_balanced_v1 vs edna_1m_balanced_100
+### Evaluation - fashionnet_balanced_v1 vs edna_1m_balanced_100
 
 Evaluated with `scripts/evaluation/evaluate_custom.py`, val split (11,186 images), conf=0.25, NMS IoU=0.45.
 
@@ -4279,7 +4371,7 @@ Evaluated with `scripts/evaluation/evaluate_custom.py`, val split (11,186 images
 | F1 | 0.3594 | **0.3597** |
 | Best val_loss | 3.0591 | **2.6953** |
 | Best epoch | 87 | 63 |
-| Key flags | aug=medium, multi_cell | â€” |
+| Key flags | aug=medium, multi_cell | - |
 
 ### Per-class breakdown
 
@@ -4308,7 +4400,7 @@ The aug=medium + multi_cell flags in fashionnet_balanced_v1 appear to provide ma
 
 ---
 
-## Full Training â€” edna_1.2m
+## Full Training - edna_1.2m
 
 ### Setup
 
@@ -4321,7 +4413,7 @@ The aug=medium + multi_cell flags in fashionnet_balanced_v1 appear to provide ma
 - Best val_loss: 2.8128 (epoch 100)
 - Weights: `models/weights/edna_1.2m/best.pt`
 
-### Evaluation â€” edna_1.2m
+### Evaluation - edna_1.2m
 
 Evaluated with `scripts/evaluation/evaluate_custom.py`, val split (11,186 images), conf=0.25, NMS IoU=0.45.
 
@@ -4356,18 +4448,18 @@ Evaluated with `scripts/evaluation/evaluate_custom.py`, val split (11,186 images
 | Experiment | mAP@50 | F1 | Best val_loss | Best epoch | Key flags |
 |------------|--------|----|---------------|------------|-----------|
 | fashionnet_balanced_v1 | 0.1930 | 0.3594 | 3.0591 | 87 | aug=medium, multi_cell |
-| edna_1m_balanced_100 | 0.1869 | 0.3597 | 2.6953 | 63 | â€” |
+| edna_1m_balanced_100 | 0.1869 | 0.3597 | 2.6953 | 63 | - |
 | **edna_1.2m** | **0.2600** | **0.4068** | 2.8128 | 100 | aug=medium, multi_cell |
 
 ### Analysis
 
-edna_1.2m is a clear improvement over both previous versions: +0.0670 mAP@50 over fashionnet_balanced_v1 and +0.0731 over edna_1m_balanced_100. F1 also improves meaningfully (+0.0474 vs both). Recall jumps to 0.4920 â€” the highest of the three â€” suggesting the medium-scale model with aug=medium + multi_cell is better at finding objects, though precision (0.3467) remains the lowest, meaning more false positives.
+edna_1.2m is a clear improvement over both previous versions: +0.0670 mAP@50 over fashionnet_balanced_v1 and +0.0731 over edna_1m_balanced_100. F1 also improves meaningfully (+0.0474 vs both). Recall jumps to 0.4920 - the highest of the three - suggesting the medium-scale model with aug=medium + multi_cell is better at finding objects, though precision (0.3467) remains the lowest, meaning more false positives.
 
 The biggest gains over edna_1m_balanced_100 are on long_sleeve_outwear (+0.0872 AP), vest (+0.0789 AP), shorts (+0.0509 AP), and skirt (+0.0907 AP). The weak classes (short_sleeve_top, long_sleeve_top) see meaningful improvement too (+0.0407 and +0.0739 AP respectively) but remain the bottom two.
 
-Scaling the model (m vs default s scale in edna_1m) combined with re-enabling aug=medium and multi_cell accounts for the gain â€” consistent with the original exp4 finding that these flags help.
+Scaling the model (m vs default s scale in edna_1m) combined with re-enabling aug=medium and multi_cell accounts for the gain - consistent with the original exp4 finding that these flags help.
 
-### Threshold Tuning â€” edna_1.2m
+### Threshold Tuning - edna_1.2m
 
 Evaluated at conf=0.25 through 0.45 to test whether the precision/recall imbalance could be fixed without retraining.
 
@@ -4379,11 +4471,11 @@ Evaluated at conf=0.25 through 0.45 to test whether the precision/recall imbalan
 | 0.40 | 0.1766 | 0.4835 | 0.2925 | 0.3645 | 7,349 |
 | 0.45 | 0.1366 | 0.5349 | 0.2125 | 0.3042 | 4,825 |
 
-The F1 peak is at conf=0.30 (+0.0055 over default), but at the cost of -0.022 mAP@50. The gain is negligible. The low precision is structural â€” the model genuinely produces false positives that no threshold can eliminate without a proportional recall loss. Default conf=0.25 remains optimal for mAP; conf=0.30 is marginally better for F1 only.
+The F1 peak is at conf=0.30 (+0.0055 over default), but at the cost of -0.022 mAP@50. The gain is negligible. The low precision is structural - the model genuinely produces false positives that no threshold can eliminate without a proportional recall loss. Default conf=0.25 remains optimal for mAP; conf=0.30 is marginally better for F1 only.
 
 ---
 
-## Next â€” YOLOv8 Baseline on balanced_dataset
+## Next - YOLOv8 Baseline on balanced_dataset
 
 All previous YOLOv8 weights were trained on `data/sample_dataset`, making them invalid as a comparison against edna_1.2m. These three runs retrain YOLO on the same balanced_dataset used by all FashionNet models.
 
@@ -4473,7 +4565,7 @@ If you want the best starting points:
 
 # Tests for the models trained on the balanced_dataset
 
-## Test 1 â€” YOLOv8M | 50 epochs | batch=16 | ~7.429 hours
+## Test 1 - YOLOv8M | 50 epochs | batch=16 | ~7.429 hours
 
 | Category | Images | Instances | Precision | Recall | mAP@50 | mAP@50:95 |
 |----------|--------|-----------|-----------|--------|--------|-----------|
@@ -4519,9 +4611,9 @@ If you want the best starting points:
 
 Results are significantly worse than the sample_dataset tests (mAP@50: 0.575 vs 0.767). Key factors:
 
-- **Smaller model** â€” YOLOv8M (25.8M params) vs YOLOv8L (43.6M params) used in previous tests
-- **Harder validation set** â€” 11,186 val images vs 970, with a more uniform class distribution
-- **Weakest classes** â€” short_sleeve_top (0.293) and trousers (0.400) dropped the most, likely due to higher visual confusion in the balanced set
+- **Smaller model** - YOLOv8M (25.8M params) vs YOLOv8L (43.6M params) used in previous tests
+- **Harder validation set** - 11,186 val images vs 970, with a more uniform class distribution
+- **Weakest classes** - short_sleeve_top (0.293) and trousers (0.400) dropped the most, likely due to higher visual confusion in the balanced set
 
 ---
 
@@ -4632,15 +4724,15 @@ Test 2 (batch=26) performed slightly worse than Test 1 (batch=16) across the boa
 | Precision | 0.7229 | 0.7236 |
 | Recall | 0.7302 | 0.7117 |
 
-Nearly identical training time (~1.31h). Batch 16 is the better config â€” slightly better mAP and recall. The bigger batch didn't help here.
+Nearly identical training time (~1.31h). Batch 16 is the better config - slightly better mAP and recall. The bigger batch didn't help here.
 
 Weakest classes in both tests: short_sleeve_dress (~0.54-0.59 mAP) and long_sleeve_dress (~0.62-0.64). These could benefit from more training data or targeted augmentation.
 
 ---
 
-## Test 3 â€” YOLO-World Zero-Shot | yolov8s-worldv2 | conf=0.15 | 970 images
+## Test 3 - YOLO-World Zero-Shot | yolov8s-worldv2 | conf=0.15 | 970 images
 
-No fine-tuning â€” open-vocabulary detection via CLIP text embeddings.
+No fine-tuning - open-vocabulary detection via CLIP text embeddings.
 
 | Category | Images | Instances | Precision | Recall | mAP@50 |
 |----------|--------|-----------|-----------|--------|--------|
@@ -4667,7 +4759,7 @@ No fine-tuning â€” open-vocabulary detection via CLIP text embeddings.
 
 ### Analysis
 
-Zero-shot mAP@50 (0.1457) vs fine-tuned YOLOv8L (0.7673) â€” an expected ~5x gap. Generic categories that CLIP recognises well (trousers, shorts, skirt) perform best. Specialised fashion terms (sling, vest_dress, short_sleeve_outwear) score near zero because CLIP's training data contains very few examples of these labels.
+Zero-shot mAP@50 (0.1457) vs fine-tuned YOLOv8L (0.7673) - an expected ~5x gap. Generic categories that CLIP recognises well (trousers, shorts, skirt) perform best. Specialised fashion terms (sling, vest_dress, short_sleeve_outwear) score near zero because CLIP's training data contains very few examples of these labels.
 
 | Metric | YOLOv8L Fine-tuned (Test 1) | YOLO-World Zero-Shot |
 |--------|---------------------------|----------------------|
@@ -4682,11 +4774,11 @@ YOLO-World is useful as a no-training baseline or for rapid prototyping, but fin
 ### Justification:
 CLIP (Contrastive Language-Image Pre-training) Ã© um modelo da OpenAI treinado em milhÃµes de pares imagem-texto da internet. Aprendeu a mapear imagens e texto para o mesmo espaÃ§o vetorial (embedding space).
 **Porque Ã© que algumas classes falham?**
-O CLIP foi treinado com linguagem genÃ©rica da internet. Palavras comuns como "trousers" tÃªm embeddings ricos e bem definidos. Termos especializados como "sling" ou "long_sleeve_outwear" tÃªm embeddings fracos ou ambÃ­guos, porque aparecem raramente nos dados de treino do CLIP â€” daÃ­ o mAP perto de zero nessas categorias.
+O CLIP foi treinado com linguagem genÃ©rica da internet. Palavras comuns como "trousers" tÃªm embeddings ricos e bem definidos. Termos especializados como "sling" ou "long_sleeve_outwear" tÃªm embeddings fracos ou ambÃ­guos, porque aparecem raramente nos dados de treino do CLIP - daÃ­ o mAP perto de zero nessas categorias.
 
 ---
 
-## Test 4 â€” 10k images | YOLOv8L | batch=16 | ~1.227 hours
+## Test 4 - 10k images | YOLOv8L | batch=16 | ~1.227 hours
 
 | Category | Images | Instances | Precision | Recall | mAP@50 | mAP@50:95 |
 |----------|--------|-----------|-----------|--------|--------|-----------|
@@ -4741,11 +4833,11 @@ O CLIP foi treinado com linguagem genÃ©rica da internet. Palavras comuns como 
 | Precision | 0.7229 | 0.7229 |
 | Recall | 0.7302 | 0.7302 |
 
-Results are identical to Test 1 â€” confirms that batch=16 is a reproducible and stable configuration for YOLOv8L on this dataset. Training was slightly faster (1.227h vs 1.311h).
+Results are identical to Test 1 - confirms that batch=16 is a reproducible and stable configuration for YOLOv8L on this dataset. Training was slightly faster (1.227h vs 1.311h).
 
 ---
 
-## Test 5 â€” 10k images | YOLOv8L | batch=16 | no pretrained weights | ~1.203 hours
+## Test 5 - 10k images | YOLOv8L | batch=16 | no pretrained weights | ~1.203 hours
 
 Trained from scratch using `--no-pretrained` (random weights, no COCO pretraining).
 
@@ -4806,7 +4898,7 @@ COCO pretraining gives a clear advantage ~7% higher mAP@50 and ~8% higher mAP@50
 
 ---
 
-## Test 6 â€” FashionNet (custom) vs YOLOv8L | 970 val images | Model Comparison
+## Test 6 - FashionNet (custom) vs YOLOv8L | 970 val images | Model Comparison
 
 Side-by-side evaluation of the from-scratch FashionNet and fine-tuned YOLOv8L on the same validation set.
 
@@ -4842,9 +4934,9 @@ Side-by-side evaluation of the from-scratch FashionNet and fine-tuned YOLOv8L on
 
 YOLOv8L outperforms FashionNet by 0.7679 mAP@50. This gap reflects:
 
-- **Pretrained COCO weights** â€” YOLOv8L transfers feature representations from millions of images; FashionNet learns entirely from scratch
-- **Architecture maturity** â€” YOLOv8 benefits from years of architectural optimisation (CSPDarknet backbone, PANet neck, decoupled head)
-- **Parameter efficiency** â€” despite having 4x more parameters (43.6M vs 11.7M), YOLOv8L's weights are smaller on disk (87.6 MB vs 141.2 MB) due to architectural efficiency
+- **Pretrained COCO weights** - YOLOv8L transfers feature representations from millions of images; FashionNet learns entirely from scratch
+- **Architecture maturity** - YOLOv8 benefits from years of architectural optimisation (CSPDarknet backbone, PANet neck, decoupled head)
+- **Parameter efficiency** - despite having 4x more parameters (43.6M vs 11.7M), YOLOv8L's weights are smaller on disk (87.6 MB vs 141.2 MB) due to architectural efficiency
 
-FashionNet is faster (3.2ms vs 10.9ms, ~3x) and lighter in parameters, but its detection quality is near zero â€” expected for a custom model trained from scratch with limited data and epochs.
+FashionNet is faster (3.2ms vs 10.9ms, ~3x) and lighter in parameters, but its detection quality is near zero - expected for a custom model trained from scratch with limited data and epochs.
 

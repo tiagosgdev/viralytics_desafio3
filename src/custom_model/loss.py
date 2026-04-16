@@ -81,9 +81,10 @@ def focal_bce(pred: torch.Tensor, target: torch.Tensor,
     Focal BCE — down-weights easy background examples.
     Critical for object detection where ~95% of grid cells are background.
     """
-    bce  = F.binary_cross_entropy_with_logits(pred, target, reduction='none')
-    p_t  = torch.exp(-bce)
-    loss = alpha * (1 - p_t) ** gamma * bce
+    bce     = F.binary_cross_entropy_with_logits(pred, target, reduction='none')
+    p_t     = torch.exp(-bce)
+    alpha_t = alpha * target + (1 - alpha) * (1 - target)
+    loss    = alpha_t * (1 - p_t) ** gamma * bce
     return loss.mean()
 
 
@@ -186,7 +187,8 @@ class FashionNetLoss(nn.Module):
                  lambda_obj:  float = 1.0,
                  lambda_cls:  float = 0.5,
                  img_size:    int = 640,
-                 multi_cell:  bool = False):
+                 multi_cell:  bool = False,
+                 gr:          float = 0.0):
         super().__init__()
         self.num_classes = num_classes
         self.lambda_box  = lambda_box
@@ -194,6 +196,7 @@ class FashionNetLoss(nn.Module):
         self.lambda_cls  = lambda_cls
         self.img_size    = img_size
         self.multi_cell  = multi_cell
+        self.gr          = gr
         self.bce         = nn.BCEWithLogitsLoss()
 
     def forward(
@@ -241,8 +244,8 @@ class FashionNetLoss(nn.Module):
                 iou        = bbox_iou(pred_boxes, tgt_boxes, ciou=True)
                 loss_box   = loss_box + (1 - iou).mean()
 
-                # IoU-aware objectness: use CIoU as soft target instead of 1.0
-                obj_mask[obj_mask_bool] = iou.detach().clamp(0)
+                # IoU-aware objectness: blend binary target (gr=0) with CIoU soft target (gr=1)
+                obj_mask[obj_mask_bool] = (1.0 - self.gr) + self.gr * iou.detach().clamp(0)
 
                 # ── Class loss (only on positives) ───────────────────
                 loss_cls = loss_cls + self.bce(
