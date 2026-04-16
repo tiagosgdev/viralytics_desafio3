@@ -19,13 +19,15 @@ import os
 import shutil
 import tempfile
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 import cv2
+import httpx
 import numpy as np
 from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from src.api.schemas import (
@@ -251,6 +253,32 @@ async def shutdown():
 
 # ── Routes ─────────────────────────────────────────────────────────────────
 
+_GOOGLE_IMAGE_HOSTS = {"drive.google.com", "drive.usercontent.google.com"}
+
+
+def _extract_google_drive_file_id(raw_url: str) -> str | None:
+    parsed = urlparse(raw_url)
+    host = parsed.netloc.lower()
+    if host not in _GOOGLE_IMAGE_HOSTS:
+        return None
+
+    path_parts = [part for part in parsed.path.split("/") if part]
+    if len(path_parts) >= 3 and path_parts[0] == "file" and path_parts[1] == "d":
+        return path_parts[2]
+
+    query_id = parse_qs(parsed.query).get("id")
+    if query_id and query_id[0].strip():
+        return query_id[0].strip()
+
+    return None
+
+
+def _normalize_google_drive_image_url(raw_url: str) -> str:
+    file_id = _extract_google_drive_file_id(raw_url)
+    if not file_id:
+        return raw_url
+    return f"https://drive.usercontent.google.com/download?id={file_id}&export=view"
+
 @app.get("/", response_class=HTMLResponse)
 async def root():
     index = FRONTEND_DIR / "index.html"
@@ -262,6 +290,47 @@ async def root():
 @app.get("/health", response_model=HealthResponse)
 async def health():
     return HealthResponse(status="ok", model_loaded=detector is not None)
+
+
+@app.get("/api/image-proxy")
+async def image_proxy(url: str):
+    raw_url = (url or "").strip()
+    if not raw_url:
+        raise HTTPException(status_code=400, detail="Missing 'url' query parameter")
+
+    normalized_url = _normalize_google_drive_image_url(raw_url)
+    parsed = urlparse(normalized_url)
+    if parsed.scheme not in {"http", "https"}:
+        raise HTTPException(status_code=400, detail="Only http/https image URLs are allowed")
+
+    if parsed.netloc.lower() not in _GOOGLE_IMAGE_HOSTS:
+        raise HTTPException(status_code=400, detail="Only Google Drive image hosts are allowed")
+
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=20.0) as client:
+            upstream = await client.get(
+                normalized_url,
+                headers={"User-Agent": "Mozilla/5.0"},
+            )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Could not fetch image: {exc}") from exc
+
+    if upstream.status_code != 200:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Image host returned status {upstream.status_code}",
+        )
+
+    content_type = (upstream.headers.get("content-type") or "").lower()
+    if not content_type.startswith("image/"):
+        raise HTTPException(status_code=502, detail="Image URL did not return image content")
+
+    media_type = content_type.split(";", 1)[0]
+    return Response(
+        content=upstream.content,
+        media_type=media_type,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
 
 
 @app.post("/api/session/start", response_model=SessionResponse)

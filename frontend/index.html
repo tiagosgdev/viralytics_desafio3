@@ -292,6 +292,7 @@ let hasShownInitialRecommendationsModal = false;
 let recommendationDetailIndex = 0;
 let hasChatIntroLoaded = false;
 let introRequestInFlight = false;
+let introRequestToken = 0;
 
 const feed = document.getElementById('feed');
 const landingScreen = document.getElementById('landing-screen');
@@ -822,9 +823,45 @@ function escAttr(value) {
     .replace(/>/g, '&gt;');
 }
 
+function extractGoogleDriveFileId(rawUrl) {
+  const value = String(rawUrl || '').trim();
+  if (!value) return '';
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.toLowerCase();
+    if (host !== 'drive.google.com' && host !== 'drive.usercontent.google.com') {
+      return '';
+    }
+
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    if (parts.length >= 3 && parts[0] === 'file' && parts[1] === 'd' && parts[2]) {
+      return parts[2];
+    }
+
+    return parsed.searchParams.get('id') || '';
+  } catch (error) {
+    return '';
+  }
+}
+
+function toRenderableImageUrl(rawUrl) {
+  const original = String(rawUrl || '').trim();
+  if (!original) return '';
+
+  const fileId = extractGoogleDriveFileId(original);
+  if (!fileId) return original;
+
+  const normalizedDriveUrl = 'https://drive.usercontent.google.com/download?id=' +
+    encodeURIComponent(fileId) + '&export=view';
+
+  return '/api/image-proxy?url=' + encodeURIComponent(normalizedDriveUrl);
+}
+
 function buildRecommendationThumb(rec, baseClass) {
   const icon = EMOJI[rec.category] || '<i class="fas fa-shirt"></i>';
-  const imageUrl = rec && rec.image_url ? String(rec.image_url).trim() : '';
+  const rawImageUrl = rec && rec.image_url ? String(rec.image_url).trim() : '';
+  const imageUrl = toRenderableImageUrl(rawImageUrl);
   const classes = imageUrl ? (baseClass + ' thumb-media has-image') : (baseClass + ' thumb-media');
 
   if (!imageUrl) {
@@ -873,54 +910,13 @@ function requestPersonaIntro() {
     return;
   }
 
-  introRequestInFlight = true;
-  addTypingIndicator();
+  const reply = selectedPersona === 'edna'
+    ? 'I am Edna. I handle fashion, and I handle it correctly. Tell me what you need.'
+    : 'Darling, I am Cruella, your fashion accomplice. Tell me what power look you want.';
 
-  fetch('/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: '',
-      persona: selectedPersona,
-      assistant_mode: selectedPersona,
-      history: chatHistory,
-      session_id: currentSessionId,
-      state: chatConversationState,
-      detected_categories: currentDetectedCategories,
-      recommendations: currentRecommendations
-    })
-  })
-    .then((response) => response.json().then((data) => ({ ok: response.ok, status: response.status, data })))
-    .then(({ ok, status, data }) => {
-      if (!ok) {
-        throw new Error(extractApiError(data, 'Chat intro failed (HTTP ' + status + ')'));
-      }
-
-      removeTypingIndicator();
-      const reply = data.reply || data.message || data.response || 'Hello. Tell me your style goal.';
-      if (data.session_id) currentSessionId = data.session_id;
-      if (data.state) chatConversationState = data.state;
-      if (data.active_filters && Object.keys(extractIncludeFilters(data.active_filters)).length) {
-        currentActiveFilters = data.active_filters;
-      } else if (data.state && data.state.filters && Object.keys(extractIncludeFilters(data.state.filters)).length) {
-        currentActiveFilters = data.state.filters;
-      }
-
-      addChatBubble(reply, 'bot');
-      chatHistory.push({ role: 'assistant', content: reply });
-      hasChatIntroLoaded = true;
-
-      if (Array.isArray(data.results) && data.results.length) {
-        renderRecs(data.results);
-      }
-    })
-    .catch((error) => {
-      removeTypingIndicator();
-      addChatBubble(error && error.message ? error.message : 'Connection error. Please try again.', 'bot');
-    })
-    .finally(() => {
-      introRequestInFlight = false;
-    });
+  addChatBubble(reply, 'bot');
+  chatHistory.push({ role: 'assistant', content: reply });
+  hasChatIntroLoaded = true;
 }
 
 function addChatBubble(text, sender) {
@@ -1294,6 +1290,7 @@ function selectPersona(persona) {
   resetPersonaState();
   loadConfidence();
   initHelpers();
+  requestPersonaIntro();
 }
 
 function returnToPersonaSelection() {
@@ -1324,6 +1321,7 @@ function resetPersonaState() {
   currentActiveFilters = {};
   hasShownInitialRecommendationsModal = false;
   recommendationDetailIndex = 0;
+  introRequestToken += 1;
   hasChatIntroLoaded = false;
   introRequestInFlight = false;
   tagsEl.innerHTML = '<span class="notag">Nothing detected yet</span>';

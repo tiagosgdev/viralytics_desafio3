@@ -35,8 +35,58 @@ SIMILARITY_THRESHOLD = 0.25
 BATCH_SIZE = 64
 
 # Weights for soft filtering
-PENALTY_WEIGHT = 0.2
-BOOST_WEIGHT = 0.2
+PENALTY_WEIGHT = 0.4
+EXTENDED_PENALTY_WEIGHT = 0.2
+BOOST_WEIGHT = 0.2  # Reserved for optional include boosting (currently unused).
+
+# Deterministic exclude expansion for semantically close values.
+# This is used to improve behavior for negations like "not too fitted"
+# where users also expect near-equivalent fits (e.g., slim fit) to be penalized.
+EXCLUDE_EXTENSION_MAP = {
+    "fit": {
+        "fitted": ("slim fit", "tailored"),
+        "slim fit": ("fitted", "tailored"),
+        "tailored": ("fitted", "slim fit"),
+        "regular": ("relaxed", "tailored"),
+        "relaxed": ("loose", "oversized", "baggy"),
+        "loose": ("relaxed", "oversized", "baggy"),
+        "oversized": ("loose", "baggy", "relaxed"),
+        "baggy": ("oversized", "loose", "relaxed"),
+        "athletic": ("slim fit",),
+    },
+    "length": {
+        "mini": ("short",),
+        "short": ("mini",),
+        "knee-length": ("midi",),
+        "midi": ("knee-length"),
+        "ankle": ("full length",),
+        "full length": ("ankle", "maxi"),
+        "maxi": ("full length", "ankle"),
+    },
+    "style": {
+        "smart casual": ("casual"),
+        "casual": ("smart casual"),
+    },
+    "material": {
+        "cotton": ("organic cotton"),
+        "organic cotton": ("cotton"),
+    },
+    "leg_style": {
+        "skinny": ("slim", "tapered"),
+        "slim": ("skinny", "tapered", "straight"),
+        "tapered": ("slim", "skinny", "jogger"),
+        "straight": ("slim", "wide leg", "bootcut"),
+        "wide leg": ("flared", "straight", "bootcut"),
+        "flared": ("wide leg", "bootcut"),
+        "bootcut": ("flared", "wide leg", "straight"),
+        "jogger": ("tapered", "cargo"),
+        "cargo": ("jogger",),
+    },
+    "waterproof": {
+        "waterproof": ("water resistant",),
+        "water resistant": ("waterproof",),
+    },
+}
 
 # BGE models perform better when queries are prefixed with this instruction.
 # Documents are encoded WITHOUT the prefix (done during build_vector_db).
@@ -84,6 +134,74 @@ def _collection_point_count(client: QdrantClient) -> int:
     if not _collection_exists(client):
         return 0
     return client.get_collection(COLLECTION_NAME).points_count
+
+
+def _dedupe_preserve_order(values: list[str]) -> list[str]:
+    seen = set()
+    output = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        output.append(value)
+    return output
+
+
+def _normalize_filter_values(values: object) -> list[str]:
+    if not isinstance(values, list):
+        return []
+    normalized = []
+    for value in values:
+        if not isinstance(value, str):
+            continue
+        cleaned = value.strip()
+        if cleaned:
+            normalized.append(cleaned)
+    return _dedupe_preserve_order(normalized)
+
+
+def _expand_exclude_filters(excludes: dict) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    """Return (exact_excludes, extended_excludes) with deterministic field-specific expansion."""
+    if not isinstance(excludes, dict):
+        return {}, {}
+
+    exact: dict[str, list[str]] = {}
+    extended: dict[str, list[str]] = {}
+
+    for field, raw_values in excludes.items():
+        values = _normalize_filter_values(raw_values)
+        if not values:
+            continue
+
+        exact[field] = values
+        field_map = EXCLUDE_EXTENSION_MAP.get(field, {})
+        expanded_values = []
+
+        for value in values:
+            expanded_values.extend(field_map.get(value, ()))
+
+        expanded_values = [v for v in _dedupe_preserve_order(expanded_values) if v not in values]
+        if expanded_values:
+            extended[field] = expanded_values
+
+    return exact, extended
+
+
+def _merge_filter_values(primary: dict[str, list[str]], secondary: dict[str, list[str]]) -> dict[str, list[str]]:
+    merged = {field: _normalize_filter_values(values) for field, values in primary.items()}
+    for field, values in secondary.items():
+        base = merged.get(field, [])
+        merged[field] = _dedupe_preserve_order(base + _normalize_filter_values(values))
+    return {field: values for field, values in merged.items() if values}
+
+
+def _payload_matches_any(payload_value: object, values: list[str]) -> bool:
+    if payload_value is None or not values:
+        return False
+
+    if isinstance(payload_value, list):
+        return any(v in payload_value for v in values)
+    return payload_value in values
 
 
 # ══════════════════════════════════════════════════════════════
@@ -236,6 +354,7 @@ def filtered_search(
     score_threshold: float | None = None,
     penalty_weight: float | None = None,
     boost_weight: float | None = None,
+    extended_penalty_weight: float | None = None,
 ):
     """
     Semantic search with Qdrant metadata filters, applying strict or soft filtering.
@@ -249,11 +368,16 @@ def filtered_search(
     client = _get_client()
     fetch_limit = MAX_QUERY_RESULTS
     
-    excludes = parsed_filters.get("exclude", {})
-    includes = parsed_filters.get("include", {})
+    includes = parsed_filters.get("include", {}) if isinstance(parsed_filters.get("include", {}), dict) else {}
+    excludes_raw = parsed_filters.get("exclude", {}) if isinstance(parsed_filters.get("exclude", {}), dict) else {}
+    exact_excludes, extended_excludes = _expand_exclude_filters(excludes_raw)
 
     if strict:
-        qfilter = _build_qdrant_filter(parsed_filters, strict_exclude=True, strict_include=True)
+        strict_filters = {
+            "include": includes,
+            "exclude": _merge_filter_values(exact_excludes, extended_excludes),
+        }
+        qfilter = _build_qdrant_filter(strict_filters, strict_exclude=True, strict_include=True)
         results = client.query_points(
             collection_name=COLLECTION_NAME,
             query=query_emb,
@@ -262,7 +386,7 @@ def filtered_search(
         )
         hits = results.points
     else:
-        if not excludes:
+        if not exact_excludes:
             # no values on "exclude" -> search normally without any filtering
             results = client.query_points(
                 collection_name=COLLECTION_NAME,
@@ -272,7 +396,14 @@ def filtered_search(
             hits = results.points
         else:
             # two searches
-            qfilter_exclude = _build_qdrant_filter(parsed_filters, strict_exclude=True, strict_include=False)
+            qfilter_exclude = _build_qdrant_filter(
+                {
+                    "include": includes,
+                    "exclude": exact_excludes,
+                },
+                strict_exclude=True,
+                strict_include=False,
+            )
             results_exclude = client.query_points(
                 collection_name=COLLECTION_NAME,
                 query=query_emb,
@@ -292,22 +423,30 @@ def filtered_search(
                     hits_dict[hit.id] = hit
             hits = list(hits_dict.values())
             
-        p_weight = penalty_weight if penalty_weight is not None else PENALTY_WEIGHT
-        b_weight = boost_weight if boost_weight is not None else BOOST_WEIGHT
+        p_exact = penalty_weight if penalty_weight is not None else PENALTY_WEIGHT
+        p_extended = (
+            extended_penalty_weight
+            if extended_penalty_weight is not None
+            else EXTENDED_PENALTY_WEIGHT
+        )
 
-        if excludes or includes:
+        # Backward compatibility: parameter retained even though we currently
+        # use exclude-driven penalties only in soft mode.
+        _ = boost_weight
+
+        if exact_excludes or extended_excludes or includes:
             for hit in hits:
-                # Penalize
-                for field, values in excludes.items():
+                # Strong penalty for exact excludes.
+                for field, values in exact_excludes.items():
                     payload_val = hit.payload.get(field)
-                    if payload_val is None:
-                        continue
-                    if isinstance(payload_val, list):
-                        if any(v in payload_val for v in values):
-                            hit.score -= p_weight
-                    else:
-                        if payload_val in values:
-                            hit.score -= p_weight
+                    if _payload_matches_any(payload_val, values):
+                        hit.score -= p_exact
+
+                # Lighter penalty for deterministic extended excludes.
+                for field, values in extended_excludes.items():
+                    payload_val = hit.payload.get(field)
+                    if _payload_matches_any(payload_val, values):
+                        hit.score -= p_extended
 
                 # # Check if it lacks anything in include
                 # for field, values in includes.items():

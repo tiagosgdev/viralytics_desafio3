@@ -1,232 +1,142 @@
-import json
+from __future__ import annotations
+
+import argparse
+import re
 import sqlite3
-import sys
 from pathlib import Path
-from typing import List, Sequence, Tuple
-
-try:
-    from LNIAGIA.DB.models import COLOR, TYPE
-except ModuleNotFoundError:
-    db_dir = Path(__file__).resolve().parent.parent
-    if str(db_dir) not in sys.path:
-        sys.path.insert(0, str(db_dir))
-    from models import COLOR, TYPE
-
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "clothing.db"
-DATA_SOURCES_PATH = BASE_DIR / "DataSources"
+DEFAULT_DB_PATH = BASE_DIR / "clothing.db"
+DEFAULT_TABLE_NAME = "items"
+DEFAULT_URL_COLUMN = "image_url"
+DEFAULT_ID_COLUMN = "id"
+
+_DRIVE_FILE_PATTERN = re.compile(r"/file/d/([a-zA-Z0-9_-]+)")
+_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
-def _print_options(title: str, options: Sequence[str]) -> None:
-    print(f"\n{title}:")
-    for idx, option in enumerate(options, 1):
-        print(f"  [{idx}] {option}")
+def _quote_identifier(identifier: str, *, label: str) -> str:
+    if not _IDENTIFIER_PATTERN.fullmatch(identifier):
+        raise ValueError(f"Invalid {label}: {identifier}")
+    return f'"{identifier}"'
 
 
-def _parse_indices(raw_input: str, max_index: int, allow_multiple: bool) -> List[int]:
-    normalized = raw_input.replace(",", " ")
-    tokens = normalized.split()
-
-    if not tokens:
-        raise ValueError("selection cannot be empty")
-
-    if not allow_multiple and len(tokens) != 1:
-        raise ValueError("select exactly one number")
-
-    picked: List[int] = []
-    seen = set()
-    for token in tokens:
-        if not token.isdigit():
-            raise ValueError("use only numbers")
-
-        index = int(token)
-        if index < 1 or index > max_index:
-            raise ValueError(f"numbers must be between 1 and {max_index}")
-
-        if index not in seen:
-            picked.append(index)
-            seen.add(index)
-
-    return picked
+def extract_file_id(drive_url: str) -> str | None:
+    """Extract the file ID from a Google Drive URL."""
+    match = _DRIVE_FILE_PATTERN.search(drive_url or "")
+    if match:
+        return match.group(1)
+    return None
 
 
-def choose_colors() -> List[str]:
-    _print_options("Available colors", COLOR)
-
-    while True:
-        raw = input("\nSelect one or more colors (numbers separated by comma or space): ").strip()
-        try:
-            indices = _parse_indices(raw, len(COLOR), allow_multiple=True)
-            return [COLOR[i - 1] for i in indices]
-        except ValueError as exc:
-            print(f"  Invalid input: {exc}.")
+def transform_drive_url(drive_url: str) -> str:
+    """Transform a Google Drive viewer URL to a direct image URL."""
+    file_id = extract_file_id(drive_url)
+    if file_id:
+        return f"https://drive.google.com/uc?export=view&id={file_id}"
+    return drive_url
 
 
-def choose_type() -> str:
-    _print_options("Available types", TYPE)
+def update_database(
+    db_path: Path = DEFAULT_DB_PATH,
+    table_name: str = DEFAULT_TABLE_NAME,
+    url_column: str = DEFAULT_URL_COLUMN,
+    id_column: str = DEFAULT_ID_COLUMN,
+    dry_run: bool = False,
+) -> int:
+    """Update Drive viewer URLs in SQLite and return the number of changed rows."""
+    if not db_path.is_file():
+        raise FileNotFoundError(f"Database file not found: {db_path}")
 
-    while True:
-        raw = input("\nSelect exactly one type (one number): ").strip()
-        try:
-            index = _parse_indices(raw, len(TYPE), allow_multiple=False)[0]
-            return TYPE[index - 1]
-        except ValueError as exc:
-            print(f"  Invalid input: {exc}.")
+    table_sql = _quote_identifier(table_name, label="table name")
+    url_sql = _quote_identifier(url_column, label="URL column")
+    id_sql = _quote_identifier(id_column, label="ID column")
 
-
-def ask_url() -> str:
-    while True:
-        url = input("\nType the image URL: ").strip()
-        if url:
-            return url
-        print("  URL cannot be empty.")
-
-
-def _load_json_items(json_path: Path) -> List[dict]:
-    with json_path.open("r", encoding="utf-8") as file:
-        data = json.load(file)
-
-    if not isinstance(data, list):
-        raise ValueError("root JSON value is not a list")
-
-    return data
-
-
-def update_json_files(selected_colors: Sequence[str], selected_type: str, image_url: str) -> Tuple[int, int]:
-    json_files = sorted(path for path in DATA_SOURCES_PATH.glob("*.json") if path.is_file())
-
-    if not json_files:
-        print("  No JSON files found in DataSources.")
-        return 0, 0
-
-    total_rows_updated = 0
-    files_updated = 0
-
-    for json_file in json_files:
-        try:
-            items = _load_json_items(json_file)
-        except (OSError, json.JSONDecodeError, ValueError) as exc:
-            print(f"  Skipping {json_file.name}: {exc}")
-            continue
-
-        file_rows_updated = 0
-        for item in items:
-            if not isinstance(item, dict):
-                continue
-            if item.get("color") in selected_colors and item.get("type") == selected_type:
-                item["image_url"] = image_url
-                file_rows_updated += 1
-
-        if file_rows_updated > 0:
-            try:
-                with json_file.open("w", encoding="utf-8") as file:
-                    json.dump(items, file, indent=2, ensure_ascii=False)
-                files_updated += 1
-                total_rows_updated += file_rows_updated
-            except OSError as exc:
-                print(f"  Could not write {json_file.name}: {exc}")
-                continue
-
-        print(f"  {json_file.name}: {file_rows_updated} row(s) updated")
-
-    return total_rows_updated, files_updated
-
-
-def _table_exists(cursor: sqlite3.Cursor, table_name: str) -> bool:
-    cursor.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
-        (table_name,),
-    )
-    return cursor.fetchone() is not None
-
-
-def _ensure_image_url_column(cursor: sqlite3.Cursor) -> bool:
-    cursor.execute('PRAGMA table_info("items")')
-    existing_columns = {row[1] for row in cursor.fetchall()}
-
-    if "image_url" in existing_columns:
-        return False
-
-    cursor.execute('ALTER TABLE "items" ADD COLUMN "image_url" TEXT')
-    return True
-
-
-def update_database(selected_colors: Sequence[str], selected_type: str, image_url: str) -> Tuple[int, bool]:
-    if not DB_PATH.is_file():
-        raise FileNotFoundError(f"database file not found: {DB_PATH}")
-
-    placeholders = ",".join("?" for _ in selected_colors)
-
-    connection = sqlite3.connect(DB_PATH)
+    connection = sqlite3.connect(db_path)
     cursor = connection.cursor()
 
     try:
-        if not _table_exists(cursor, "items"):
-            raise RuntimeError("table 'items' was not found in the database")
+        print(f"Connected to SQLite database: {db_path}")
 
-        added_column = _ensure_image_url_column(cursor)
-
-        count_query = (
-            f'SELECT COUNT(*) FROM "items" '
-            f'WHERE "type" = ? AND "color" IN ({placeholders})'
+        select_query = (
+            f"SELECT {id_sql}, {url_sql} "
+            f"FROM {table_sql} "
+            f"WHERE {url_sql} LIKE '%drive.google.com/file/d/%'"
         )
-        count_params = [selected_type, *selected_colors]
-        cursor.execute(count_query, count_params)
-        rows_to_update = int(cursor.fetchone()[0])
+        cursor.execute(select_query)
+        rows = cursor.fetchall()
+        print(f"Found {len(rows)} rows with Google Drive viewer URLs")
 
         update_query = (
-            f'UPDATE "items" SET "image_url" = ? '
-            f'WHERE "type" = ? AND "color" IN ({placeholders})'
+            f"UPDATE {table_sql} "
+            f"SET {url_sql} = ? "
+            f"WHERE {id_sql} = ?"
         )
-        update_params = [image_url, selected_type, *selected_colors]
-        cursor.execute(update_query, update_params)
 
-        connection.commit()
-        return rows_to_update, added_column
+        updated_count = 0
+        for row_id, url in rows:
+            if not isinstance(url, str):
+                continue
+
+            new_url = transform_drive_url(url)
+            if new_url == url:
+                continue
+
+            updated_count += 1
+            if not dry_run:
+                cursor.execute(update_query, (new_url, row_id))
+
+        if dry_run:
+            connection.rollback()
+            print(f"Dry run complete. {updated_count} row(s) would be updated.")
+        else:
+            connection.commit()
+            print(f"Updated {updated_count} row(s).")
+
+        return updated_count
     finally:
         connection.close()
 
 
 def main() -> None:
-    print("=" * 60)
-    print("               Update Image URL By Color And Type")
-    print("=" * 60)
-
-    selected_colors = choose_colors()
-    selected_type = choose_type()
-    image_url = ask_url()
-
-    print("\nSelected filters:")
-    print(f"  Colors: {', '.join(selected_colors)}")
-    print(f"  Type:   {selected_type}")
-    print(f"  URL:    {image_url}")
-
-    print("\nUpdating JSON files...")
-    json_rows_updated, json_files_updated = update_json_files(
-        selected_colors,
-        selected_type,
-        image_url,
+    parser = argparse.ArgumentParser(
+        description="Convert Google Drive viewer URLs in SQLite to direct image URLs."
+    )
+    parser.add_argument(
+        "--db-path",
+        default=str(DEFAULT_DB_PATH),
+        help="Path to SQLite database (default: local clothing.db)",
+    )
+    parser.add_argument(
+        "--table",
+        default=DEFAULT_TABLE_NAME,
+        help="Table name containing image URLs",
+    )
+    parser.add_argument(
+        "--url-column",
+        default=DEFAULT_URL_COLUMN,
+        help="Column that stores the image URL",
+    )
+    parser.add_argument(
+        "--id-column",
+        default=DEFAULT_ID_COLUMN,
+        help="Primary key column",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show how many rows would change without writing to the database",
     )
 
-    print("\nUpdating SQLite database...")
-    try:
-        db_rows_updated, added_column = update_database(
-            selected_colors,
-            selected_type,
-            image_url,
-        )
-        if added_column:
-            print("  Added missing column: image_url")
-        print(f"  Database rows updated: {db_rows_updated}")
-    except (FileNotFoundError, RuntimeError, sqlite3.Error) as exc:
-        db_rows_updated = 0
-        print(f"  Database update failed: {exc}")
+    args = parser.parse_args()
 
-    print("\nSummary:")
-    print(f"  JSON files updated: {json_files_updated}")
-    print(f"  JSON rows updated:  {json_rows_updated}")
-    print(f"  DB rows updated:    {db_rows_updated}")
+    update_database(
+        db_path=Path(args.db_path),
+        table_name=args.table,
+        url_column=args.url_column,
+        id_column=args.id_column,
+        dry_run=args.dry_run,
+    )
 
 
 if __name__ == "__main__":

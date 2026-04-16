@@ -58,21 +58,29 @@ STRICTNESS_FLEXIBLE = "flexible"
 
 STRICT_MARKERS = {
     "strict",
+    "strictly",
     "exact",
     "exactly",
     "precise",
     "picky",
     "must match",
+    "exact matches",
     "only exact",
     "only strict",
+    "no alternatives",
 }
 FLEXIBLE_MARKERS = {
     "flexible",
+    "more flexible",
     "open",
     "similar",
     "close matches",
     "not strict",
+    "less strict",
     "anything close",
+    "near matches",
+    "wider",
+    "broader",
     "creative",
     "versatile",
 }
@@ -82,12 +90,24 @@ NO_WORDS = {"no", "n", "nah", "nope"}
 
 CONFIRM_MARKERS = {
     "confirm",
+    "i confirm",
     "correct",
     "that's right",
     "thats right",
+    "that is perfect",
+    "that's perfect",
+    "perfect",
     "looks good",
+    "looks perfect",
     "sounds good",
+    "works for me",
+    "i like that",
     "go ahead",
+    "please proceed",
+    "proceed",
+    "approved",
+    "do it",
+    "run it",
     "search now",
     "run the search",
     "why not",
@@ -97,9 +117,12 @@ REVISE_MARKERS = {
     "adjust",
     "modify",
     "different",
+    "not quite",
+    "not exactly",
     "not right",
     "not correct",
     "wrong",
+    "instead",
     "update it",
 }
 
@@ -110,6 +133,10 @@ SEARCH_MARKERS = {
     "find",
     "recommend",
     "go ahead",
+    "please proceed",
+    "proceed",
+    "run it",
+    "start search",
     "that is all",
     "thats all",
     "lets go",
@@ -404,16 +431,103 @@ def _normalize_strict_preference(value: Any) -> str:
     return STRICTNESS_UNKNOWN
 
 
-def _extract_strict_preference(message: str, awaiting_strictness: bool = False) -> str | None:
+def _classify_binary_intent_with_llm(mode: str, stage: str, message: str) -> str | None:
+    """Classify short, ambiguous replies for pending binary questions.
+
+    Returns one of:
+      - confirmation stage: "confirm" | "revise" | None
+      - strictness stage: "strict" | "flexible" | None
+    """
+    if ollama is None:
+        return None
+
+    normalized_mode = _normalize_assistant_mode(mode)
+    stage_name = str(stage or "").strip().lower()
+    msg = (message or "").strip()
+    if not msg:
+        return None
+
+    if stage_name == "confirmation":
+        labels = "confirm, revise, unclear"
+        task = (
+            "The user is responding to: 'Confirm the brief so I can search, or tell me what to change.' "
+            "Decide if they confirm or request a change."
+        )
+    elif stage_name == "strictness":
+        labels = "strict, flexible, unclear"
+        task = (
+            "The user is responding to: 'Do you want exact matches only, or flexible suggestions?' "
+            "Decide if they want strict matching or flexible matching."
+        )
+    else:
+        return None
+
+    system_prompt = (
+        "You are an intent classifier for a fashion search assistant. "
+        f"Assistant mode: {normalized_mode}.\n"
+        f"Return exactly one lowercase label: {labels}.\n"
+        "Do not explain. Output only the label."
+    )
+    user_prompt = f"{task}\nUser reply: {msg}"
+
+    try:
+        response = ollama.chat(
+            model=OLLAMA_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            options={"temperature": 0},
+        )
+
+        raw = ""
+        if isinstance(response, dict):
+            message_obj = response.get("message", {})
+            if isinstance(message_obj, dict):
+                raw = str(message_obj.get("content", "")).strip()
+        else:
+            message_obj = getattr(response, "message", None)
+            raw = str(getattr(message_obj, "content", "")).strip()
+
+        cleaned = raw.lower().strip().strip("`\"' ")
+        if not cleaned:
+            return None
+
+        tokenized = "".join(ch if (ch.isalpha() or ch.isspace()) else " " for ch in cleaned)
+        words = {part for part in tokenized.split() if part}
+
+        if stage_name == "confirmation":
+            if "revise" in words or "change" in words or "modify" in words:
+                return "revise"
+            if "confirm" in words or "approved" in words or "approve" in words:
+                return "confirm"
+            if cleaned == "revise":
+                return "revise"
+            if cleaned == "confirm":
+                return "confirm"
+            return None
+
+        if "flexible" in words or "broad" in words or "broader" in words:
+            return STRICTNESS_FLEXIBLE
+        if "strict" in words or "exact" in words:
+            return STRICTNESS_STRICT
+        if cleaned == STRICTNESS_FLEXIBLE:
+            return STRICTNESS_FLEXIBLE
+        if cleaned == STRICTNESS_STRICT:
+            return STRICTNESS_STRICT
+        return None
+    except Exception:
+        return None
+
+
+def _extract_strict_preference(
+    message: str,
+    awaiting_strictness: bool = False,
+    assistant_mode: str = DEFAULT_ASSISTANT_MODE,
+) -> str | None:
     lowered = message.strip().lower()
     if not lowered:
         return None
-
-    if awaiting_strictness:
-        if lowered in YES_WORDS or any(lowered.startswith(f"{word} ") for word in YES_WORDS) or "why not" in lowered:
-            return STRICTNESS_STRICT
-        if lowered in NO_WORDS or any(lowered.startswith(f"{word} ") for word in NO_WORDS):
-            return STRICTNESS_FLEXIBLE
 
     for marker in FLEXIBLE_MARKERS:
         if marker in lowered:
@@ -423,13 +537,39 @@ def _extract_strict_preference(message: str, awaiting_strictness: bool = False) 
         if marker in lowered:
             return STRICTNESS_STRICT
 
+    if awaiting_strictness:
+        if lowered in YES_WORDS or any(lowered.startswith(f"{word} ") for word in YES_WORDS) or "why not" in lowered:
+            return STRICTNESS_STRICT
+        if lowered in NO_WORDS or any(lowered.startswith(f"{word} ") for word in NO_WORDS):
+            return STRICTNESS_FLEXIBLE
+
+        llm_signal = _classify_binary_intent_with_llm(
+            mode=assistant_mode,
+            stage="strictness",
+            message=message,
+        )
+        if llm_signal in {STRICTNESS_STRICT, STRICTNESS_FLEXIBLE}:
+            return llm_signal
+
     return None
 
 
-def _extract_confirmation_signal(message: str, awaiting_confirmation: bool = False) -> str | None:
+def _extract_confirmation_signal(
+    message: str,
+    awaiting_confirmation: bool = False,
+    assistant_mode: str = DEFAULT_ASSISTANT_MODE,
+) -> str | None:
     lowered = message.strip().lower()
     if not lowered:
         return None
+
+    for marker in REVISE_MARKERS:
+        if marker in lowered:
+            return "revise"
+
+    for marker in CONFIRM_MARKERS:
+        if marker in lowered:
+            return "confirm"
 
     if awaiting_confirmation:
         if lowered in YES_WORDS or any(lowered.startswith(f"{word} ") for word in YES_WORDS) or "why not" in lowered:
@@ -437,13 +577,13 @@ def _extract_confirmation_signal(message: str, awaiting_confirmation: bool = Fal
         if lowered in NO_WORDS or any(lowered.startswith(f"{word} ") for word in NO_WORDS):
             return "revise"
 
-    for marker in CONFIRM_MARKERS:
-        if marker in lowered:
-            return "confirm"
-
-    for marker in REVISE_MARKERS:
-        if marker in lowered:
-            return "revise"
+        llm_signal = _classify_binary_intent_with_llm(
+            mode=assistant_mode,
+            stage="confirmation",
+            message=message,
+        )
+        if llm_signal in {"confirm", "revise"}:
+            return llm_signal
 
     return None
 
@@ -611,7 +751,7 @@ def _compose_include_phrase(include: dict, query: str) -> str:
     elif color_text:
         base = f"clothing in {color_text}"
     else:
-        base = query.strip() if query.strip() else "clothing recommendations"
+        base = "clothing recommendations"
 
     extras = []
     if fit_text:
@@ -656,22 +796,173 @@ def _build_requirements_summary(query: str, filters: dict) -> str:
     return include_text
 
 
-def _build_confirmation_prompt(mode: str, summary: str) -> str:
+def _extract_situation_label(query: str, filters: dict) -> str | None:
+    lowered = query.strip().lower()
+    normalized = _normalize_filter_payload(filters)
+    include = normalized.get("include", {})
+
+    occasions = {
+        value.strip().lower()
+        for value in _format_filter_values(include.get("occasion"))
+    }
+    styles = {
+        value.strip().lower()
+        for value in _format_filter_values(include.get("style"))
+    }
+
+    if "interview" in lowered:
+        return "important interview"
+    if any(token in lowered for token in ("ceo", "boss", "board", "executive", "promotion")):
+        return "high-stakes work moment"
+    if "meeting" in lowered and ("work" in occasions or "formal" in styles or "smart casual" in styles):
+        return "important work meeting"
+    if "wedding" in lowered or "wedding" in occasions:
+        return "wedding guest look"
+    if "beach" in lowered or "beach" in occasions:
+        return "beach outing"
+    if "party" in lowered or "party" in occasions or "date night" in occasions:
+        return "special social event"
+    if "formal event" in occasions:
+        return "formal event"
+    if "work" in occasions:
+        return "work setting"
+    return None
+
+
+def _fallback_confirmation_lead(mode: str, situation_label: str | None) -> str:
+    normalized_mode = _normalize_assistant_mode(mode)
+    if normalized_mode == "edna":
+        if situation_label:
+            return f"Understood. We are dressing for this {situation_label}."
+        return "Understood. We will keep this precise."
+
+    if situation_label:
+        return f"Darling, for this {situation_label}, we are building a look with intent."
+    return "Darling, we are shaping this look with intention."
+
+
+def _generate_confirmation_lead(
+    mode: str,
+    *,
+    summary: str,
+    query: str,
+    user_message: str,
+    filters: dict,
+) -> str:
+    normalized_mode = _normalize_assistant_mode(mode)
+    situation_label = _extract_situation_label(query, filters)
+    fallback = _fallback_confirmation_lead(normalized_mode, situation_label)
+
+    if ollama is None:
+        return fallback
+
+    persona_prompt = _load_persona_prompt_text(normalized_mode)
+    temperature = 0.65 if normalized_mode == "cruella" else 0.25
+
+    system_prompt = (
+        f"{persona_prompt}\n\n"
+        "Write one short lead sentence for a confirmation message.\n"
+        "Rules:\n"
+        "- Mention the situation when provided.\n"
+        "- Do not ask questions.\n"
+        "- Do not rewrite or alter filter constraints.\n"
+        "- Do not include phrases like 'Here is your brief' or 'Confirm if this is correct'.\n"
+        "- Keep it under 18 words.\n"
+        "- Plain text only."
+    )
+
+    user_prompt = (
+        f"User message: {user_message or '(none)'}\n"
+        f"Semantic query: {query}\n"
+        f"Situation: {situation_label or 'none'}\n"
+        f"Canonical summary (do not rewrite): {summary}"
+    )
+
+    try:
+        response = ollama.chat(
+            model=OLLAMA_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            options={"temperature": temperature},
+        )
+
+        raw = ""
+        if isinstance(response, dict):
+            message_obj = response.get("message", {})
+            if isinstance(message_obj, dict):
+                raw = str(message_obj.get("content", "")).strip()
+        else:
+            message_obj = getattr(response, "message", None)
+            raw = str(getattr(message_obj, "content", "")).strip()
+
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[1] if "\n" in raw else raw
+            raw = raw.rsplit("```", 1)[0].strip()
+
+        lead = raw.splitlines()[0].strip() if raw else ""
+        if not lead:
+            return fallback
+
+        lowered = lead.lower()
+        blocked_fragments = (
+            "here is your brief",
+            "confirm if this is correct",
+            "or tell me what to change",
+        )
+        if any(fragment in lowered for fragment in blocked_fragments):
+            return fallback
+
+        if len(lead) > 220:
+            return fallback
+
+        if lead[-1] not in ".!?":
+            lead = f"{lead}."
+        return lead
+    except Exception:
+        return fallback
+
+
+def _build_confirmation_prompt(mode: str, summary: str, lead: str | None = None) -> str:
     if _normalize_assistant_mode(mode) == "edna":
-        return (
+        core = (
             f"Here is your brief: {summary}. Confirm if this is correct and I will search, "
             "or tell me what to change."
         )
-    return (
-        f"Darling, here is your brief: {summary}. Confirm if this is correct and I will search, "
-        "or tell me what to change."
-    )
+    else:
+        core = (
+            f"Darling, here is your brief: {summary}. Confirm if this is correct and I will search, "
+            "or tell me what to change."
+        )
+
+    if lead:
+        return f"{lead} {core}"
+    return core
 
 
 def _build_revision_prompt(mode: str) -> str:
     if _normalize_assistant_mode(mode) == "edna":
         return "Fine. Tell me exactly what to change, and I will update the brief before searching."
     return "Darling, perfect. Tell me what to change and I will update the brief before we search."
+
+
+def _build_strictness_prompt(mode: str) -> str:
+    if _normalize_assistant_mode(mode) == "edna":
+        return (
+            "Do you want strict matching (exact matches only) or flexible matching "
+            "(include near matches)?"
+        )
+    return (
+        "Darling, should I be strict (exact matches only) or flexible "
+        "(include near matches)?"
+    )
+
+
+def _build_strictness_reask(mode: str) -> str:
+    if _normalize_assistant_mode(mode) == "edna":
+        return "Answer with your preference: strict or flexible."
+    return "Darling, answer clearly: strict or flexible."
 
 
 def _missing_detail_fields(filters: dict) -> list[str]:
@@ -746,6 +1037,13 @@ def _fallback_persona_reply(mode: str, scenario: str, context: dict[str, Any]) -
         }
 
     return fallback.get(scenario, fallback["nudge"])
+
+
+def _fixed_persona_intro(mode: str) -> str:
+    normalized_mode = _normalize_assistant_mode(mode)
+    if normalized_mode == "edna":
+        return "I am Edna. I handle fashion, and I handle it correctly. Tell me what you need."
+    return "Darling, I am Cruella, your fashion accomplice. Tell me what power look you want."
 
 
 def _generate_persona_reply(mode: str, scenario: str, user_message: str, context: dict[str, Any]) -> str:
@@ -1203,12 +1501,15 @@ def run_conversation_model(
 
     if not message:
         scenario = "intro" if not started_before else "nudge"
-        reply = _generate_persona_reply(
-            mode,
-            scenario,
-            user_message="",
-            context={"detected_type": detected or "unspecified"},
-        )
+        if not started_before:
+            reply = _fixed_persona_intro(mode)
+        else:
+            reply = _generate_persona_reply(
+                mode,
+                scenario,
+                user_message="",
+                context={"detected_type": detected or "unspecified"},
+            )
         return {
             "ok": True,
             "reply": reply,
@@ -1260,8 +1561,16 @@ def run_conversation_model(
         }
 
     explicit_search = _is_explicit_search_request(message)
-    strict_signal = _extract_strict_preference(message, awaiting_strictness=awaiting_strictness)
-    confirmation_signal = _extract_confirmation_signal(message, awaiting_confirmation=awaiting_confirmation)
+    strict_signal = _extract_strict_preference(
+        message,
+        awaiting_strictness=awaiting_strictness,
+        assistant_mode=mode,
+    )
+    confirmation_signal = _extract_confirmation_signal(
+        message,
+        awaiting_confirmation=awaiting_confirmation,
+        assistant_mode=mode,
+    )
 
     if strict_signal is not None:
         strict_preference = strict_signal
@@ -1347,12 +1656,7 @@ def run_conversation_model(
         }
 
     if awaiting_strictness and strict_signal is None:
-        reply = _generate_persona_reply(
-            mode,
-            "strict_reask",
-            user_message=message,
-            context={},
-        )
+        reply = _build_strictness_reask(mode)
         return {
             "ok": True,
             "reply": reply,
@@ -1371,6 +1675,13 @@ def run_conversation_model(
                 strict_default=strict,
             ),
         }
+
+    should_skip_confirmation = (
+        explicit_search
+        and confirmation_signal != "revise"
+        and has_previous_context
+        and _has_filters(current_filters)
+    )
 
     resolved_strictness_turn = was_awaiting_strictness and strict_signal is not None
     if not resolved_strictness_turn:
@@ -1399,7 +1710,15 @@ def run_conversation_model(
                 }
             else:
                 summary = _build_requirements_summary(current_query, current_filters)
-                reply = _build_confirmation_prompt(mode, summary)
+                confirmation_lead = _generate_confirmation_lead(
+                    mode,
+                    summary=summary,
+                    query=current_query,
+                    user_message=message,
+                    filters=current_filters,
+                )
+                reply = _build_confirmation_prompt(mode, summary, lead=confirmation_lead)
+                strict_preference = STRICTNESS_UNKNOWN
                 return {
                     "ok": True,
                     "reply": reply,
@@ -1418,9 +1737,17 @@ def run_conversation_model(
                         strict_default=strict,
                     ),
                 }
-        else:
+        elif not should_skip_confirmation:
             summary = _build_requirements_summary(current_query, current_filters)
-            reply = _build_confirmation_prompt(mode, summary)
+            confirmation_lead = _generate_confirmation_lead(
+                mode,
+                summary=summary,
+                query=current_query,
+                user_message=message,
+                filters=current_filters,
+            )
+            reply = _build_confirmation_prompt(mode, summary, lead=confirmation_lead)
+            strict_preference = STRICTNESS_UNKNOWN
             return {
                 "ok": True,
                 "reply": reply,
@@ -1441,12 +1768,7 @@ def run_conversation_model(
             }
 
     if strict_preference == STRICTNESS_UNKNOWN:
-        reply = _generate_persona_reply(
-            mode,
-            "ask_strictness",
-            user_message=message,
-            context={},
-        )
+        reply = _build_strictness_prompt(mode)
         return {
             "ok": True,
             "reply": reply,
