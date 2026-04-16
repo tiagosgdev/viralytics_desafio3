@@ -1253,6 +1253,43 @@ Biggest class-level changes edna_1.3m vs edna_1.2m:
 
 ---
 
+## Test Set Evaluation — edna_1.2m vs edna_1.3m
+
+Evaluated both models on the held-out test set (11,186 images, 11 classes) at conf=0.25.
+
+### Overall
+
+| Model | mAP@50 | Precision | Recall | F1 | Detections |
+|-------|--------|-----------|--------|----|------------|
+| **edna_1.2m** | **0.2676** | 0.3456 | **0.4995** | **0.4085** | 17,540 |
+| edna_1.3m | 0.2100 | **0.4360** | 0.3672 | 0.3987 | 10,221 |
+
+The ranking from validation holds on the test set. edna_1.2m leads on mAP@50 (+0.0576)
+and recall; edna_1.3m leads on precision (+0.0904). The precision/recall shift from
+IoU-aware objectness generalises — edna_1.3m fires ~42% fewer detections (10,221 vs 17,540).
+
+### Per-class
+
+| Category | edna_1.2m AP | edna_1.3m AP | Δ AP |
+|----------|-------------|-------------|------|
+| short_sleeve_top | 0.1270 | 0.0773 | -0.0497 |
+| long_sleeve_top | 0.1254 | 0.0838 | -0.0416 |
+| long_sleeve_outwear | 0.4186 | 0.3577 | -0.0609 |
+| vest | 0.3532 | 0.3255 | -0.0277 |
+| shorts | 0.3232 | 0.3178 | -0.0054 |
+| trousers | 0.2810 | 0.1783 | -0.1027 |
+| skirt | 0.1963 | 0.1654 | -0.0309 |
+| short_sleeve_dress | 0.2853 | 0.2333 | -0.0520 |
+| long_sleeve_dress | 0.2257 | 0.1672 | -0.0585 |
+| vest_dress | 0.2656 | 0.1860 | -0.0796 |
+| sling_dress | 0.3421 | 0.2177 | -0.1244 |
+
+edna_1.3m regresses on every class. The largest drops are sling_dress (-0.1244),
+trousers (-0.1027), and vest_dress (-0.0796) — all high-recall classes in edna_1.2m
+that are hurt most by the conservative objectness targets.
+
+---
+
 ## Threshold Tuning - edna_1.2m
 
 Evaluated at conf=0.25 through 0.45 to test whether the precision/recall imbalance
