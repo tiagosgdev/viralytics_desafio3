@@ -7,6 +7,7 @@
 
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -182,6 +183,50 @@ FASHION_MARKERS = {
     "brand",
 }
 
+TYPE_HINT_MARKERS = {
+    "t-shirt",
+    "tshirt",
+    "tee",
+    "shirt",
+    "top",
+    "blouse",
+    "sweater",
+    "hoodie",
+    "jacket",
+    "coat",
+    "blazer",
+    "outerwear",
+    "vest",
+    "dress",
+    "dresses",
+    "pants",
+    "trousers",
+    "jeans",
+    "shorts",
+    "skirt",
+}
+
+REFINEMENT_CONTEXT_MARKERS = {
+    " not ",
+    "don't",
+    "dont",
+    "without",
+    "avoid",
+    "exclude",
+    "except",
+    "instead",
+    "also",
+    "remove",
+    "swap",
+    "replace",
+    "make it",
+    "keep it",
+    "want it",
+    "it to be",
+    "anything but",
+    "anything, just",
+}
+
 DETAIL_FIELDS = ["type", "color", "style", "pattern", "fit", "occasion", "season", "material", "brand"]
 
 TYPE_DISPLAY_MAP = {
@@ -298,6 +343,34 @@ FIELD_EXCLUDE_TEMPLATE = {
 
 _PROMPTS_DIR = _SCRIPT_DIR / "query_parsing" / "prompts"
 _PERSONA_PROMPT_CACHE: dict[str, str] = {}
+
+_CONFIRMATION_LEAD_STOPWORDS = {
+    "a",
+    "an",
+    "and",
+    "are",
+    "as",
+    "at",
+    "be",
+    "for",
+    "from",
+    "here",
+    "if",
+    "in",
+    "is",
+    "it",
+    "of",
+    "on",
+    "or",
+    "that",
+    "the",
+    "this",
+    "to",
+    "we",
+    "with",
+    "your",
+    "darling",
+}
 
 
 def clear():
@@ -651,6 +724,90 @@ def _ensure_type_filter(filters: dict, detected_type: str | None) -> dict:
     return normalized
 
 
+def _normalize_type_values(values: Any) -> list[str]:
+    if not isinstance(values, list):
+        return []
+
+    normalized = []
+    for value in values:
+        if not isinstance(value, str):
+            continue
+        cleaned = value.strip().lower().replace("-", "_").replace(" ", "_")
+        if cleaned:
+            normalized.append(cleaned)
+
+    return _dedupe_preserve_order(normalized)
+
+
+def _extract_type_values(filters: dict) -> tuple[str, ...]:
+    include = _normalize_filter_payload(filters).get("include", {})
+    return tuple(sorted(_normalize_type_values(include.get("type"))))
+
+
+def _type_filters_changed(current_filters: dict, candidate_filters: dict) -> bool:
+    candidate_types = _extract_type_values(candidate_filters)
+    if not candidate_types:
+        return False
+    return candidate_types != _extract_type_values(current_filters)
+
+
+def _is_type_only_request(filters: dict) -> bool:
+    normalized = _normalize_filter_payload(filters)
+    include = normalized.get("include", {})
+    exclude = normalized.get("exclude", {})
+
+    include_fields = {
+        field
+        for field, values in include.items()
+        if isinstance(values, list) and any(isinstance(v, str) and v.strip() for v in values)
+    }
+    has_excludes = any(
+        isinstance(values, list) and any(isinstance(v, str) and v.strip() for v in values)
+        for values in exclude.values()
+    )
+
+    return include_fields == {"type"} and bool(_extract_type_values(normalized)) and not has_excludes
+
+
+def _minimal_request_signature(filters: dict) -> str | None:
+    if not _is_type_only_request(filters):
+        return None
+
+    types = _extract_type_values(filters)
+    if not types:
+        return None
+    return f"type:{'|'.join(types)}"
+
+
+def _message_mentions_type_hint(message: str) -> bool:
+    lowered = f" {message.strip().lower()} "
+    if not lowered.strip():
+        return False
+    return any(f" {hint} " in lowered for hint in TYPE_HINT_MARKERS)
+
+
+def _is_contextual_refinement_message(message: str) -> bool:
+    lowered = f" {message.strip().lower()} "
+    if not lowered.strip():
+        return False
+
+    if any(marker in lowered for marker in REFINEMENT_CONTEXT_MARKERS):
+        return True
+    return _is_probably_fashion_related(message)
+
+
+def _resolve_post_search_strict_preference(current_preference: str, state: dict) -> str:
+    normalized = _normalize_strict_preference(current_preference)
+    if normalized != STRICTNESS_UNKNOWN:
+        return normalized
+
+    state_strict = state.get("strict") if isinstance(state, dict) else None
+    if isinstance(state_strict, bool):
+        return STRICTNESS_STRICT if state_strict else STRICTNESS_FLEXIBLE
+
+    return STRICTNESS_STRICT
+
+
 def _ordered_filter_fields(block: dict) -> list[str]:
     ordered = [field for field in DETAIL_FIELDS if field in block]
     ordered += sorted(field for field in block.keys() if field not in DETAIL_FIELDS)
@@ -830,15 +987,100 @@ def _extract_situation_label(query: str, filters: dict) -> str | None:
 
 
 def _fallback_confirmation_lead(mode: str, situation_label: str | None) -> str:
+    abstract_situation = None
+    if situation_label:
+        label = situation_label.strip().lower()
+        if label in {
+            "important interview",
+            "high-stakes work moment",
+            "important work meeting",
+            "work setting",
+        }:
+            abstract_situation = "important professional moment"
+        elif label in {"wedding guest look", "special social event", "formal event"}:
+            abstract_situation = "special social moment"
+        elif label in {"beach outing"}:
+            abstract_situation = "relaxed moment"
+        else:
+            abstract_situation = "important moment"
+
     normalized_mode = _normalize_assistant_mode(mode)
     if normalized_mode == "edna":
-        if situation_label:
-            return f"Understood. We are dressing for this {situation_label}."
+        if abstract_situation:
+            return f"Understood. We are dressing for this {abstract_situation}."
         return "Understood. We will keep this precise."
 
-    if situation_label:
-        return f"Darling, for this {situation_label}, we are building a look with intent."
+    if abstract_situation:
+        return f"Darling, for this {abstract_situation}, we are building a look with intent."
     return "Darling, we are shaping this look with intention."
+
+
+def _collect_confirmation_forbidden_phrases(summary: str, filters: dict) -> list[str]:
+    _ = summary
+    normalized = _normalize_filter_payload(filters)
+    phrases = set()
+
+    for section in ("include", "exclude"):
+        block = normalized.get(section, {})
+        for field in _summary_field_order(block):
+            values = _format_filter_values(block.get(field))
+            for value in values:
+                normalized_value = value.strip().lower()
+                if normalized_value:
+                    phrases.add(normalized_value)
+
+                humanized = _humanize_filter_value(field, value).strip().lower()
+                if humanized:
+                    phrases.add(humanized)
+
+    return sorted(p for p in phrases if p and len(p) >= 3)
+
+
+def _contains_phrase(text: str, phrase: str) -> bool:
+    if not phrase:
+        return False
+
+    if " " in phrase or "-" in phrase:
+        return phrase in text
+
+    return re.search(rf"\b{re.escape(phrase)}\b", text) is not None
+
+
+def _overlap_tokens(text: str) -> set[str]:
+    cleaned = re.sub(r"[^a-z0-9]+", " ", text.lower())
+    return {
+        token
+        for token in cleaned.split()
+        if len(token) >= 3 and token not in _CONFIRMATION_LEAD_STOPWORDS
+    }
+
+
+def _lead_violates_confirmation_rules(lead: str, summary: str, filters: dict) -> bool:
+    lowered = (lead or "").strip().lower()
+    if not lowered:
+        return True
+
+    if "?" in lowered:
+        return True
+
+    sentence_parts = [part.strip() for part in re.split(r"[.!?]", lowered) if part.strip()]
+    if len(sentence_parts) > 1:
+        return True
+
+    forbidden_phrases = _collect_confirmation_forbidden_phrases(summary, filters)
+    for phrase in forbidden_phrases:
+        if _contains_phrase(lowered, phrase):
+            return True
+
+    lead_tokens = _overlap_tokens(lowered)
+    summary_tokens = _overlap_tokens(summary)
+    if lead_tokens and summary_tokens:
+        overlap = lead_tokens & summary_tokens
+        overlap_ratio = len(overlap) / max(1, len(lead_tokens))
+        if len(overlap) >= 2 and overlap_ratio >= 0.45:
+            return True
+
+    return False
 
 
 def _generate_confirmation_lead(
@@ -852,6 +1094,8 @@ def _generate_confirmation_lead(
     normalized_mode = _normalize_assistant_mode(mode)
     situation_label = _extract_situation_label(query, filters)
     fallback = _fallback_confirmation_lead(normalized_mode, situation_label)
+    forbidden_phrases = _collect_confirmation_forbidden_phrases(summary, filters)
+    forbidden_preview = ", ".join(forbidden_phrases[:30]) if forbidden_phrases else "(none)"
 
     if ollama is None:
         return fallback
@@ -863,11 +1107,13 @@ def _generate_confirmation_lead(
         f"{persona_prompt}\n\n"
         "Write one short lead sentence for a confirmation message.\n"
         "Rules:\n"
+        "- Exactly one sentence.\n"
         "- Mention the situation when provided.\n"
         "- Do not ask questions.\n"
+        "- Never include any concrete value from the canonical summary or filters.\n"
+        "- You may use abstract phrasing like 'interesting color choice' or 'strong style direction'.\n"
         "- Do not rewrite or alter filter constraints.\n"
         "- Do not include phrases like 'Here is your brief' or 'Confirm if this is correct'.\n"
-        "- Keep it under 18 words.\n"
         "- Plain text only."
     )
 
@@ -875,7 +1121,8 @@ def _generate_confirmation_lead(
         f"User message: {user_message or '(none)'}\n"
         f"Semantic query: {query}\n"
         f"Situation: {situation_label or 'none'}\n"
-        f"Canonical summary (do not rewrite): {summary}"
+        f"Canonical summary (do not rewrite): {summary}\n"
+        f"Forbidden values (never use literally): {forbidden_preview}"
     )
 
     try:
@@ -917,6 +1164,9 @@ def _generate_confirmation_lead(
         if len(lead) > 220:
             return fallback
 
+        if _lead_violates_confirmation_rules(lead, summary, filters):
+            return fallback
+
         if lead[-1] not in ".!?":
             lead = f"{lead}."
         return lead
@@ -932,7 +1182,7 @@ def _build_confirmation_prompt(mode: str, summary: str, lead: str | None = None)
         )
     else:
         core = (
-            f"Darling, here is your brief: {summary}. Confirm if this is correct and I will search, "
+            f"Here is your brief: {summary}. Confirm if this is correct and I will search, "
             "or tell me what to change."
         )
 
@@ -1284,6 +1534,8 @@ def _build_state_payload(
     awaiting_strictness: bool,
     awaiting_confirmation: bool = False,
     strict_default: bool,
+    has_completed_search: bool = False,
+    pending_detail_signature: str = "",
 ) -> dict[str, Any]:
     return {
         "query": query,
@@ -1294,6 +1546,8 @@ def _build_state_payload(
         "parser_source": parser_source,
         "awaiting_strictness": bool(awaiting_strictness),
         "awaiting_confirmation": bool(awaiting_confirmation),
+        "has_completed_search": bool(has_completed_search),
+        "pending_detail_signature": str(pending_detail_signature or ""),
         "started": True,
     }
 
@@ -1496,6 +1750,8 @@ def run_conversation_model(
     awaiting_strictness = was_awaiting_strictness
     awaiting_confirmation = bool(state.get("awaiting_confirmation"))
     parser_source = str(state.get("parser_source") or "none")
+    has_completed_search = bool(state.get("has_completed_search"))
+    pending_detail_signature = str(state.get("pending_detail_signature") or "").strip()
 
     message = (user_input or "").strip()
 
@@ -1525,6 +1781,8 @@ def run_conversation_model(
                 awaiting_strictness=awaiting_strictness,
                 awaiting_confirmation=awaiting_confirmation,
                 strict_default=strict,
+                has_completed_search=has_completed_search,
+                pending_detail_signature=pending_detail_signature,
             ),
         }
 
@@ -1536,6 +1794,8 @@ def run_conversation_model(
         awaiting_strictness = False
         awaiting_confirmation = False
         parser_source = "reset"
+        has_completed_search = False
+        pending_detail_signature = ""
         reply = _generate_persona_reply(
             mode,
             "reset",
@@ -1557,6 +1817,8 @@ def run_conversation_model(
                 awaiting_strictness=awaiting_strictness,
                 awaiting_confirmation=awaiting_confirmation,
                 strict_default=strict,
+                has_completed_search=has_completed_search,
+                pending_detail_signature=pending_detail_signature,
             ),
         }
 
@@ -1576,12 +1838,21 @@ def run_conversation_model(
         strict_preference = strict_signal
         awaiting_strictness = False
 
+    contextual_refinement = (
+        has_completed_search
+        and has_previous_context
+        and not awaiting_strictness
+        and not awaiting_confirmation
+        and _is_contextual_refinement_message(message)
+    )
+
     if (
         strict_signal is None
         and confirmation_signal is None
         and not awaiting_strictness
         and not awaiting_confirmation
         and not explicit_search
+        and not contextual_refinement
         and not _is_probably_fashion_related(message)
     ):
         reply = _generate_persona_reply(
@@ -1605,13 +1876,33 @@ def run_conversation_model(
                 awaiting_strictness=awaiting_strictness,
                 awaiting_confirmation=awaiting_confirmation,
                 strict_default=strict,
+                has_completed_search=has_completed_search,
+                pending_detail_signature=pending_detail_signature,
             ),
         }
 
     parser_warning = None
+    new_query_from_type_change = False
+    has_previous_context_for_update = has_previous_context
+
+    if contextual_refinement and _message_mentions_type_hint(message):
+        candidate_filters, candidate_source, candidate_warning = _parse_with_mode(mode, message)
+        if _type_filters_changed(current_filters, candidate_filters):
+            new_query_from_type_change = True
+            has_previous_context_for_update = False
+            has_completed_search = False
+            pending_detail_signature = ""
+            strict_preference = STRICTNESS_UNKNOWN
+            awaiting_strictness = False
+            awaiting_confirmation = False
+            current_query = message.strip()
+            current_filters = _ensure_type_filter(candidate_filters, detected)
+            parser_source = f"{candidate_source}_new_query" if candidate_source else "new_query"
+            parser_warning = candidate_warning
+
     short_strict_answer = strict_signal is not None and len(message.split()) <= 5
     short_confirmation_answer = confirmation_signal is not None and len(message.split()) <= 6
-    should_update_with_parser = not (
+    should_update_with_parser = not new_query_from_type_change and not (
         (was_awaiting_strictness and short_strict_answer and _has_filters(current_filters))
         or (awaiting_confirmation and short_confirmation_answer and _has_filters(current_filters))
     )
@@ -1622,14 +1913,31 @@ def run_conversation_model(
             current_query=current_query,
             current_filters=current_filters,
             message=message,
-            has_previous_context=has_previous_context,
+            has_previous_context=has_previous_context_for_update,
         )
         current_filters = _ensure_type_filter(current_filters, detected)
 
     filter_count = _count_filter_values(current_filters)
-    needs_more_detail = filter_count == 0 or (filter_count <= 1 and not explicit_search)
+    minimal_signature = _minimal_request_signature(current_filters)
+    repeated_minimal_request = (
+        not has_completed_search
+        and bool(pending_detail_signature)
+        and minimal_signature is not None
+        and minimal_signature == pending_detail_signature
+        and strict_signal is None
+        and confirmation_signal is None
+        and not awaiting_strictness
+        and not awaiting_confirmation
+    )
+
+    auto_search_refinement_turn = contextual_refinement and not new_query_from_type_change
+    needs_more_detail = (
+        filter_count == 0 or (filter_count <= 1 and not explicit_search)
+    ) and not repeated_minimal_request and not auto_search_refinement_turn
+
     if needs_more_detail and strict_signal is None and confirmation_signal is None and not awaiting_strictness:
         detail_fields = _missing_detail_fields(current_filters)
+        pending_detail_signature = minimal_signature or ""
         reply = _generate_persona_reply(
             mode,
             "ask_details",
@@ -1652,8 +1960,16 @@ def run_conversation_model(
                 awaiting_strictness=False,
                 awaiting_confirmation=False,
                 strict_default=strict,
+                has_completed_search=has_completed_search,
+                pending_detail_signature=pending_detail_signature,
             ),
         }
+
+    if repeated_minimal_request:
+        strict_preference = STRICTNESS_STRICT
+
+    if not needs_more_detail:
+        pending_detail_signature = ""
 
     if awaiting_strictness and strict_signal is None:
         reply = _build_strictness_reask(mode)
@@ -1673,14 +1989,20 @@ def run_conversation_model(
                 awaiting_strictness=True,
                 awaiting_confirmation=False,
                 strict_default=strict,
+                has_completed_search=has_completed_search,
+                pending_detail_signature=pending_detail_signature,
             ),
         }
 
     should_skip_confirmation = (
-        explicit_search
-        and confirmation_signal != "revise"
-        and has_previous_context
-        and _has_filters(current_filters)
+        repeated_minimal_request
+        or auto_search_refinement_turn
+        or (
+            explicit_search
+            and confirmation_signal != "revise"
+            and has_previous_context_for_update
+            and _has_filters(current_filters)
+        )
     )
 
     resolved_strictness_turn = was_awaiting_strictness and strict_signal is not None
@@ -1706,6 +2028,8 @@ def run_conversation_model(
                         awaiting_strictness=False,
                         awaiting_confirmation=False,
                         strict_default=strict,
+                        has_completed_search=has_completed_search,
+                        pending_detail_signature=pending_detail_signature,
                     ),
                 }
             else:
@@ -1735,6 +2059,8 @@ def run_conversation_model(
                         awaiting_strictness=False,
                         awaiting_confirmation=True,
                         strict_default=strict,
+                        has_completed_search=has_completed_search,
+                        pending_detail_signature=pending_detail_signature,
                     ),
                 }
         elif not should_skip_confirmation:
@@ -1764,8 +2090,13 @@ def run_conversation_model(
                     awaiting_strictness=False,
                     awaiting_confirmation=True,
                     strict_default=strict,
+                    has_completed_search=has_completed_search,
+                    pending_detail_signature=pending_detail_signature,
                 ),
             }
+
+    if auto_search_refinement_turn:
+        strict_preference = _resolve_post_search_strict_preference(strict_preference, state)
 
     if strict_preference == STRICTNESS_UNKNOWN:
         reply = _build_strictness_prompt(mode)
@@ -1785,6 +2116,8 @@ def run_conversation_model(
                 awaiting_strictness=True,
                 awaiting_confirmation=False,
                 strict_default=strict,
+                has_completed_search=has_completed_search,
+                pending_detail_signature=pending_detail_signature,
             ),
         }
 
@@ -1814,6 +2147,8 @@ def run_conversation_model(
                 awaiting_strictness=False,
                 awaiting_confirmation=False,
                 strict_default=search_is_strict,
+                has_completed_search=has_completed_search,
+                pending_detail_signature=pending_detail_signature,
             ),
         }
 
@@ -1844,6 +2179,8 @@ def run_conversation_model(
                     awaiting_strictness=False,
                     awaiting_confirmation=False,
                     strict_default=search_is_strict,
+                    has_completed_search=has_completed_search,
+                    pending_detail_signature=pending_detail_signature,
                 ),
             }
 
@@ -1877,6 +2214,8 @@ def run_conversation_model(
                 awaiting_strictness=False,
                 awaiting_confirmation=False,
                 strict_default=search_is_strict,
+                has_completed_search=has_completed_search,
+                pending_detail_signature=pending_detail_signature,
             ),
         }
 
@@ -1893,6 +2232,8 @@ def run_conversation_model(
         },
     )
 
+    has_completed_search = True
+    pending_detail_signature = ""
     return {
         "ok": True,
         "reply": reply,
@@ -1909,6 +2250,8 @@ def run_conversation_model(
             awaiting_strictness=False,
             awaiting_confirmation=False,
             strict_default=search_is_strict,
+            has_completed_search=has_completed_search,
+            pending_detail_signature=pending_detail_signature,
         ),
     }
 
