@@ -49,7 +49,10 @@ class ChatRequest(BaseModel):
     session_id: Optional[str] = None
     persona: str = "cruella"
     replace_vision: Optional[bool] = None
-    strict: bool = False
+    strict: bool = Field(
+        default=False,
+        description="Deprecated. Strictness is derived from assistant_mode/persona.",
+    )
     assistant_mode: Optional[str] = None
     state: Optional[Dict[str, Any]] = None
     detected_categories: List[str] = Field(default_factory=list)
@@ -59,7 +62,10 @@ class ChatRequest(BaseModel):
 class ConversationRequest(BaseModel):
     detected_type: Optional[str] = None
     message: Optional[str] = None
-    strict: bool = False
+    strict: bool = Field(
+        default=False,
+        description="Deprecated. Strictness is derived from assistant_mode/persona.",
+    )
     assistant_mode: Optional[str] = None
     state: Optional[Dict[str, Any]] = None
 

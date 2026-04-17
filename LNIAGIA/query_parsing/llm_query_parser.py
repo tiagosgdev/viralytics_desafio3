@@ -5,6 +5,8 @@
 # ════════════════════════════════════════════════════════════
 
 import json
+import os
+import re
 import sys
 from pathlib import Path
 
@@ -22,8 +24,75 @@ from DB.models import FILTERABLE_FIELDS, FREE_TEXT_FILTER_FIELDS
 # CONFIGURATION
 # ══════════════════════════════════════════════════════════════
 
-OLLAMA_MODEL = "qwen2.5:7b-instruct-q3_K_M"
-#OLLAMA_MODEL = "qwen2.5:3b-instruct"
+DEFAULT_OLLAMA_REFINER_MODEL = "qwen2.5:7b-instruct-q3_K_M"
+
+_LEGACY_OLLAMA_MODEL = (os.getenv("OLLAMA_MODEL") or "").strip()
+
+OLLAMA_REFINER_MODEL = (
+  (os.getenv("OLLAMA_REFINER_MODEL") or "").strip()
+  or _LEGACY_OLLAMA_MODEL
+  or DEFAULT_OLLAMA_REFINER_MODEL
+)
+OLLAMA_ROUTER_MODEL = (
+  (os.getenv("OLLAMA_ROUTER_MODEL") or "").strip()
+  or OLLAMA_REFINER_MODEL
+)
+
+# Backward-compatible alias used by older imports and status endpoints.
+OLLAMA_MODEL = OLLAMA_REFINER_MODEL
+
+_MAX_REFINEMENT_CONTEXT_MESSAGES = 6
+
+_REPLACE_MARKERS = (
+  " instead ",
+  "instead of",
+  "replace",
+  "swap",
+  "change to",
+  "rather than",
+)
+
+_SET_ONLY_MARKERS = (
+  " only ",
+  "only want",
+  "only need",
+  "just want",
+  "nothing but",
+  "except ",
+)
+
+_TYPE_KEYWORD_MAP = {
+  "t-shirt": "short_sleeve_top",
+  "tshirt": "short_sleeve_top",
+  "t shirt": "short_sleeve_top",
+  "tee": "short_sleeve_top",
+  "shirt": "long_sleeve_top",
+  "blouse": "long_sleeve_top",
+  "sweater": "long_sleeve_top",
+  "jumper": "long_sleeve_top",
+  "pullover": "long_sleeve_top",
+  "sweatshirt": "long_sleeve_top",
+  "hoodie": "long_sleeve_outwear",
+  "jacket": "long_sleeve_outwear",
+  "coat": "long_sleeve_outwear",
+  "blazer": "long_sleeve_outwear",
+  "cardigan": "long_sleeve_outwear",
+  "parka": "long_sleeve_outwear",
+  "windbreaker": "long_sleeve_outwear",
+  "tank top": "vest",
+  "camisole": "vest",
+  "sleeveless top": "vest",
+  "pants": "trousers",
+  "trouser": "trousers",
+  "trousers": "trousers",
+  "jeans": "trousers",
+  "slacks": "trousers",
+  "chinos": "trousers",
+  "leggings": "trousers",
+  "shorts": "shorts",
+  "skirt": "skirt",
+  "dress": "short_sleeve_dress",
+}
 
 # ══════════════════════════════════════════════════════════════
 # PROMPT
@@ -73,8 +142,9 @@ Return ONLY a JSON object with this schema — no explanation, no markdown:
 RULES:
 
 1. INCLUDE vs EXCLUDE:
-   - "include" lists the values the user WANTS (explicit or reasonably inferred).
+  - "include" lists the values the user WANTS (explicitly stated).
    - "exclude" lists the values the user does NOT want (negations).
+  - Only infer include values when Rule 3 explicitly allows it.
 
 2. NEGATION HANDLING:
    When the user expresses negation using words like "not", "no", "don't", 
@@ -100,18 +170,29 @@ RULES:
      exclude: {{"fit": ["fitted"]}}
 
 3. CONTEXTUAL INFERENCE (allowed for "include" only):
-   You may infer reasonable values for "include" based on context when the user
-   describes a situation or occasion without being explicit:
+  You may infer reasonable values for "include" ONLY when the request is
+  underspecified and high-level (occasion/context only), for example:
    
    - "meeting with a CEO" -> infer formal style, professional occasion
    - "beach vacation" -> infer summer season, casual or sporty style
    - "wedding guest" -> infer elegant or formal style, wedding occasion
+
+  IMPORTANT inference gate:
+  - If the user provides any concrete attribute constraints (for example specific
+    color, type, fit, pattern, material, brand, season, or explicit style),
+    DO NOT infer additional fields they did not mention.
+  - In explicit requests, extract only what the user said plus valid mappings.
+
+  Example (explicit, no inference):
+  - "I want a black t-shirt that is not too fitted" ->
+    include: {{"color": ["black"], "type": ["short_sleeve_top"]}}
+    exclude: {{"fit": ["fitted"]}}
+    Do NOT add style/occasion/season unless explicitly requested.
    
    However, do NOT infer values for "exclude" unless the user explicitly
    expresses negation.
 
 4. TYPE MAPPINGS:
-   4. TYPE MAPPINGS:
    When the user mentions a generic clothing term, map it to the appropriate 
    specific type(s) from the valid values. If the term is ambiguous or generic,
    include all relevant subtypes.
@@ -163,13 +244,12 @@ RULES:
 EXAMPLES:
 
 Example 1:
-  User: "I want a black T-shirt that is not too fitted, I want it to be casual"
+  User: "I want a black T-shirt that is not too fitted"
   Output:
   {{
     "include": {{
       "color": ["black"],
       "type": ["short_sleeve_top"],
-      "style": ["casual"]
     }},
     "exclude": {{
       "fit": ["fitted"]
@@ -287,20 +367,224 @@ Rules:
 - Keep previous intent unless the refinement changes it.
 - If user says "also/add/include", add constraints.
 - If user says "instead/change/swap/replace", replace old value with new value in the same field.
+- If user says "only" for a field, treat it as set-only for that field (clear older values in that field).
 - If user negates something ("not", "don't", "without"), place that value in "exclude".
+- If user both negates and replaces (e.g., "not t-shirt, trousers instead"), keep the new value in include and the negated one in exclude.
 - Ensure include/exclude never contain the same value for the same field.
 - Keep query text consistent with the final filters and concise.
 - If a section is empty, you may omit it.
 - If follow-up is ambiguous, prefer minimal safe changes.
+
+Type replacement examples:
+- Previous include.type: ["short_sleeve_top"], user: "Now I want trousers instead of a t-shirt"
+  -> include.type: ["trousers"]
+- Previous include.type: ["short_sleeve_top", "trousers"], user: "No, I only want trousers"
+  -> include.type: ["trousers"]
+- Previous include.type: ["short_sleeve_top"], user: "Also include trousers"
+  -> include.type: ["short_sleeve_top", "trousers"]
+
+Always prefer explicit replacement intent over additive behavior.
 """
 
 
-def _build_refinement_user_prompt(previous_query: str, previous_filters: dict, refinement: str) -> str:
-    return (
-        f"Previous semantic query: {json.dumps(previous_query)}\n"
-        f"Previous filters: {json.dumps(previous_filters, ensure_ascii=False)}\n"
-        f"User refinement: {json.dumps(refinement)}"
-    )
+def _build_refinement_user_prompt(
+  previous_query: str,
+  previous_filters: dict,
+  refinement: str,
+  recent_messages: list[str] | None = None,
+) -> str:
+  lines = [
+    f"Previous semantic query: {json.dumps(previous_query)}",
+    f"Previous filters: {json.dumps(previous_filters, ensure_ascii=False)}",
+    f"User refinement: {json.dumps(refinement)}",
+  ]
+
+  if isinstance(recent_messages, list) and recent_messages:
+    cleaned_messages = [
+      str(message).strip()
+      for message in recent_messages
+      if isinstance(message, str) and message.strip()
+    ][-_MAX_REFINEMENT_CONTEXT_MESSAGES:]
+    if cleaned_messages:
+      lines.append(
+        "Recent user messages (oldest to newest): "
+        f"{json.dumps(cleaned_messages, ensure_ascii=False)}"
+      )
+
+  return "\n".join(lines)
+
+
+def _dedupe_preserve_order(values: list[str]) -> list[str]:
+  seen = set()
+  output = []
+  for value in values:
+    if value in seen:
+      continue
+    seen.add(value)
+    output.append(value)
+  return output
+
+
+def _normalize_value_token(value: str) -> str:
+  return str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+
+
+def _normalize_refinement_text(refinement: str) -> str:
+  cleaned = re.sub(r"\s+", " ", str(refinement or "").strip().lower())
+  return f" {cleaned} "
+
+
+def _normalize_filter_dict(filters: dict) -> dict:
+  normalized = {"include": {}, "exclude": {}}
+  if not isinstance(filters, dict):
+    return normalized
+
+  for section in ("include", "exclude"):
+    block = filters.get(section, {})
+    if not isinstance(block, dict):
+      continue
+
+    cleaned_block = {}
+    for field, values in block.items():
+      if not isinstance(field, str) or not isinstance(values, list):
+        continue
+      cleaned_values = [str(value).strip() for value in values if isinstance(value, str) and value.strip()]
+      if cleaned_values:
+        cleaned_block[field] = _dedupe_preserve_order(cleaned_values)
+
+    if cleaned_block:
+      normalized[section] = cleaned_block
+
+  return normalized
+
+
+def _find_type_mentions(refinement: str) -> list[str]:
+  lowered = _normalize_refinement_text(refinement).strip()
+  mentions = []
+  occupied_spans: list[tuple[int, int]] = []
+
+  def _overlaps_existing(start: int, end: int) -> bool:
+    return any(start < existing_end and end > existing_start for existing_start, existing_end in occupied_spans)
+
+  for keyword, mapped in sorted(_TYPE_KEYWORD_MAP.items(), key=lambda pair: len(pair[0]), reverse=True):
+    pattern = rf"(?<!\w){re.escape(keyword)}(?!\w)"
+    for match in re.finditer(pattern, lowered):
+      start, end = match.span()
+      if _overlaps_existing(start, end):
+        continue
+      occupied_spans.append((start, end))
+      mentions.append(mapped)
+      break
+
+  for canonical in sorted(ALL_MAPPINGS.get("type", {}).keys(), key=len, reverse=True):
+    phrase = canonical.replace("_", " ")
+    pattern = rf"(?<!\w){re.escape(phrase)}(?!\w)"
+    for match in re.finditer(pattern, lowered):
+      start, end = match.span()
+      if _overlaps_existing(start, end):
+        continue
+      occupied_spans.append((start, end))
+      mentions.append(canonical)
+      break
+
+  return _dedupe_preserve_order(mentions)
+
+
+def _choose_replacement_values(
+  previous_values: list[str],
+  candidate_values: list[str],
+  mentioned_values: list[str],
+  set_only_intent: bool,
+) -> list[str]:
+  previous_tokens = {_normalize_value_token(value) for value in previous_values}
+
+  if mentioned_values:
+    introduced_mentions = [
+      value
+      for value in mentioned_values
+      if _normalize_value_token(value) not in previous_tokens
+    ]
+    if introduced_mentions:
+      return _dedupe_preserve_order(introduced_mentions)
+    return _dedupe_preserve_order(mentioned_values)
+
+  introduced_candidates = [
+    value
+    for value in candidate_values
+    if _normalize_value_token(value) not in previous_tokens
+  ]
+  if introduced_candidates:
+    return _dedupe_preserve_order(introduced_candidates)
+
+  if set_only_intent and candidate_values:
+    return [candidate_values[0]]
+
+  return _dedupe_preserve_order(candidate_values)
+
+
+def _enforce_include_exclude_disjoint(filters: dict) -> dict:
+  normalized = _normalize_filter_dict(filters)
+  include = dict(normalized.get("include", {}))
+  exclude = dict(normalized.get("exclude", {}))
+
+  for field, ex_values in exclude.items():
+    if field not in include:
+      continue
+    ex_tokens = {_normalize_value_token(value) for value in ex_values}
+    kept = [value for value in include[field] if _normalize_value_token(value) not in ex_tokens]
+    if kept:
+      include[field] = kept
+    else:
+      del include[field]
+
+  output = {}
+  if include:
+    output["include"] = include
+  if exclude:
+    output["exclude"] = exclude
+  return output
+
+
+def _apply_refinement_safety(previous_filters: dict, refinement: str, candidate_filters: dict) -> dict:
+  previous = _normalize_filter_dict(previous_filters)
+  candidate = _normalize_filter_dict(candidate_filters)
+
+  include = dict(candidate.get("include", {}))
+  exclude = dict(candidate.get("exclude", {}))
+  previous_include = previous.get("include", {})
+
+  lowered = _normalize_refinement_text(refinement)
+  replace_intent = any(marker in lowered for marker in _REPLACE_MARKERS)
+  set_only_intent = any(marker in lowered for marker in _SET_ONLY_MARKERS)
+
+  if replace_intent or set_only_intent:
+    for field, candidate_values in list(include.items()):
+      if not isinstance(candidate_values, list) or not candidate_values:
+        continue
+
+      previous_values = previous_include.get(field, [])
+      if field == "type":
+        mentioned_types = _find_type_mentions(refinement)
+        include[field] = _choose_replacement_values(
+          previous_values=previous_values,
+          candidate_values=candidate_values,
+          mentioned_values=mentioned_types,
+          set_only_intent=set_only_intent,
+        )
+        continue
+
+      if not previous_values:
+        continue
+
+      include[field] = _choose_replacement_values(
+        previous_values=previous_values,
+        candidate_values=candidate_values,
+        mentioned_values=[],
+        set_only_intent=set_only_intent,
+      )
+
+  safe_filters = {"include": include, "exclude": exclude}
+  return _enforce_include_exclude_disjoint(safe_filters)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -319,7 +603,7 @@ def parse_query(query: str, model: str | None = None, verbose: bool = False) -> 
     Returns:
         Dict with keys "include", "exclude" (either may be absent).
     """
-    model = model or OLLAMA_MODEL
+    model = model or OLLAMA_REFINER_MODEL
 
     response = ollama.chat(
         model=model,
@@ -357,6 +641,7 @@ def refine_query(
     previous_filters: dict,
     refinement: str,
     model: str | None = None,
+  recent_messages: list[str] | None = None,
     verbose: bool = False,
 ) -> dict:
     """
@@ -367,6 +652,7 @@ def refine_query(
         previous_filters: Existing parsed filters.
         refinement: User follow-up text (e.g., "also plain", "white instead").
         model: Ollama model name (defaults to OLLAMA_MODEL).
+        recent_messages: Optional bounded user-message context for better refinement.
         verbose: Print raw LLM response.
 
     Returns:
@@ -374,7 +660,7 @@ def refine_query(
             "query": updated semantic query string
             "filters": updated validated filter dict
     """
-    model = model or OLLAMA_MODEL
+    model = model or OLLAMA_REFINER_MODEL
 
     response = ollama.chat(
         model=model,
@@ -386,6 +672,7 @@ def refine_query(
                     previous_query=previous_query,
                     previous_filters=previous_filters,
                     refinement=refinement,
+                  recent_messages=recent_messages,
                 ),
             },
         ],
@@ -419,9 +706,15 @@ def refine_query(
     if not isinstance(updated_filters, dict):
         updated_filters = previous_filters
 
+    safe_filters = _apply_refinement_safety(
+        previous_filters=previous_filters,
+        refinement=refinement,
+        candidate_filters=updated_filters,
+    )
+
     return {
         "query": updated_query.strip(),
-        "filters": _validate(updated_filters),
+        "filters": _validate(safe_filters),
     }
 
 
@@ -429,8 +722,16 @@ def _validate(parsed: dict) -> dict:
     """Remove any field values that are not in the valid set."""
     for section in ("include", "exclude"):
         block = parsed.get(section, {})
+        if not isinstance(block, dict):
+            if section in parsed:
+                del parsed[section]
+            continue
+
         cleaned = {}
         for field, values in block.items():
+            if not isinstance(values, list):
+                continue
+
             # Free-text fields (e.g. brand) — just ensure non-empty strings,
             # no closed-set validation needed.
             if field in FREE_TEXT_FILTER_FIELDS:
@@ -460,7 +761,8 @@ if __name__ == "__main__":
     print("=" * 60)
     print("  LLM Query Parser  (Ollama)")
     print("=" * 60)
-    print(f"  Model: {OLLAMA_MODEL}")
+    print(f"  Refiner model: {OLLAMA_REFINER_MODEL}")
+    print(f"  Interaction model: {OLLAMA_ROUTER_MODEL}")
     print("  Type a clothing query, or 'exit' to quit.\n")
 
     print(" System prompt:")

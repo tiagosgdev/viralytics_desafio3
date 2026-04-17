@@ -65,6 +65,7 @@ def _load_search_app_module():
 @pytest.fixture
 def search_app(monkeypatch):
     app = _load_search_app_module()
+    strict_calls: list[bool] = []
 
     def fake_parse_with_mode(mode: str, message: str):
         lowered = message.lower()
@@ -92,6 +93,7 @@ def search_app(monkeypatch):
         current_filters: dict,
         message: str,
         has_previous_context: bool,
+        recent_user_messages: list[str] | None = None,
     ):
         if not has_previous_context:
             parsed, source, warning = fake_parse_with_mode(mode, message)
@@ -122,7 +124,11 @@ def search_app(monkeypatch):
     monkeypatch.setattr(app, "_update_state_with_message", fake_update_state_with_message)
     monkeypatch.setattr(app, "_ensure_vector_db_ready", lambda: (True, None))
     monkeypatch.setattr(app, "_load_model", lambda: object())
-    monkeypatch.setattr(app, "filtered_search", lambda query, filters, model, strict=False: [object()])
+    def fake_filtered_search(query, filters, model, strict=False):
+        strict_calls.append(bool(strict))
+        return [object()]
+
+    monkeypatch.setattr(app, "filtered_search", fake_filtered_search)
     monkeypatch.setattr(
         app,
         "_build_ranked_results",
@@ -133,38 +139,40 @@ def search_app(monkeypatch):
     monkeypatch.setattr(app, "_fixed_persona_intro", lambda mode: "intro")
 
     app._CONVERSATION_MODEL = None
+    app._strict_calls = strict_calls
     return app
 
 
-def _run(search_app, message: str, state: dict | None = None) -> dict:
+def _run(search_app, message: str, state: dict | None = None, assistant_mode: str | None = None) -> dict:
     return search_app.run_conversation_model(
         detected_type=None,
         user_input=message,
         conversation_state=state,
+        assistant_mode=assistant_mode,
     )
 
 
-def test_second_consecutive_vague_request_auto_searches_strict(search_app):
+def test_second_consecutive_vague_request_auto_searches_with_cruella_strict(search_app):
     first = _run(search_app, "I want a t-shirt")
     assert first["action"] == "ask_details"
     assert first["state"]["pending_detail_signature"]
 
     second = _run(search_app, "I really just want a t-shirt", first["state"])
     assert second["action"] == "searched"
-    assert second["state"]["strict_preference"] == search_app.STRICTNESS_STRICT
     assert second["state"]["strict"] is True
     assert second["state"]["awaiting_confirmation"] is False
-    assert second["state"]["awaiting_strictness"] is False
+    assert search_app._strict_calls[-1] is True
 
 
-def test_post_search_refinement_auto_searches_and_reuses_strictness(search_app):
+def test_post_search_refinement_auto_searches_and_reuses_cruella_strict(search_app):
     first = _run(search_app, "I want a t-shirt")
     searched = _run(search_app, "I really just want a t-shirt", first["state"])
     refined = _run(search_app, "I dont want anything that is red", searched["state"])
 
     assert refined["action"] == "searched"
-    assert refined["state"]["strict_preference"] == search_app.STRICTNESS_STRICT
+    assert refined["state"]["strict"] is True
     assert refined["state"]["filters"]["exclude"]["color"] == ["red"]
+    assert search_app._strict_calls[-1] is True
 
 
 def test_type_change_after_results_starts_new_query_flow(search_app):
@@ -174,7 +182,7 @@ def test_type_change_after_results_starts_new_query_flow(search_app):
 
     assert changed["action"] == "confirm_requirements"
     assert changed["state"]["awaiting_confirmation"] is True
-    assert changed["state"]["strict_preference"] == search_app.STRICTNESS_UNKNOWN
+    assert changed["state"]["strict"] is True
     assert changed["state"]["has_completed_search"] is False
 
 
@@ -185,17 +193,16 @@ def test_non_type_followup_refines_and_searches_immediately(search_app):
 
     assert refined["action"] == "searched"
     assert refined["state"]["filters"]["include"]["color"] == ["green"]
-    assert refined["state"]["strict_preference"] == search_app.STRICTNESS_STRICT
+    assert refined["state"]["strict"] is True
+    assert search_app._strict_calls[-1] is True
 
 
-def test_missing_strictness_falls_back_to_strict_for_auto_refine(search_app):
+def test_legacy_state_without_strictness_fields_defaults_to_cruella_strict(search_app):
     prior_state = {
         "started": True,
         "assistant_mode": "cruella",
         "query": "I need formal work clothing",
         "filters": {"include": {"style": ["formal"], "occasion": ["work"]}, "exclude": {}},
-        "strict_preference": search_app.STRICTNESS_UNKNOWN,
-        "awaiting_strictness": False,
         "awaiting_confirmation": False,
         "parser_source": "llm_refine",
         "has_completed_search": True,
@@ -203,5 +210,30 @@ def test_missing_strictness_falls_back_to_strict_for_auto_refine(search_app):
 
     refined = _run(search_app, "anything, just not red", prior_state)
     assert refined["action"] == "searched"
-    assert refined["state"]["strict_preference"] == search_app.STRICTNESS_STRICT
     assert refined["state"]["strict"] is True
+    assert search_app._strict_calls[-1] is True
+
+
+def test_edna_mode_always_searches_with_flexible_matching(search_app):
+    first = _run(search_app, "I want a t-shirt", assistant_mode="edna")
+    assert first["action"] == "ask_details"
+
+    second = _run(search_app, "I really just want a t-shirt", first["state"], assistant_mode="edna")
+    assert second["action"] == "searched"
+    assert second["state"]["strict"] is False
+    assert search_app._strict_calls[-1] is False
+
+
+def test_short_detailed_revision_during_confirmation_is_parsed(search_app):
+    first = _run(search_app, "I want a t-shirt")
+    searched = _run(search_app, "I really just want a t-shirt", first["state"])
+    changed = _run(search_app, "Now I want a green pair of trousers", searched["state"])
+
+    assert changed["action"] == "confirm_requirements"
+    assert changed["state"]["awaiting_confirmation"] is True
+
+    revised = _run(search_app, "No, only trousers please", changed["state"])
+
+    assert revised["action"] == "confirm_requirements"
+    assert revised["state"]["awaiting_confirmation"] is True
+    assert revised["state"]["query"].endswith("No, only trousers please")

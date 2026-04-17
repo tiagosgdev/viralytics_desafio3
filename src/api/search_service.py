@@ -17,11 +17,18 @@ if _LNIAGIA_DIR.exists() and str(_LNIAGIA_DIR) not in sys.path:
     sys.path.insert(0, str(_LNIAGIA_DIR))
 
 try:
-    from LNIAGIA.query_parsing.llm_query_parser import OLLAMA_MODEL, parse_query
+    from LNIAGIA.query_parsing.llm_query_parser import (
+        OLLAMA_MODEL,
+        OLLAMA_REFINER_MODEL,
+        OLLAMA_ROUTER_MODEL,
+        parse_query,
+    )
 except Exception as exc:  # pragma: no cover - optional parser stack
     parse_query = None
     _PARSER_IMPORT_ERROR = exc
     OLLAMA_MODEL = "unavailable"
+    OLLAMA_REFINER_MODEL = "unavailable"
+    OLLAMA_ROUTER_MODEL = "unavailable"
 else:
     _PARSER_IMPORT_ERROR = None
 
@@ -67,8 +74,6 @@ RESTORE_MARKERS = (
     "based on my outfit again",
     "use the vision result again",
 )
-
-STRICT_MARKERS = ("exactly", "strictly", "only", "must be")
 
 
 def _dedupe(values: List[str]) -> List[str]:
@@ -163,9 +168,8 @@ def _determine_mode(message: str, replace_vision: Optional[bool], current_mode: 
     return current_mode
 
 
-def _use_strict_mode(message: str) -> bool:
-    text = message.lower()
-    return any(marker in text for marker in STRICT_MARKERS)
+def _strict_for_persona(persona: str) -> bool:
+    return normalize_persona(persona) == "cruella"
 
 
 def _build_contextual_query(state: "SearchSession", message: str, mode: str) -> str:
@@ -211,6 +215,8 @@ class UnifiedSearchService:
             "vector_ready": vector_ready,
             "embedding_model": EMBEDDING_MODEL_NAME,
             "parser_model": OLLAMA_MODEL,
+            "parser_refiner_model": OLLAMA_REFINER_MODEL,
+            "interaction_model": OLLAMA_ROUTER_MODEL,
             "import_error": str(_IMPORT_ERROR) if _IMPORT_ERROR else None,
         }
 
@@ -281,7 +287,7 @@ class UnifiedSearchService:
             raise KeyError(session_id)
 
         mode = _determine_mode(message, replace_vision, session.mode)
-        strict = _use_strict_mode(message)
+        strict = _strict_for_persona(session.persona)
         parsed_filters = self._safe_parse(message, parser_backend=parser_backend)
         effective_filters = parsed_filters if mode == "override" else _merge_filters(session.base_filters, parsed_filters)
         search_query = _build_contextual_query(session, message, mode)
@@ -323,7 +329,7 @@ class UnifiedSearchService:
 
         if results:
             return f"{base} I found {len(results)} option(s) to explore next."
-        return f"{base} I could not find strong matches, so you may want to try a more specific refinement."
+        return f"{base} I found 0 results with the current filters, so you may want to try a more specific refinement."
 
     def _safe_parse(self, message: str, parser_backend: str = "llm") -> dict:
         if parser_backend == "custom":

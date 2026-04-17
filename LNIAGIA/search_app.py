@@ -34,7 +34,12 @@ from DB.vector.VectorDBManager import (
     SIMILARITY_THRESHOLD,
 )
 from DB.SQLLite.DBManager import get_items_by_ids
-from query_parsing.llm_query_parser import parse_query, refine_query, OLLAMA_MODEL
+from query_parsing.llm_query_parser import (
+    OLLAMA_REFINER_MODEL,
+    OLLAMA_ROUTER_MODEL,
+    parse_query,
+    refine_query,
+)
 from query_parsing.qp_models.baselines.exporter import load_latest_exported_parser
 
 
@@ -53,38 +58,8 @@ DEFAULT_PARSER_MODE = "llm"
 DEFAULT_ASSISTANT_MODE = "cruella"
 ASSISTANT_MODES = {"cruella", "edna"}
 
-STRICTNESS_UNKNOWN = "unknown"
 STRICTNESS_STRICT = "strict"
 STRICTNESS_FLEXIBLE = "flexible"
-
-STRICT_MARKERS = {
-    "strict",
-    "strictly",
-    "exact",
-    "exactly",
-    "precise",
-    "picky",
-    "must match",
-    "exact matches",
-    "only exact",
-    "only strict",
-    "no alternatives",
-}
-FLEXIBLE_MARKERS = {
-    "flexible",
-    "more flexible",
-    "open",
-    "similar",
-    "close matches",
-    "not strict",
-    "less strict",
-    "anything close",
-    "near matches",
-    "wider",
-    "broader",
-    "creative",
-    "versatile",
-}
 
 YES_WORDS = {"yes", "y", "sure", "ok", "okay", "go ahead"}
 NO_WORDS = {"no", "n", "nah", "nope"}
@@ -228,6 +203,8 @@ REFINEMENT_CONTEXT_MARKERS = {
 }
 
 DETAIL_FIELDS = ["type", "color", "style", "pattern", "fit", "occasion", "season", "material", "brand"]
+
+_MAX_RECENT_USER_MESSAGES = 6
 
 TYPE_DISPLAY_MAP = {
     "short_sleeve_top": "T-shirt",
@@ -402,6 +379,29 @@ def _normalize_filter_payload(payload: Any) -> dict:
     }
 
 
+def _normalize_recent_user_messages(messages: Any) -> list[str]:
+    if not isinstance(messages, list):
+        return []
+
+    cleaned = []
+    for message in messages:
+        if not isinstance(message, str):
+            continue
+        text = message.strip()
+        if text:
+            cleaned.append(text)
+
+    return cleaned[-_MAX_RECENT_USER_MESSAGES:]
+
+
+def _append_recent_user_message(messages: list[str], message: str) -> list[str]:
+    base = _normalize_recent_user_messages(messages)
+    text = str(message or "").strip()
+    if text:
+        base.append(text)
+    return base[-_MAX_RECENT_USER_MESSAGES:]
+
+
 def _get_parser_mode() -> str:
     # Accept only the two supported modes.
     configured = str(PARSER_MODE).strip().lower()
@@ -497,11 +497,11 @@ def _normalize_assistant_mode(value: Any) -> str:
     return DEFAULT_ASSISTANT_MODE
 
 
-def _normalize_strict_preference(value: Any) -> str:
-    lowered = str(value or STRICTNESS_UNKNOWN).strip().lower()
-    if lowered in {STRICTNESS_STRICT, STRICTNESS_FLEXIBLE}:
-        return lowered
-    return STRICTNESS_UNKNOWN
+def _strict_preference_for_mode(mode: str) -> str:
+    normalized_mode = _normalize_assistant_mode(mode)
+    if normalized_mode == "edna":
+        return STRICTNESS_FLEXIBLE
+    return STRICTNESS_STRICT
 
 
 def _classify_binary_intent_with_llm(mode: str, stage: str, message: str) -> str | None:
@@ -509,7 +509,6 @@ def _classify_binary_intent_with_llm(mode: str, stage: str, message: str) -> str
 
     Returns one of:
       - confirmation stage: "confirm" | "revise" | None
-      - strictness stage: "strict" | "flexible" | None
     """
     if ollama is None:
         return None
@@ -520,20 +519,14 @@ def _classify_binary_intent_with_llm(mode: str, stage: str, message: str) -> str
     if not msg:
         return None
 
-    if stage_name == "confirmation":
-        labels = "confirm, revise, unclear"
-        task = (
-            "The user is responding to: 'Confirm the brief so I can search, or tell me what to change.' "
-            "Decide if they confirm or request a change."
-        )
-    elif stage_name == "strictness":
-        labels = "strict, flexible, unclear"
-        task = (
-            "The user is responding to: 'Do you want exact matches only, or flexible suggestions?' "
-            "Decide if they want strict matching or flexible matching."
-        )
-    else:
+    if stage_name != "confirmation":
         return None
+
+    labels = "confirm, revise, unclear"
+    task = (
+        "The user is responding to: 'Confirm the brief so I can search, or tell me what to change.' "
+        "Decide if they confirm or request a change."
+    )
 
     system_prompt = (
         "You are an intent classifier for a fashion search assistant. "
@@ -545,7 +538,7 @@ def _classify_binary_intent_with_llm(mode: str, stage: str, message: str) -> str
 
     try:
         response = ollama.chat(
-            model=OLLAMA_MODEL,
+            model=OLLAMA_ROUTER_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -579,52 +572,9 @@ def _classify_binary_intent_with_llm(mode: str, stage: str, message: str) -> str
             if cleaned == "confirm":
                 return "confirm"
             return None
-
-        if "flexible" in words or "broad" in words or "broader" in words:
-            return STRICTNESS_FLEXIBLE
-        if "strict" in words or "exact" in words:
-            return STRICTNESS_STRICT
-        if cleaned == STRICTNESS_FLEXIBLE:
-            return STRICTNESS_FLEXIBLE
-        if cleaned == STRICTNESS_STRICT:
-            return STRICTNESS_STRICT
         return None
     except Exception:
         return None
-
-
-def _extract_strict_preference(
-    message: str,
-    awaiting_strictness: bool = False,
-    assistant_mode: str = DEFAULT_ASSISTANT_MODE,
-) -> str | None:
-    lowered = message.strip().lower()
-    if not lowered:
-        return None
-
-    for marker in FLEXIBLE_MARKERS:
-        if marker in lowered:
-            return STRICTNESS_FLEXIBLE
-
-    for marker in STRICT_MARKERS:
-        if marker in lowered:
-            return STRICTNESS_STRICT
-
-    if awaiting_strictness:
-        if lowered in YES_WORDS or any(lowered.startswith(f"{word} ") for word in YES_WORDS) or "why not" in lowered:
-            return STRICTNESS_STRICT
-        if lowered in NO_WORDS or any(lowered.startswith(f"{word} ") for word in NO_WORDS):
-            return STRICTNESS_FLEXIBLE
-
-        llm_signal = _classify_binary_intent_with_llm(
-            mode=assistant_mode,
-            stage="strictness",
-            message=message,
-        )
-        if llm_signal in {STRICTNESS_STRICT, STRICTNESS_FLEXIBLE}:
-            return llm_signal
-
-    return None
 
 
 def _extract_confirmation_signal(
@@ -796,16 +746,18 @@ def _is_contextual_refinement_message(message: str) -> bool:
     return _is_probably_fashion_related(message)
 
 
-def _resolve_post_search_strict_preference(current_preference: str, state: dict) -> str:
-    normalized = _normalize_strict_preference(current_preference)
-    if normalized != STRICTNESS_UNKNOWN:
-        return normalized
+def _is_detailed_revision_message(message: str, confirmation_signal: str | None) -> bool:
+    if confirmation_signal != "revise":
+        return False
 
-    state_strict = state.get("strict") if isinstance(state, dict) else None
-    if isinstance(state_strict, bool):
-        return STRICTNESS_STRICT if state_strict else STRICTNESS_FLEXIBLE
+    text = str(message or "").strip()
+    if not text:
+        return False
 
-    return STRICTNESS_STRICT
+    if len(text.split()) <= 2:
+        return False
+
+    return _is_contextual_refinement_message(text) or _message_mentions_type_hint(text)
 
 
 def _ordered_filter_fields(block: dict) -> list[str]:
@@ -1127,7 +1079,7 @@ def _generate_confirmation_lead(
 
     try:
         response = ollama.chat(
-            model=OLLAMA_MODEL,
+            model=OLLAMA_ROUTER_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -1197,24 +1149,6 @@ def _build_revision_prompt(mode: str) -> str:
     return "Darling, perfect. Tell me what to change and I will update the brief before we search."
 
 
-def _build_strictness_prompt(mode: str) -> str:
-    if _normalize_assistant_mode(mode) == "edna":
-        return (
-            "Do you want strict matching (exact matches only) or flexible matching "
-            "(include near matches)?"
-        )
-    return (
-        "Darling, should I be strict (exact matches only) or flexible "
-        "(include near matches)?"
-    )
-
-
-def _build_strictness_reask(mode: str) -> str:
-    if _normalize_assistant_mode(mode) == "edna":
-        return "Answer with your preference: strict or flexible."
-    return "Darling, answer clearly: strict or flexible."
-
-
 def _missing_detail_fields(filters: dict) -> list[str]:
     include = _normalize_filter_payload(filters).get("include", {})
     missing = []
@@ -1266,11 +1200,9 @@ def _fallback_persona_reply(mode: str, scenario: str, context: dict[str, Any]) -
             "reset": "Reset complete. Start again. Better this time.",
             "off_topic": "No. I am not here for that. Ask me about clothes, fit, color, or occasion.",
             "ask_details": f"Too vague. Give me more: {detail_text}.",
-            "ask_strictness": "Do you want only exact matches, or should I include near matches with potential?",
-            "strict_reask": "Answer clearly: exact matches only, or flexible suggestions?",
             "search_unavailable": "Search is unavailable right now. Try again in a moment.",
             "results_ready": f"Analysis complete. I found {result_count} strong option(s).",
-            "no_results": "No strong matches. Add more detail and we try again.",
+            "no_results": "I found 0 results for that exact brief. Add more detail or relax one constraint and we try again.",
         }
     else:
         fallback = {
@@ -1279,11 +1211,9 @@ def _fallback_persona_reply(mode: str, scenario: str, context: dict[str, Any]) -
             "reset": "Fresh canvas, darling. We begin again.",
             "off_topic": "Absolutely ghastly use of my time. Ask me about fashion, not that.",
             "ask_details": f"Promising start, darling, but I need more edge: {detail_text}.",
-            "ask_strictness": "Do you want razor-sharp exact matches only, or a wider sweep with bold near matches?",
-            "strict_reask": "Pick one, darling: exact and uncompromising, or flexible and exploratory?",
             "search_unavailable": "I would search right now, but the fashion vault is unavailable for a moment.",
             "results_ready": f"Now that is power. I analyzed everything and found {result_count} option(s).",
-            "no_results": "I searched hard and found nothing worthy yet. Give me new constraints and we strike again.",
+            "no_results": "Darling, we have hit a roadblock: I found 0 results for that exact brief. Let us loosen one constraint and find something fabulous.",
         }
 
     return fallback.get(scenario, fallback["nudge"])
@@ -1294,6 +1224,28 @@ def _fixed_persona_intro(mode: str) -> str:
     if normalized_mode == "edna":
         return "I am Edna. I handle fashion, and I handle it correctly. Tell me what you need."
     return "Darling, I am Cruella, your fashion accomplice. Tell me what power look you want."
+
+
+def _ensure_no_results_clarity(mode: str, text: str) -> str:
+    lowered = (text or "").strip().lower()
+    if not lowered:
+        return text
+
+    clarity_markers = (
+        "no results",
+        "0 result",
+        "zero result",
+        "did not find any results",
+        "didn't find any results",
+        "found nothing",
+    )
+    if any(marker in lowered for marker in clarity_markers):
+        return text
+
+    normalized_mode = _normalize_assistant_mode(mode)
+    if normalized_mode == "edna":
+        return f"I found 0 results for that exact brief. {text}".strip()
+    return f"Darling, I found 0 results for that exact brief. {text}".strip()
 
 
 def _generate_persona_reply(mode: str, scenario: str, user_message: str, context: dict[str, Any]) -> str:
@@ -1312,6 +1264,7 @@ def _generate_persona_reply(mode: str, scenario: str, user_message: str, context
         "- Reply in plain text only.\n"
         "- No markdown and no JSON.\n"
         "- Keep it concise (1 to 3 sentences).\n"
+        "- If scenario is no_results, explicitly state that 0 results were found.\n"
         "- Stay fashion-focused."
     )
     user_prompt = (
@@ -1323,7 +1276,7 @@ def _generate_persona_reply(mode: str, scenario: str, user_message: str, context
 
     try:
         response = ollama.chat(
-            model=OLLAMA_MODEL,
+            model=OLLAMA_ROUTER_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
@@ -1345,6 +1298,8 @@ def _generate_persona_reply(mode: str, scenario: str, user_message: str, context
             raw = raw.rsplit("```", 1)[0].strip()
 
         if raw:
+            if scenario == "no_results":
+                return _ensure_no_results_clarity(normalized_mode, raw)
             return raw
     except Exception:
         pass
@@ -1497,6 +1452,7 @@ def _update_state_with_message(
     current_filters: dict,
     message: str,
     has_previous_context: bool,
+    recent_user_messages: list[str] | None = None,
 ) -> tuple[str, dict, str, str | None]:
     normalized_mode = _normalize_assistant_mode(mode)
 
@@ -1507,6 +1463,7 @@ def _update_state_with_message(
                 previous_query=current_query,
                 previous_filters=current_filters,
                 refinement=message,
+                recent_messages=recent_user_messages,
                 verbose=False,
             )
             next_query = updated.get("query") if isinstance(updated.get("query"), str) else f"{current_query} {message}".strip()
@@ -1528,28 +1485,30 @@ def _build_state_payload(
     *,
     query: str,
     filters: dict,
-    strict_preference: str,
+    strict: bool,
     assistant_mode: str,
     parser_source: str,
-    awaiting_strictness: bool,
     awaiting_confirmation: bool = False,
-    strict_default: bool,
     has_completed_search: bool = False,
     pending_detail_signature: str = "",
+    recent_user_messages: list[str] | None = None,
 ) -> dict[str, Any]:
-    return {
+    payload = {
         "query": query,
         "filters": _normalize_filter_payload(filters),
-        "strict": _strict_from_preference(strict_preference, strict_default=strict_default),
-        "strict_preference": _normalize_strict_preference(strict_preference),
+        "strict": bool(strict),
         "assistant_mode": _normalize_assistant_mode(assistant_mode),
         "parser_source": parser_source,
-        "awaiting_strictness": bool(awaiting_strictness),
         "awaiting_confirmation": bool(awaiting_confirmation),
         "has_completed_search": bool(has_completed_search),
         "pending_detail_signature": str(pending_detail_signature or ""),
         "started": True,
     }
+
+    if isinstance(recent_user_messages, list):
+        payload["recent_user_messages"] = _normalize_recent_user_messages(recent_user_messages)
+
+    return payload
 
 
 def _display_results(hits: list, parsed_filters: dict):
@@ -1607,7 +1566,8 @@ def main():
     print(f"  Vector DB    : {COLLECTION_NAME} ({points} points)")
     print(f"  Embed model  : {EMBEDDING_MODEL_NAME}")
     print(f"  Initial parser: {_initial_parser_banner()}")
-    print(f"  LLM refiner  : {OLLAMA_MODEL}")
+    print(f"  LLM parser/refiner: {OLLAMA_REFINER_MODEL}")
+    print(f"  LLM interaction : {OLLAMA_ROUTER_MODEL}")
     print(f"  Total results: {TOTAL_RESULTS} (evaluating {MAX_QUERY_RESULTS} cands)")
     print(f"  Threshold    : {SIMILARITY_THRESHOLD}")
     print("=" * 60)
@@ -1618,6 +1578,11 @@ def main():
     # ── Search loop ──
     print("\n  Type a natural-language query, or 'exit' to quit.")
     print("  Commands: 'new: <query>' to start a new query, 'reset' to clear state, 'show' to inspect state.\n")
+
+    assistant_mode = _normalize_assistant_mode(DEFAULT_ASSISTANT_MODE)
+    strict = _strict_from_preference(_strict_preference_for_mode(assistant_mode), strict_default=False)
+    strict_label = "strict" if strict else "flexible"
+    print(f"  Mode policy : {assistant_mode} ({strict_label} matching)\n")
 
     current_query: str | None = None
     current_filters: dict = {}
@@ -1679,15 +1644,11 @@ def main():
         print("\n  Extracted filters:")
         print(f"  {json.dumps(current_filters, indent=4)}")
 
-        # Step 2: Ask user for strictness
-        strict_ans = input("\n  Do you want strict matching (only exact filter matches)? (y/n) > ").strip().lower()
-        strict = strict_ans == 'y'
-
-        # Step 3: Filtered semantic search
+        # Step 2: Filtered semantic search
         print("\n  Searching ...")
         hits = filtered_search(current_query, current_filters, model, strict=strict)
 
-        # Step 4: Display results
+        # Step 3: Display results
         _display_results(hits, current_filters)
 
 
@@ -1705,7 +1666,7 @@ def run_conversation_model(
     - Cruella and Edna persona modes.
     - Off-topic guardrails (fashion-only scope).
     - Clarifying questions when user request is underspecified.
-    - Non-technical strictness question before search.
+    - Persona-locked strictness policy (Cruella strict, Edna flexible).
     - First parse routing by mode:
         Cruella -> LLM parse_query
         Edna    -> baseline parser (LLM fallback)
@@ -1742,18 +1703,17 @@ def run_conversation_model(
     current_filters = state_filters if has_previous_context else normalized_base_filters
     current_filters = _ensure_type_filter(current_filters, detected)
 
-    strict_preference = _normalize_strict_preference(state.get("strict_preference"))
-    if strict and strict_preference == STRICTNESS_UNKNOWN:
-        strict_preference = STRICTNESS_STRICT
-
-    was_awaiting_strictness = bool(state.get("awaiting_strictness"))
-    awaiting_strictness = was_awaiting_strictness
+    # Strictness is derived from the selected persona mode; free-form strict/flexible
+    # negotiation is intentionally disabled.
+    strict_preference = _strict_preference_for_mode(mode)
     awaiting_confirmation = bool(state.get("awaiting_confirmation"))
     parser_source = str(state.get("parser_source") or "none")
     has_completed_search = bool(state.get("has_completed_search"))
     pending_detail_signature = str(state.get("pending_detail_signature") or "").strip()
+    recent_user_messages = _normalize_recent_user_messages(state.get("recent_user_messages"))
 
     message = (user_input or "").strip()
+    recent_user_messages = _append_recent_user_message(recent_user_messages, message)
 
     if not message:
         scenario = "intro" if not started_before else "nudge"
@@ -1775,14 +1735,13 @@ def run_conversation_model(
             "state": _build_state_payload(
                 query=current_query,
                 filters=current_filters,
-                strict_preference=strict_preference,
+                strict=_strict_from_preference(strict_preference, strict_default=False),
                 assistant_mode=mode,
                 parser_source=parser_source,
-                awaiting_strictness=awaiting_strictness,
                 awaiting_confirmation=awaiting_confirmation,
-                strict_default=strict,
                 has_completed_search=has_completed_search,
                 pending_detail_signature=pending_detail_signature,
+                recent_user_messages=recent_user_messages,
             ),
         }
 
@@ -1790,8 +1749,7 @@ def run_conversation_model(
         mode = _normalize_assistant_mode(assistant_mode) if assistant_mode else (existing_mode if started_before else requested_mode)
         current_query = base_query
         current_filters = _ensure_type_filter(base_filters, detected)
-        strict_preference = STRICTNESS_UNKNOWN
-        awaiting_strictness = False
+        strict_preference = _strict_preference_for_mode(mode)
         awaiting_confirmation = False
         parser_source = "reset"
         has_completed_search = False
@@ -1811,45 +1769,34 @@ def run_conversation_model(
             "state": _build_state_payload(
                 query=current_query,
                 filters=current_filters,
-                strict_preference=strict_preference,
+                strict=_strict_from_preference(strict_preference, strict_default=False),
                 assistant_mode=mode,
                 parser_source=parser_source,
-                awaiting_strictness=awaiting_strictness,
                 awaiting_confirmation=awaiting_confirmation,
-                strict_default=strict,
                 has_completed_search=has_completed_search,
                 pending_detail_signature=pending_detail_signature,
+                recent_user_messages=recent_user_messages,
             ),
         }
 
     explicit_search = _is_explicit_search_request(message)
-    strict_signal = _extract_strict_preference(
-        message,
-        awaiting_strictness=awaiting_strictness,
-        assistant_mode=mode,
-    )
     confirmation_signal = _extract_confirmation_signal(
         message,
         awaiting_confirmation=awaiting_confirmation,
         assistant_mode=mode,
     )
 
-    if strict_signal is not None:
-        strict_preference = strict_signal
-        awaiting_strictness = False
-
     contextual_refinement = (
-        has_completed_search
-        and has_previous_context
-        and not awaiting_strictness
-        and not awaiting_confirmation
+        has_previous_context
         and _is_contextual_refinement_message(message)
+        and (
+            (has_completed_search and not awaiting_confirmation)
+            or (awaiting_confirmation and confirmation_signal == "revise")
+        )
     )
 
     if (
-        strict_signal is None
-        and confirmation_signal is None
-        and not awaiting_strictness
+        confirmation_signal is None
         and not awaiting_confirmation
         and not explicit_search
         and not contextual_refinement
@@ -1870,14 +1817,13 @@ def run_conversation_model(
             "state": _build_state_payload(
                 query=current_query,
                 filters=current_filters,
-                strict_preference=strict_preference,
+                strict=_strict_from_preference(strict_preference, strict_default=False),
                 assistant_mode=mode,
                 parser_source=parser_source,
-                awaiting_strictness=awaiting_strictness,
                 awaiting_confirmation=awaiting_confirmation,
-                strict_default=strict,
                 has_completed_search=has_completed_search,
                 pending_detail_signature=pending_detail_signature,
+                recent_user_messages=recent_user_messages,
             ),
         }
 
@@ -1892,19 +1838,21 @@ def run_conversation_model(
             has_previous_context_for_update = False
             has_completed_search = False
             pending_detail_signature = ""
-            strict_preference = STRICTNESS_UNKNOWN
-            awaiting_strictness = False
+            strict_preference = _strict_preference_for_mode(mode)
             awaiting_confirmation = False
             current_query = message.strip()
             current_filters = _ensure_type_filter(candidate_filters, detected)
             parser_source = f"{candidate_source}_new_query" if candidate_source else "new_query"
             parser_warning = candidate_warning
 
-    short_strict_answer = strict_signal is not None and len(message.split()) <= 5
-    short_confirmation_answer = confirmation_signal is not None and len(message.split()) <= 6
+    detailed_revision_message = _is_detailed_revision_message(message, confirmation_signal)
+    short_confirmation_answer = (
+        confirmation_signal is not None
+        and len(message.split()) <= 6
+        and not detailed_revision_message
+    )
     should_update_with_parser = not new_query_from_type_change and not (
-        (was_awaiting_strictness and short_strict_answer and _has_filters(current_filters))
-        or (awaiting_confirmation and short_confirmation_answer and _has_filters(current_filters))
+        awaiting_confirmation and short_confirmation_answer and _has_filters(current_filters)
     )
 
     if should_update_with_parser:
@@ -1914,6 +1862,7 @@ def run_conversation_model(
             current_filters=current_filters,
             message=message,
             has_previous_context=has_previous_context_for_update,
+            recent_user_messages=recent_user_messages,
         )
         current_filters = _ensure_type_filter(current_filters, detected)
 
@@ -1924,9 +1873,7 @@ def run_conversation_model(
         and bool(pending_detail_signature)
         and minimal_signature is not None
         and minimal_signature == pending_detail_signature
-        and strict_signal is None
         and confirmation_signal is None
-        and not awaiting_strictness
         and not awaiting_confirmation
     )
 
@@ -1935,7 +1882,7 @@ def run_conversation_model(
         filter_count == 0 or (filter_count <= 1 and not explicit_search)
     ) and not repeated_minimal_request and not auto_search_refinement_turn
 
-    if needs_more_detail and strict_signal is None and confirmation_signal is None and not awaiting_strictness:
+    if needs_more_detail and confirmation_signal is None:
         detail_fields = _missing_detail_fields(current_filters)
         pending_detail_signature = minimal_signature or ""
         reply = _generate_persona_reply(
@@ -1954,45 +1901,18 @@ def run_conversation_model(
             "state": _build_state_payload(
                 query=current_query,
                 filters=current_filters,
-                strict_preference=strict_preference,
+                strict=_strict_from_preference(strict_preference, strict_default=False),
                 assistant_mode=mode,
                 parser_source=parser_source,
-                awaiting_strictness=False,
                 awaiting_confirmation=False,
-                strict_default=strict,
                 has_completed_search=has_completed_search,
                 pending_detail_signature=pending_detail_signature,
+                recent_user_messages=recent_user_messages,
             ),
         }
-
-    if repeated_minimal_request:
-        strict_preference = STRICTNESS_STRICT
 
     if not needs_more_detail:
         pending_detail_signature = ""
-
-    if awaiting_strictness and strict_signal is None:
-        reply = _build_strictness_reask(mode)
-        return {
-            "ok": True,
-            "reply": reply,
-            "mode": mode,
-            "action": "ask_strictness",
-            "results": [],
-            "warning": parser_warning,
-            "state": _build_state_payload(
-                query=current_query,
-                filters=current_filters,
-                strict_preference=strict_preference,
-                assistant_mode=mode,
-                parser_source=parser_source,
-                awaiting_strictness=True,
-                awaiting_confirmation=False,
-                strict_default=strict,
-                has_completed_search=has_completed_search,
-                pending_detail_signature=pending_detail_signature,
-            ),
-        }
 
     should_skip_confirmation = (
         repeated_minimal_request
@@ -2005,65 +1925,31 @@ def run_conversation_model(
         )
     )
 
-    resolved_strictness_turn = was_awaiting_strictness and strict_signal is not None
-    if not resolved_strictness_turn:
-        if awaiting_confirmation:
-            if confirmation_signal == "confirm" or explicit_search:
-                awaiting_confirmation = False
-            elif confirmation_signal == "revise" and not should_update_with_parser:
-                reply = _build_revision_prompt(mode)
-                return {
-                    "ok": True,
-                    "reply": reply,
-                    "mode": mode,
-                    "action": "confirm_edit",
-                    "results": [],
-                    "warning": parser_warning,
-                    "state": _build_state_payload(
-                        query=current_query,
-                        filters=current_filters,
-                        strict_preference=strict_preference,
-                        assistant_mode=mode,
-                        parser_source=parser_source,
-                        awaiting_strictness=False,
-                        awaiting_confirmation=False,
-                        strict_default=strict,
-                        has_completed_search=has_completed_search,
-                        pending_detail_signature=pending_detail_signature,
-                    ),
-                }
-            else:
-                summary = _build_requirements_summary(current_query, current_filters)
-                confirmation_lead = _generate_confirmation_lead(
-                    mode,
-                    summary=summary,
+    if awaiting_confirmation:
+        if confirmation_signal == "confirm" or explicit_search:
+            awaiting_confirmation = False
+        elif confirmation_signal == "revise" and not should_update_with_parser:
+            reply = _build_revision_prompt(mode)
+            return {
+                "ok": True,
+                "reply": reply,
+                "mode": mode,
+                "action": "confirm_edit",
+                "results": [],
+                "warning": parser_warning,
+                "state": _build_state_payload(
                     query=current_query,
-                    user_message=message,
                     filters=current_filters,
-                )
-                reply = _build_confirmation_prompt(mode, summary, lead=confirmation_lead)
-                strict_preference = STRICTNESS_UNKNOWN
-                return {
-                    "ok": True,
-                    "reply": reply,
-                    "mode": mode,
-                    "action": "confirm_requirements",
-                    "results": [],
-                    "warning": parser_warning,
-                    "state": _build_state_payload(
-                        query=current_query,
-                        filters=current_filters,
-                        strict_preference=strict_preference,
-                        assistant_mode=mode,
-                        parser_source=parser_source,
-                        awaiting_strictness=False,
-                        awaiting_confirmation=True,
-                        strict_default=strict,
-                        has_completed_search=has_completed_search,
-                        pending_detail_signature=pending_detail_signature,
-                    ),
-                }
-        elif not should_skip_confirmation:
+                    strict=_strict_from_preference(strict_preference, strict_default=False),
+                    assistant_mode=mode,
+                    parser_source=parser_source,
+                    awaiting_confirmation=False,
+                    has_completed_search=has_completed_search,
+                    pending_detail_signature=pending_detail_signature,
+                    recent_user_messages=recent_user_messages,
+                ),
+            }
+        else:
             summary = _build_requirements_summary(current_query, current_filters)
             confirmation_lead = _generate_confirmation_lead(
                 mode,
@@ -2073,7 +1959,6 @@ def run_conversation_model(
                 filters=current_filters,
             )
             reply = _build_confirmation_prompt(mode, summary, lead=confirmation_lead)
-            strict_preference = STRICTNESS_UNKNOWN
             return {
                 "ok": True,
                 "reply": reply,
@@ -2084,44 +1969,46 @@ def run_conversation_model(
                 "state": _build_state_payload(
                     query=current_query,
                     filters=current_filters,
-                    strict_preference=strict_preference,
+                    strict=_strict_from_preference(strict_preference, strict_default=False),
                     assistant_mode=mode,
                     parser_source=parser_source,
-                    awaiting_strictness=False,
                     awaiting_confirmation=True,
-                    strict_default=strict,
                     has_completed_search=has_completed_search,
                     pending_detail_signature=pending_detail_signature,
+                    recent_user_messages=recent_user_messages,
                 ),
             }
-
-    if auto_search_refinement_turn:
-        strict_preference = _resolve_post_search_strict_preference(strict_preference, state)
-
-    if strict_preference == STRICTNESS_UNKNOWN:
-        reply = _build_strictness_prompt(mode)
+    elif not should_skip_confirmation:
+        summary = _build_requirements_summary(current_query, current_filters)
+        confirmation_lead = _generate_confirmation_lead(
+            mode,
+            summary=summary,
+            query=current_query,
+            user_message=message,
+            filters=current_filters,
+        )
+        reply = _build_confirmation_prompt(mode, summary, lead=confirmation_lead)
         return {
             "ok": True,
             "reply": reply,
             "mode": mode,
-            "action": "ask_strictness",
+            "action": "confirm_requirements",
             "results": [],
             "warning": parser_warning,
             "state": _build_state_payload(
                 query=current_query,
                 filters=current_filters,
-                strict_preference=strict_preference,
+                strict=_strict_from_preference(strict_preference, strict_default=False),
                 assistant_mode=mode,
                 parser_source=parser_source,
-                awaiting_strictness=True,
-                awaiting_confirmation=False,
-                strict_default=strict,
+                awaiting_confirmation=True,
                 has_completed_search=has_completed_search,
                 pending_detail_signature=pending_detail_signature,
+                recent_user_messages=recent_user_messages,
             ),
         }
 
-    search_is_strict = _strict_from_preference(strict_preference, strict_default=strict)
+    search_is_strict = _strict_from_preference(strict_preference, strict_default=False)
 
     db_ready, db_error = _ensure_vector_db_ready()
     if not db_ready:
@@ -2141,14 +2028,13 @@ def run_conversation_model(
             "state": _build_state_payload(
                 query=current_query,
                 filters=current_filters,
-                strict_preference=strict_preference,
+                strict=_strict_from_preference(strict_preference, strict_default=False),
                 assistant_mode=mode,
                 parser_source=parser_source,
-                awaiting_strictness=False,
                 awaiting_confirmation=False,
-                strict_default=search_is_strict,
                 has_completed_search=has_completed_search,
                 pending_detail_signature=pending_detail_signature,
+                recent_user_messages=recent_user_messages,
             ),
         }
 
@@ -2173,14 +2059,13 @@ def run_conversation_model(
                 "state": _build_state_payload(
                     query=current_query,
                     filters=current_filters,
-                    strict_preference=strict_preference,
+                    strict=_strict_from_preference(strict_preference, strict_default=False),
                     assistant_mode=mode,
                     parser_source=parser_source,
-                    awaiting_strictness=False,
                     awaiting_confirmation=False,
-                    strict_default=search_is_strict,
                     has_completed_search=has_completed_search,
                     pending_detail_signature=pending_detail_signature,
+                    recent_user_messages=recent_user_messages,
                 ),
             }
 
@@ -2208,14 +2093,13 @@ def run_conversation_model(
             "state": _build_state_payload(
                 query=current_query,
                 filters=current_filters,
-                strict_preference=strict_preference,
+                strict=_strict_from_preference(strict_preference, strict_default=False),
                 assistant_mode=mode,
                 parser_source=parser_source,
-                awaiting_strictness=False,
                 awaiting_confirmation=False,
-                strict_default=search_is_strict,
                 has_completed_search=has_completed_search,
                 pending_detail_signature=pending_detail_signature,
+                recent_user_messages=recent_user_messages,
             ),
         }
 
@@ -2244,14 +2128,13 @@ def run_conversation_model(
         "state": _build_state_payload(
             query=current_query,
             filters=current_filters,
-            strict_preference=strict_preference,
+            strict=_strict_from_preference(strict_preference, strict_default=False),
             assistant_mode=mode,
             parser_source=parser_source,
-            awaiting_strictness=False,
             awaiting_confirmation=False,
-            strict_default=search_is_strict,
             has_completed_search=has_completed_search,
             pending_detail_signature=pending_detail_signature,
+            recent_user_messages=recent_user_messages,
         ),
     }
 

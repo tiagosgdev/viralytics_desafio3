@@ -160,6 +160,22 @@ def _persona_text_backend(persona: str) -> str:
     return PERSONA_CONFIGS[key].text_backend
 
 
+def _strict_for_persona(persona: str) -> bool:
+    return normalize_persona(persona) == "cruella"
+
+
+def _resolve_assistant_mode(payload: ConversationRequest) -> str:
+    if isinstance(payload.assistant_mode, str) and payload.assistant_mode.strip():
+        return normalize_persona(payload.assistant_mode)
+
+    if isinstance(payload.state, dict):
+        state_mode = payload.state.get("assistant_mode")
+        if isinstance(state_mode, str) and state_mode.strip():
+            return normalize_persona(state_mode)
+
+    return "cruella"
+
+
 def _db_backed_recommendations_sync(detected_categories: list[str]) -> list[dict]:
     """Resolve recommendations from LNIAGIA search_app against the real DB."""
     try:
@@ -503,13 +519,16 @@ async def _run_conversation_search(payload: ConversationRequest) -> dict:
             detail=f"Could not import conversation search module: {exc}",
         ) from exc
 
+    assistant_mode = _resolve_assistant_mode(payload)
+    strict = _strict_for_persona(assistant_mode)
+
     result = await run_in_threadpool(
         run_conversation_model,
         detected_type=payload.detected_type,
         user_input=payload.message,
         conversation_state=payload.state,
-        strict=payload.strict,
-        assistant_mode=payload.assistant_mode,
+        strict=strict,
+        assistant_mode=assistant_mode,
     )
 
     if not result.get("ok", False):
@@ -528,12 +547,13 @@ async def search_conversation(payload: ConversationRequest, persona: str = "crue
 
     The frontend should send `state` from the previous response to keep context.
     """
+    assistant_mode = payload.assistant_mode or normalize_persona(persona)
     return await _run_conversation_search(
         ConversationRequest(
             detected_type=payload.detected_type,
             message=payload.message,
-            strict=payload.strict,
-            assistant_mode=payload.assistant_mode or normalize_persona(persona),
+            strict=_strict_for_persona(assistant_mode),
+            assistant_mode=assistant_mode,
             state=payload.state,
         )
     )
@@ -669,12 +689,13 @@ async def chat(payload: ChatRequest):
             persona = session.persona
 
     detected_type = _get_detected_type(session_id, payload.detected_categories)
+    assistant_mode = payload.assistant_mode or persona
     conversation_result = await _run_conversation_search(
         ConversationRequest(
             detected_type=detected_type,
             message=payload.message,
-            strict=payload.strict,
-            assistant_mode=payload.assistant_mode or persona,
+            strict=_strict_for_persona(assistant_mode),
+            assistant_mode=assistant_mode,
             state=payload.state,
         )
     )
@@ -686,13 +707,14 @@ async def chat(payload: ChatRequest):
 
     reply = str(conversation_result.get("reply") or "I processed your request.")
     warning = conversation_result.get("warning")
-    strict_value = payload.strict
-    if isinstance(state, dict) and isinstance(state.get("strict"), bool):
-        strict_value = state.get("strict")
 
     model_mode = conversation_result.get("mode")
     if isinstance(model_mode, str) and model_mode.strip():
         persona = normalize_persona(model_mode)
+
+    strict_value = _strict_for_persona(persona)
+    if isinstance(state, dict) and isinstance(state.get("strict"), bool):
+        strict_value = state.get("strict")
 
     return ChatResponse(
         reply=reply,

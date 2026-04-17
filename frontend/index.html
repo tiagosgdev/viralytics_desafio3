@@ -19,17 +19,18 @@
       <div class="landing-eyebrow">Choose Your Stylist</div>
       <h1 id="landing-title">How should FashionSense think today?</h1>
       <p class="landing-copy">
-        Cruella uses the trained YOLO detector with the LLM-powered search flow. Edna uses the custom FashionNet
-        detector with the local custom text parser.
+        Cruella uses the trained YOLO detector with the LLM-powered search flow and always applies strict matching.
+        Edna uses the custom FashionNet detector with the local custom text parser and always applies flexible
+        matching.
       </p>
       <div class="landing-options">
         <button class="landing-option cruella" type="button" onclick="selectPersona('cruella')">
           <span class="landing-name">Cruella</span>
-          <span class="landing-meta">YOLO vision + LLM text</span>
+          <span class="landing-meta">YOLO vision + LLM text + strict matching</span>
         </button>
         <button class="landing-option edna" type="button" onclick="selectPersona('edna')">
           <span class="landing-name">Edna</span>
-          <span class="landing-meta">FashionNet vision + custom text</span>
+          <span class="landing-meta">FashionNet vision + custom text + flexible matching</span>
         </button>
       </div>
     </div>

@@ -37,7 +37,7 @@ BATCH_SIZE = 64
 # Weights for soft filtering
 PENALTY_WEIGHT = 0.4
 EXTENDED_PENALTY_WEIGHT = 0.2
-BOOST_WEIGHT = 0.2  # Reserved for optional include boosting (currently unused).
+BOOST_WEIGHT = 0.1  # Positive boost applied per include-field match in soft mode.
 
 # Deterministic exclude expansion for semantically close values.
 # This is used to improve behavior for negations like "not too fitted"
@@ -429,10 +429,7 @@ def filtered_search(
             if extended_penalty_weight is not None
             else EXTENDED_PENALTY_WEIGHT
         )
-
-        # Backward compatibility: parameter retained even though we currently
-        # use exclude-driven penalties only in soft mode.
-        _ = boost_weight
+        b_include = boost_weight if boost_weight is not None else BOOST_WEIGHT
 
         if exact_excludes or extended_excludes or includes:
             for hit in hits:
@@ -447,6 +444,12 @@ def filtered_search(
                     payload_val = hit.payload.get(field)
                     if _payload_matches_any(payload_val, values):
                         hit.score -= p_extended
+
+                # Positive boost for include matches in soft mode.
+                for field, values in includes.items():
+                    payload_val = hit.payload.get(field)
+                    if _payload_matches_any(payload_val, values):
+                        hit.score += b_include
 
                 # # Check if it lacks anything in include
                 # for field, values in includes.items():
