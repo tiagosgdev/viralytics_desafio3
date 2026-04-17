@@ -39,6 +39,7 @@ def parse_args():
         action="store_true",
         help="Train from scratch (random weights, no COCO pretraining)",
     )
+    p.add_argument("--name", default="", help="Override output run name (default: {model}_fashion)")
     p.add_argument("--wandb", action="store_true", help="Enable W&B logging")
     return p.parse_args()
 
@@ -76,6 +77,13 @@ def main():
     
 
     # ── Train ─────────────────────────────────────────────────────────────
+    default_name = (
+        f"{args.model}_fashion"
+        if not args.no_pretrained
+        else f"{args.model}_fashion_scratch"
+    )
+    run_name = args.name if args.name else default_name
+
     results = model.train(
         data=str(data_path),
         epochs=args.epochs,
@@ -84,11 +92,7 @@ def main():
         workers=args.workers,
         device=args.device or None,
         project=str(Path(args.output_dir).resolve()),
-        name=(
-            f"{args.model}_fashion"
-            if not args.no_pretrained
-            else f"{args.model}_fashion_scratch"
-        ),
+        name=run_name,
         exist_ok=False,
         patience=args.patience,
         # Augmentation settings (important for clothing variety)
@@ -109,12 +113,8 @@ def main():
         save_period=10,
     )
 
-    run_name = (
-        f"{args.model}_fashion"
-        if not args.no_pretrained
-        else f"{args.model}_fashion_scratch"
-    )
-    best = Path(args.output_dir) / run_name / "weights" / "best.pt"
+    actual_name = Path(results.save_dir).name
+    best = Path(results.save_dir) / "weights" / "best.pt"
     print(f"\n✅  Training complete!")
     print(f"   Best weights → {best.resolve()}")
     print(f"\n   Quick test:")

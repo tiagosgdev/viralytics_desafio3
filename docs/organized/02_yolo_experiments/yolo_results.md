@@ -4525,6 +4525,42 @@ Results are significantly worse than the sample_dataset tests (mAP@50: 0.575 vs 
 
 ---
 
+## Test 2 — YOLOv8M | 100 epochs (early stop 77) | batch=32 | ~11.582 hours
+
+Run: `yolov8m_balanced_1002`. Best checkpoint at epoch 62, early stopped at epoch 77 (patience=15).
+Evaluated on test set (11,186 images, 11 classes) at conf=0.25.
+
+| Category | Precision | Recall | mAP@50 | mAP@50:95 |
+|----------|-----------|--------|--------|-----------|
+| **all** | **0.575** | **0.689** | **0.592** | **0.537** |
+| short_sleeve_top | 0.319 | 0.516 | 0.282 | 0.258 |
+| long_sleeve_top | 0.423 | 0.625 | 0.400 | 0.363 |
+| long_sleeve_outwear | 0.716 | 0.795 | 0.739 | 0.677 |
+| vest | 0.653 | 0.747 | 0.685 | 0.604 |
+| shorts | 0.505 | 0.704 | 0.552 | 0.470 |
+| trousers | 0.409 | 0.643 | 0.430 | 0.376 |
+| skirt | 0.458 | 0.679 | 0.458 | 0.408 |
+| short_sleeve_dress | 0.657 | 0.701 | 0.696 | 0.646 |
+| long_sleeve_dress | 0.673 | 0.697 | 0.717 | 0.674 |
+| vest_dress | 0.658 | 0.711 | 0.701 | 0.649 |
+| sling_dress | 0.853 | 0.761 | 0.847 | 0.780 |
+
+| Metric | Value |
+|--------|-------|
+| mAP@50 | 0.5916 |
+| mAP@50:95 | 0.5368 |
+| Precision | 0.5750 |
+| Recall | 0.6891 |
+| F1 | 0.6269 |
+
+### Analysis
+
++0.0166 mAP@50 over Test 1 (50 epochs) on the same test set, with higher recall (+0.011) and F1
+(+0.627 vs ~0.609). The gains are consistent across most classes — sling_dress leads at 0.847 AP.
+short_sleeve_top remains the weakest class (0.282 AP), unchanged from Test 1.
+
+---
+
 # Training Tests
 
 ## Test 1 - 10k images | YOLOv8L | batch=16 | ~1.311 hours

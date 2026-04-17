@@ -1313,13 +1313,19 @@ for F1 only.
 
 ## Context: Gap to YOLOv8
 
-For reference, YOLOv8M trained on the same balanced_dataset reached **0.575 mAP@50**
-(50 epochs, see `02_yolo_experiments/yolo_results.md`). The gap to edna_1.2m is **0.315 mAP@50**.
+For reference, YOLOv8M trained on the same balanced_dataset:
+
+| Run | Epochs | mAP@50 | Precision | Recall | F1 |
+|-----|--------|--------|-----------|--------|----|
+| yolov8m_fashion (50ep) | 50 | 0.575 | 0.558 | 0.678 | 0.612 |
+| yolov8m_balanced_1002 (77ep, best=62) | 77 | **0.592** | 0.575 | 0.689 | 0.627 |
+
+Gap to edna_1.2m (best edna): **0.332 mAP@50** (0.592 vs 0.260).
 
 Key differences explaining the gap:
 1. YOLOv8M uses COCO-pretrained weights; edna family trains from scratch
 2. YOLOv8 architecture is years more optimized (CSPDarknet, PANet, decoupled head)
-3. YOLOv8M has ~25.8M params vs edna_1.2m at ~34M - more capacity alone does not close the gap
+3. YOLOv8M has ~25.8M params vs edna_1.2m at ~34M — more capacity alone does not close the gap
 
 ---
 

@@ -36,11 +36,12 @@ def main():
 
     print(f"\n📊  Evaluating: {args.weights}\n")
     metrics = model.val(
-        data  = args.data,
-        imgsz = args.imgsz,
-        conf  = args.conf,
-        split = args.split,
+        data    = args.data,
+        imgsz   = args.imgsz,
+        conf    = args.conf,
+        split   = args.split,
         verbose = True,
+        plots   = True,
     )
 
     # Per-class mAP table
@@ -60,6 +61,8 @@ def main():
     print(f"   Overall mAP@50:95: {metrics.box.map:.4f}")
     print(f"   Precision        : {metrics.box.mp:.4f}")
     print(f"   Recall           : {metrics.box.mr:.4f}")
+    f1 = 2 * metrics.box.mp * metrics.box.mr / (metrics.box.mp + metrics.box.mr + 1e-7)
+    print(f"   F1               : {f1:.4f}")
 
 
 if __name__ == "__main__":
