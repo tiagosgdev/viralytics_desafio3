@@ -46,6 +46,7 @@ models/weights/*
 data/**
 !data/**/
 !data/**/.gitkeep
+!data/mock_store_catalogue_template.json
 datasets/
 *.csv
 *.tsv
