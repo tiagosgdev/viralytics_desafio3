@@ -33,7 +33,7 @@ import requests
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OLLAMA_URL = "http://127.0.0.1:11434"
 DEFAULT_OLLAMA_REFINER_MODEL = "qwen2.5:7b-instruct-q3_K_M"
-DEFAULT_OLLAMA_ROUTER_MODEL = "qwen2.5:3b-instruct"
+DEFAULT_OLLAMA_ROUTER_MODEL = "qwen2.5:7b-instruct-q3_K_M"
 
 # Backward-compatible alias used in legacy messages.
 EXPECTED_OLLAMA_MODEL = DEFAULT_OLLAMA_REFINER_MODEL
@@ -302,7 +302,8 @@ def run_uvicorn(args: argparse.Namespace, env: dict) -> int:
         command.append("--reload")
 
     print("\nStarting FashionSense...")
-    print(f"  URL: http://{args.host}:{args.port}")
+    print("  Bootstrapping services (models, vectors, camera, speech)...")
+    print("  URL will be announced by Uvicorn after startup completes.")
     print(f"  Detector backend: {args.detector_backend}")
     print(f"  Parser/refiner model: {env.get('OLLAMA_REFINER_MODEL')}")
     print(f"  Interaction model : {env.get('OLLAMA_ROUTER_MODEL')}")

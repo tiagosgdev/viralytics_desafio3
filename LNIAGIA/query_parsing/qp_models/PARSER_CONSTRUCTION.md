@@ -162,3 +162,93 @@ CRF export is split across two artifacts:
 - CRF focuses on sequence labeling, then canonical value resolution.
 
 Both are benchmarked with the same structured metrics and can be exported as winner artifacts for production use.
+
+## 5. Visual Diagrams (Rule-Based and CRF)
+
+The following diagrams are implementation-faithful and show both data flow and which model/component is used in each step.
+
+### 5.1 Rule-Based Parser Diagram
+
+```mermaid
+flowchart TD
+   subgraph RB_FIT[Rule-Based fit train + val]
+      RB1[QueryExample train+val data]
+      RB2[Collect canonical values per key include/exclude]
+      RB3[Mine BIO spans for extra surface forms labels_to_spans]
+      RB4[Inject type aliases TYPE_ALIASES]
+      RB5[Generate phrase variants default_phrase_variants + normalise_for_match]
+      RB6[Build PhraseMatcher patterns spaCy PhraseMatcher]
+      RB7[Build semantic expansions SEMANTIC_HINTS filtered by known schema]
+      RB8[Runtime resources known_values_by_key, surface_forms_by_pair, match_id_to_pair, semantic_expansion]
+
+      RB1 --> RB2 --> RB3 --> RB4 --> RB5 --> RB6 --> RB8
+      RB2 --> RB7 --> RB8
+   end
+
+   subgraph RB_PARSE[Rule-Based parse runtime]
+      RQ[User query text]
+      RNL[spaCy pipeline via load_nlp en_core_web_sm or fallback blank en]
+      RC1[Candidate spans from PhraseMatcher]
+      RC2[Candidate hints from semantic tokens dark/light/warm/cool]
+      RM[Merge candidates into SpanMatch set]
+      RN[_is_negated polarity decision left window + dependency checks]
+      RO[Output FilterDict include and exclude]
+
+      RQ --> RNL --> RC1 --> RM
+      RNL --> RC2 --> RM
+      RM --> RN --> RO
+   end
+```
+
+### 5.2 CRF Parser Diagram
+
+```mermaid
+flowchart TD
+   subgraph CRF_FIT[CRF fit train + val]
+      C1[QueryExample train+val data]
+      C2[Build lookup tables known_values_by_key, surface_to_keys, variant_to_canonical]
+      C3[Inject type aliases TYPE_ALIASES]
+      C4[Token feature extraction annotate_tokens via spaCy load_nlp]
+      C5[Sequence model training sklearn_crfsuite.CRF algorithm lbfgs]
+      C6[Hyperparameter search c1 c2 grid with validation weighted F1]
+      C7[Trained artifacts CRF model pkl + parser_state json]
+
+      C1 --> C2 --> C3
+      C1 --> C4 --> C5 --> C6 --> C7
+      C3 --> C7
+   end
+
+   subgraph CRF_PARSE[CRF parse runtime]
+      CQ[User query text]
+      CNLP[spaCy-based token annotations lexical + POS + dep]
+      CFEAT[Per-token feature vector]
+      CPRED[CRF predict labels BIO and NEG]
+      CSPAN[labels_to_spans span extraction]
+      CRES[_resolve_value exact variant map then difflib fuzzy cutoff 0.82 then canonical fallback]
+      CNEG[Negation decision predicted NEG window OR lexical negation window]
+      COUT[Output FilterDict include and exclude]
+
+      CQ --> CNLP --> CFEAT --> CPRED --> CSPAN --> CRES --> CNEG --> COUT
+   end
+```
+
+### 5.3 Model/Component Used at Each Step
+
+#### Rule-Based
+
+| Step | Model/Component | Purpose |
+|---|---|---|
+| Tokenization/parsing | spaCy `en_core_web_sm` (or `spacy.blank("en")` fallback) | Build doc/tokens for matching and dependency negation checks |
+| Phrase matching | spaCy `PhraseMatcher` | Match normalized lexical patterns to `(key, value)` |
+| Semantic expansion | `SEMANTIC_HINTS` mapping | Add controlled hint-based candidates |
+| Negation | `_is_negated` heuristics + dependency relations | Decide include vs exclude polarity |
+
+#### CRF
+
+| Step | Model/Component | Purpose |
+|---|---|---|
+| Token annotations | spaCy `en_core_web_sm` (or blank fallback) via `annotate_tokens` | Generate lexical and linguistic features |
+| Sequence labeling | `sklearn-crfsuite` `CRF` (`lbfgs`) | Predict BIO/NEG tags per token |
+| Model selection | `sklearn_crfsuite.metrics` | Choose best `c1/c2` with validation weighted F1 |
+| Value normalization | lookup tables + `difflib.get_close_matches` | Map span text to canonical schema values |
+| Negation fusion | predicted `NEG` + lexical window checks | Decide include vs exclude polarity |

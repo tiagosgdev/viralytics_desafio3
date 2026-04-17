@@ -207,6 +207,9 @@ class UnifiedSearchService:
         self._sessions: Dict[str, SearchSession] = {}
         self._embedding_model = None
 
+    def set_embedding_model(self, model) -> None:
+        self._embedding_model = model
+
     def availability(self) -> dict:
         parser_ready = parse_query is not None
         vector_ready = filtered_search is not None and self._vector_collection_ready()
