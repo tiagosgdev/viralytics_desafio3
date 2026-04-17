@@ -48,6 +48,11 @@ _INITIAL_BASELINE_PARSER = None
 _INITIAL_BASELINE_META: dict[str, Any] = {}
 _INITIAL_BASELINE_LOADED = False
 
+
+def set_conversation_embedding_model(model: Any) -> None:
+    global _CONVERSATION_MODEL
+    _CONVERSATION_MODEL = model
+
 # Parser switch (manual toggle).
 # Keep one active line and comment the other.
 PARSER_MODE = "LLM"

@@ -191,6 +191,32 @@ def _db_backed_recommendations_sync(detected_categories: list[str]) -> list[dict
     return _format_conversation_results(ranked_results)
 
 
+def _preload_search_embeddings_sync() -> str | None:
+    global search_service
+
+    if search_service is None:
+        return "search service is not initialized"
+
+    try:
+        from LNIAGIA.DB.vector.VectorDBManager import _load_model
+        from LNIAGIA.search_app import set_conversation_embedding_model
+    except Exception as exc:
+        return f"could not import embedding preload helpers ({exc})"
+
+    try:
+        shared_model = _load_model()
+    except Exception as exc:
+        return f"embedding model load failed ({exc})"
+
+    try:
+        search_service.set_embedding_model(shared_model)
+        set_conversation_embedding_model(shared_model)
+    except Exception as exc:
+        return f"could not share embedding model across search paths ({exc})"
+
+    return None
+
+
 @app.on_event("startup")
 async def startup():
     global detector, recommender, camera, whisper_model, search_service
@@ -224,6 +250,13 @@ async def startup():
 
     recommender = RecommendationEngine(top_k=5)
     search_service = UnifiedSearchService(recommender)
+
+    preload_warning = await run_in_threadpool(_preload_search_embeddings_sync)
+    if preload_warning:
+        print(f"⚠️  Embedding preload skipped: {preload_warning}")
+    else:
+        print("🧠  Embedding model preloaded for API and conversation search")
+
     cameras_by_persona = {
         key: CameraStream(
             detector_instance,
