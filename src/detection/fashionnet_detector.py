@@ -14,6 +14,7 @@ from src.detection.detector import (
     BaseDetector,
     CATEGORY_COLORS,
     CATEGORY_NAMES,
+    CATEGORY_NAMES_11,
     Detection,
     DetectionResult,
 )
@@ -34,6 +35,7 @@ class FashionNetDetector(BaseDetector):
         self.imgsz = imgsz
         self.device = self._pick_device(device)
         self.model, self.num_classes, self.grayscale = self._load_model(Path(self.weights))
+        self._names = CATEGORY_NAMES_11 if self.num_classes == 11 else CATEGORY_NAMES
 
     def detect(self, frame: np.ndarray) -> DetectionResult:
         t0 = time.perf_counter()
@@ -70,7 +72,7 @@ class FashionNetDetector(BaseDetector):
             detections.append(
                 Detection(
                     class_id=class_id,
-                    class_name=CATEGORY_NAMES.get(class_id, f"class_{class_id}"),
+                    class_name=self._names.get(class_id, f"class_{class_id}"),
                     confidence=float(conf),
                     bbox=[x1, y1, x2, y2],
                     color=CATEGORY_COLORS.get(class_id, (0, 255, 0)),

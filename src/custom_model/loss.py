@@ -85,7 +85,7 @@ def focal_bce(pred: torch.Tensor, target: torch.Tensor,
     p_t     = torch.exp(-bce)
     alpha_t = alpha * target + (1 - alpha) * (1 - target)
     loss    = alpha_t * (1 - p_t) ** gamma * bce
-    return loss.mean()
+    return loss.sum()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -157,11 +157,12 @@ def build_targets(
 
                 for ci, cj in cells:
                     if 0 <= ci < gs and 0 <= cj < gs:
+                        if cls >= num_classes:
+                            continue  # H6: skip entirely — contradictory gradients if obj=1 but all cls=0
                         obj_mask[bi, cj, ci]       = 1
                         noobj_mask[bi, cj, ci]     = 0
                         target_box[bi, cj, ci]     = torch.stack([cx - ci, cy - cj, w, h])
-                        if cls < num_classes:
-                            target_cls[bi, cj, ci, cls] = 0.95
+                        target_cls[bi, cj, ci, cls] = 0.95
 
         results.append((obj_mask, noobj_mask, target_box, target_cls))
 
@@ -244,8 +245,10 @@ class FashionNetLoss(nn.Module):
                 iou        = bbox_iou(pred_boxes, tgt_boxes, ciou=True)
                 loss_box   = loss_box + (1 - iou).mean()
 
-                # IoU-aware objectness: blend binary target (gr=0) with CIoU soft target (gr=1)
-                obj_mask[obj_mask_bool] = (1.0 - self.gr) + self.gr * iou.detach().clamp(0)
+                # C1 fix: use plain IoU (no distance/aspect penalty) for soft objectness target
+                if self.gr > 0:
+                    iou_plain = bbox_iou(pred_boxes, tgt_boxes, ciou=False)
+                    obj_mask[obj_mask_bool] = (1.0 - self.gr) + self.gr * iou_plain.detach().clamp(0)
 
                 # ── Class loss (only on positives) ───────────────────
                 loss_cls = loss_cls + self.bce(
@@ -253,7 +256,9 @@ class FashionNetLoss(nn.Module):
                 )
 
             # ── Objectness loss (all cells, focal-weighted) ───────────
-            loss_obj = loss_obj + focal_bce(p_obj, obj_mask)
+            # C2 fix: normalize by batch size, not total cells (~8400),
+            # so ~5 positives/image get meaningful gradient weight
+            loss_obj = loss_obj + focal_bce(p_obj, obj_mask) / B
 
         total = (self.lambda_box * loss_box
                  + self.lambda_obj * loss_obj
