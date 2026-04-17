@@ -103,7 +103,7 @@ find data/balanced_dataset/labels/train -name "bg_*.txt" -empty | wc -l
 ## Step 3 — Train (~42h)
 
 ```bash
-python scripts/train_custom.py \
+python scripts/training/train_custom.py \
   --data data/balanced_dataset \
   --model_scale m \
   --epochs 85 \
@@ -141,7 +141,7 @@ python scripts/train_custom.py \
 
 ```bash
 # Standard val eval
-python scripts/evaluate_custom.py \
+python scripts/evaluation/evaluate_custom.py \
   --weights models/weights/edna_1.4m/best.pt \
   --data data/balanced_dataset \
   --conf 0.25

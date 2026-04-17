@@ -266,10 +266,19 @@ class FashionDataset(Dataset):
             img_t  = aug['image']        # (3, H, W) tensor
             boxes  = list(aug['bboxes'])
             classes= list(aug['class_labels'])
-        except Exception:
-            # Fallback: return image without boxes if augmentation fails
-            img_t  = torch.zeros(3, self.img_size, self.img_size)
-            boxes, classes = [], []
+        except Exception as e:
+            import warnings
+            warnings.warn(f"Augmentation failed for {img_path}: {e!r} — falling back to resize-only")
+            fallback = A.Compose([
+                A.LongestMaxSize(max_size=self.img_size),
+                A.PadIfNeeded(self.img_size, self.img_size, border_mode=cv2.BORDER_CONSTANT),
+                A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+                ToTensorV2(),
+            ], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels'], min_visibility=0.3))
+            aug    = fallback(image=img, bboxes=boxes, class_labels=classes)
+            img_t  = aug['image']
+            boxes  = list(aug['bboxes'])
+            classes = list(aug['class_labels'])
 
         return img_t, boxes, classes, img_path
 

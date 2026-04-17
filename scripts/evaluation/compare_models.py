@@ -78,7 +78,7 @@ def decode_fashionnet_output(
         p = pred.permute(0, 2, 3, 1)   # (B, gs, gs, 5+NC)
 
         p_xy  = torch.sigmoid(p[..., :2])
-        p_wh  = p[..., 2:4].abs() * stride
+        p_wh  = p[..., 2:4].clamp(min=0) * stride
         p_obj = torch.sigmoid(p[..., 4])
         p_cls = torch.sigmoid(p[..., 5:])
 
