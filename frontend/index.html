@@ -48,6 +48,7 @@
         <button class="vtab" id="tab-chat" onclick="switchView('chat')"><i class="fas fa-message"></i> Chat</button>
       </div>
       <div class="pill"><div class="dot" id="dot"></div><span id="status">Ready</span></div>
+      <button class="login-btn" id="login-btn" type="button" onclick="toggleLoginModal(true)"><i class="fas fa-sign-in-alt"></i> Login</button>
     </div>
   </header>
 
@@ -134,6 +135,79 @@
       </div>
     </aside>
   </main>
+
+  <div class="modal-shell" id="login-modal" aria-hidden="true">
+    <div class="modal-backdrop" onclick="toggleLoginModal(false)"></div>
+    <section class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+      <button class="modal-close" type="button" onclick="toggleLoginModal(false)" aria-label="Close login window">
+        <i class="fas fa-xmark"></i>
+      </button>
+      
+      <div class="auth-container">
+        <!-- Login Form -->
+        <div class="auth-form login-form active" id="login-form">
+          <div class="auth-header">
+            <h2 id="auth-modal-title">Welcome Back</h2>
+            <p>Sign in to your FashionSense account</p>
+          </div>
+          
+          <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <label for="login-email">Email</label>
+              <input type="email" id="login-email" name="email" placeholder="your@email.com" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" name="password" placeholder="••••••••" required>
+            </div>
+            
+            <button type="submit" class="auth-btn">Sign In</button>
+          </form>
+          
+          <div class="auth-switch">
+            Don't have an account? <button type="button" onclick="switchAuthForm('register')" class="switch-btn">Create one</button>
+          </div>
+        </div>
+        
+        <!-- Register Form -->
+        <div class="auth-form register-form" id="register-form">
+          <div class="auth-header">
+            <h2>Create Account</h2>
+            <p>Join FashionSense to get personalized recommendations</p>
+          </div>
+          
+          <form onsubmit="handleRegister(event)">
+            <div class="form-group">
+              <label for="register-name">Full Name</label>
+              <input type="text" id="register-name" name="name" placeholder="Your Name" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="register-email">Email</label>
+              <input type="email" id="register-email" name="email" placeholder="your@email.com" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="register-password">Password</label>
+              <input type="password" id="register-password" name="password" placeholder="••••••••" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="register-confirm">Confirm Password</label>
+              <input type="password" id="register-confirm" name="confirm" placeholder="••••••••" required>
+            </div>
+            
+            <button type="submit" class="auth-btn">Create Account</button>
+          </form>
+          
+          <div class="auth-switch">
+            Already have an account? <button type="button" onclick="switchAuthForm('login')" class="switch-btn">Sign in</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <div class="modal-shell" id="recommendations-modal" aria-hidden="true">
     <div class="modal-backdrop" onclick="toggleRecommendationsModal(false)"></div>
@@ -239,8 +313,13 @@ document.addEventListener('DOMContentLoaded', () => {
     selectPersona(storedPersona);
   }
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && recsModal.classList.contains('open')) {
-      toggleRecommendationsModal(false);
+    if (event.key === 'Escape') {
+      if (recsModal.classList.contains('open')) {
+        toggleRecommendationsModal(false);
+      }
+      if (loginModal.classList.contains('open')) {
+        toggleLoginModal(false);
+      }
     }
   });
 });
@@ -322,6 +401,7 @@ const chatInput = document.getElementById('chat-input');
 const micBtn = document.getElementById('mic-btn');
 const micSelect = document.getElementById('mic-select');
 const recsModal = document.getElementById('recommendations-modal');
+const loginModal = document.getElementById('login-modal');
 const recsScrollLeftBtn = document.getElementById('recs-scroll-left');
 const recsScrollRightBtn = document.getElementById('recs-scroll-right');
 const recsModalList = document.getElementById('rec-modal-list');
@@ -607,8 +687,15 @@ function renderRecs(recs, options = {}) {
   ).join('');
 
   recsEl.scrollTo({ left: 0, behavior: 'auto' });
+  
+  // Add staggered animation to recommendations
+  const cards = document.querySelectorAll('#recs .card');
+  cards.forEach((card, index) => {
+    card.style.animationDelay = (index * 0.08) + 's';
+    card.classList.add('rec-animate');
+  });
+  
   renderRecommendationsModal(recs);
-  animateStagger('#recs', '.card');
 
   if (autoOpen) {
     hasShownInitialRecommendationsModal = true;
@@ -752,6 +839,117 @@ function toggleRecommendationsModal(open) {
   recsModal.classList.toggle('open', shouldOpen);
   recsModal.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
   document.body.classList.toggle('modal-open', shouldOpen);
+}
+
+function toggleLoginModal(open) {
+  const shouldOpen = Boolean(open);
+  const loginModal = document.getElementById('login-modal');
+  
+  loginModal.classList.toggle('open', shouldOpen);
+  loginModal.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+  document.body.classList.toggle('modal-open', shouldOpen);
+  
+  if (shouldOpen) {
+    switchAuthForm('login');
+  }
+}
+
+function switchAuthForm(formType) {
+  const loginForm = document.getElementById('login-form');
+  const registerForm = document.getElementById('register-form');
+  
+  if (formType === 'login') {
+    loginForm.classList.add('active');
+    registerForm.classList.remove('active');
+  } else {
+    loginForm.classList.remove('active');
+    registerForm.classList.add('active');
+  }
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  
+  console.log('Login attempt:', { email, password });
+  
+  fetch('/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Login response:', data);
+    if (data.success) {
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+      if (data.user_id) {
+        localStorage.setItem('userId', data.user_id);
+      }
+      alert('Login successful! Welcome back.');
+      toggleLoginModal(false);
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+    } else {
+      alert('Login failed: ' + (data.message || 'Unknown error'));
+    }
+  })
+  .catch(error => {
+    console.error('Login error:', error);
+    alert('Login error: ' + error.message);
+  });
+}
+
+function handleRegister(event) {
+  event.preventDefault();
+  const name = document.getElementById('register-name').value;
+  const email = document.getElementById('register-email').value;
+  const password = document.getElementById('register-password').value;
+  const confirm = document.getElementById('register-confirm').value;
+  
+  if (password !== confirm) {
+    alert('Passwords do not match!');
+    return;
+  }
+  
+  console.log('Registration attempt:', { name, email });
+  
+  fetch('/api/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, email, password })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Register response:', data);
+    if (data.success) {
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+      }
+      if (data.user_id) {
+        localStorage.setItem('userId', data.user_id);
+      }
+      alert('Registration successful! You can now log in.');
+      switchAuthForm('login');
+      document.getElementById('register-name').value = '';
+      document.getElementById('register-email').value = '';
+      document.getElementById('register-password').value = '';
+      document.getElementById('register-confirm').value = '';
+    } else {
+      alert('Registration failed: ' + (data.message || 'Unknown error'));
+    }
+  })
+  .catch(error => {
+    console.error('Register error:', error);
+    alert('Registration error: ' + error.message);
+  });
 }
 
 function animateStagger(containerSelector, childSelector, opts = { delay: 80, start: 0 }) {

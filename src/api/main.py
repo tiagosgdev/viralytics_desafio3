@@ -31,11 +31,14 @@ from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from src.api.schemas import (
+    AuthResponse,
     ChatRequest,
     ChatResponse,
     ConversationRequest,
     DetectionResponse,
     HealthResponse,
+    LoginRequest,
+    RegisterRequest,
     SessionResponse,
     SessionStartRequest,
 )
@@ -726,6 +729,36 @@ async def chat(payload: ChatRequest):
         state=state,
         strict=strict_value,
         warning=warning,
+    )
+
+
+# ── Auth endpoints ────────────────────────────────────────────────────────
+
+@app.post("/api/auth/login", response_model=AuthResponse)
+async def login(payload: LoginRequest):
+    """
+    Login endpoint.
+    TODO: Implement actual authentication logic
+    """
+    return AuthResponse(
+        success=True,
+        message="Login successful",
+        user_id="user_123",
+        token="token_abc123"
+    )
+
+
+@app.post("/api/auth/register", response_model=AuthResponse)
+async def register(payload: RegisterRequest):
+    """
+    Register endpoint.
+    TODO: Implement actual registration logic
+    """
+    return AuthResponse(
+        success=True,
+        message="Registration successful",
+        user_id="user_456",
+        token="token_def456"
     )
 
 

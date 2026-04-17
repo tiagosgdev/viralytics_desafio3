@@ -80,3 +80,21 @@ class ChatResponse(BaseModel):
     state: Optional[Dict[str, Any]] = None
     strict: bool = False
     warning: Optional[str] = None
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+
+
+class AuthResponse(BaseModel):
+    success: bool
+    message: Optional[str] = None
+    user_id: Optional[str] = None
+    token: Optional[str] = None
