@@ -135,6 +135,12 @@ def _find_ffmpeg_exe() -> str | None:
 
 
 def _find_fashionnet_weights() -> str | None:
+    env = os.getenv("FASHIONNET_WEIGHTS")
+    if env:
+        full = PROJECT_ROOT / "models" / "weights" / env / "best.pt"
+        if full.exists():
+            return str(full)
+        print(f"⚠️  FASHIONNET_WEIGHTS={env!r} not found at {full}, falling back to default")
     candidate = PROJECT_ROOT / "models" / "weights" / "fashionnet" / "best.pt"
     return str(candidate) if candidate.exists() else None
 

@@ -57,6 +57,21 @@ CATEGORY_NAMES = {
     12: "sling_dress",
 }
 
+# edna/FashionNet trained on balanced dataset (11 classes — sling + short_sleeve_outwear dropped)
+CATEGORY_NAMES_11 = {
+    0: "short_sleeve_top",
+    1: "long_sleeve_top",
+    2: "long_sleeve_outwear",
+    3: "vest",
+    4: "shorts",
+    5: "trousers",
+    6: "skirt",
+    7: "short_sleeve_dress",
+    8: "long_sleeve_dress",
+    9: "vest_dress",
+    10: "sling_dress",
+}
+
 CATEGORY_COLORS = {
     0:  (255, 100, 100),   # short_sleeve_top    — coral
     1:  (255, 160,  60),   # long_sleeve_top     — amber

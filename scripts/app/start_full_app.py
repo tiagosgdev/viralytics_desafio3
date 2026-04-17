@@ -49,7 +49,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--model-weights",
         default="",
-        help="Optional model weights folder name under models/weights",
+        help="Optional model weights folder name under models/weights (Cruella/YOLO)",
+    )
+    parser.add_argument(
+        "--edna-weights",
+        default="",
+        help="Optional model weights folder name under models/weights for Edna (FashionNet). E.g. edna_1.2m",
     )
     parser.add_argument(
         "--skip-ollama",
@@ -216,6 +221,8 @@ def build_env(args: argparse.Namespace) -> dict:
     env.setdefault("OLLAMA_MODEL", EXPECTED_OLLAMA_MODEL)
     if args.model_weights:
         env["MODEL_WEIGHTS"] = args.model_weights
+    if args.edna_weights:
+        env["FASHIONNET_WEIGHTS"] = args.edna_weights
     return env
 
 
@@ -238,6 +245,8 @@ def run_uvicorn(args: argparse.Namespace, env: dict) -> int:
     print(f"  Detector backend: {args.detector_backend}")
     if args.model_weights:
         print(f"  MODEL_WEIGHTS: {args.model_weights}")
+    if args.edna_weights:
+        print(f"  FASHIONNET_WEIGHTS: {args.edna_weights}")
     print("Press Ctrl+C to stop.\n")
 
     completed = subprocess.run(command, cwd=str(REPO_ROOT), env=env)
