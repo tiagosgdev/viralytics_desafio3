@@ -281,6 +281,25 @@ body[data-persona='cruella'] header {
   box-shadow: var(--shadow-sm);
 }
 
+.persona-reset-btn {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--text);
+  padding: 0.72rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.persona-reset-btn:hover,
+.persona-reset-btn:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
 body[data-persona='cruella'] .login-btn {
   background: rgba(255, 255, 255, 0.04);
 }

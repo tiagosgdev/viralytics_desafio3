@@ -308,10 +308,6 @@ function initCardTilt() {
 document.addEventListener('DOMContentLoaded', () => {
   initReveal();
   initCardTilt();
-  const storedPersona = window.localStorage.getItem('fashionSensePersona');
-  if (storedPersona === 'cruella' || storedPersona === 'edna') {
-    selectPersona(storedPersona);
-  }
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       if (recsModal.classList.contains('open')) {
