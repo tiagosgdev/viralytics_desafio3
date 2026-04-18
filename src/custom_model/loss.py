@@ -85,7 +85,7 @@ def focal_bce(pred: torch.Tensor, target: torch.Tensor,
     p_t     = torch.exp(-bce)
     alpha_t = alpha * target + (1 - alpha) * (1 - target)
     loss    = alpha_t * (1 - p_t) ** gamma * bce
-    return loss.sum()
+    return loss.mean()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -256,9 +256,8 @@ class FashionNetLoss(nn.Module):
                 )
 
             # ── Objectness loss (all cells, focal-weighted) ───────────
-            # C2 fix: normalize by batch size, not total cells (~8400),
-            # so ~5 positives/image get meaningful gradient weight
-            loss_obj = loss_obj + focal_bce(p_obj, obj_mask) / B
+            # focal_bce uses .mean() so already normalized by cell count
+            loss_obj = loss_obj + focal_bce(p_obj, obj_mask)
 
         total = (self.lambda_box * loss_box
                  + self.lambda_obj * loss_obj

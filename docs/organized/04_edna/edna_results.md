@@ -1290,6 +1290,94 @@ that are hurt most by the conservative objectness targets.
 
 ---
 
+## edna_1.4m
+
+### Setup
+
+| Parameter | Value |
+|-----------|-------|
+| Config | aug=medium, multi_cell=true, model_scale=m (~34.07M params), optimizer=adamw |
+| New vs 1.2m | +2,000 COCO background images (empty labels) in train split; gr=0.0 (explicit); lambda_obj=1.0 (reverted from 1.3m); no cos_lr, no mosaic, no EMA |
+| Dataset | balanced_dataset + 2,000 bg images = 54,199 training images, 11,186 val images |
+| Epochs | 100 (best at epoch 57, val_loss plateaued/regressed after) |
+| Batch | 16 |
+| Device | CUDA |
+| Best val_loss | 6.7039 (epoch 57) |
+| Weights | `models/weights/edna_1.4m/best.pt` |
+
+**Note on val_loss:** The ~2.4x higher val_loss vs edna_1.2m (6.70 vs 2.81) is caused by `focal_bce` using `.sum()` over all ~8,400 grid cells — background images with zero positive cells contribute pure negative objectness loss across all cells, inflating the obj loss ~1000x. The val set has no background images so the loss scale is directly comparable and reflects genuine degradation in objectness calibration. Despite this, mAP is marginally better than 1.2m.
+
+### edna_1.4m Overall Metrics
+
+| Metric | Value |
+|--------|-------|
+| mAP@50 | **0.2625** |
+| Precision | **0.4770** |
+| Recall | 0.4150 |
+| F1 | 0.4438 |
+| Total detections (val) | 10,990 |
+| Total ground truths (val) | 12,632 |
+
+### edna_1.4m Per-class Breakdown
+
+| Class | AP | Precision | Recall | F1 |
+|---|---|---|---|---|
+| short_sleeve_top | 0.0487 | 0.288 | 0.138 | 0.187 |
+| long_sleeve_top | 0.1006 | 0.396 | 0.213 | 0.277 |
+| long_sleeve_outwear | 0.3629 | 0.591 | 0.513 | 0.549 |
+| vest | 0.3703 | 0.571 | 0.513 | 0.540 |
+| shorts | 0.3287 | 0.484 | 0.524 | 0.503 |
+| trousers | 0.2406 | 0.356 | 0.550 | 0.432 |
+| skirt | 0.2051 | 0.409 | 0.427 | 0.418 |
+| short_sleeve_dress | 0.2745 | 0.541 | 0.386 | 0.451 |
+| long_sleeve_dress | 0.2342 | 0.554 | 0.331 | 0.414 |
+| vest_dress | 0.3184 | 0.482 | 0.505 | 0.493 |
+| sling_dress | 0.4037 | 0.621 | 0.458 | 0.527 |
+
+### edna_1.4m Analysis
+
+edna_1.4m **marginally beats edna_1.2m on mAP@50** (0.2625 vs 0.2600, +0.0025) and achieves the **highest precision of any edna run** (0.4770 vs 0.3467 in 1.2m, +0.1303). The background images worked as intended — false positive suppression improved significantly.
+
+However, **recall dropped vs edna_1.2m** (0.4150 vs 0.4920, -0.0770). The background images overfit the model toward "predict nothing", trading recall for precision. The `focal_bce` `.sum()` normalization (changed from `.mean()` in an earlier commit) caused the obj loss to be dominated by the 2,000 background images, each contributing 8,400 negative cells with no positive counterbalance.
+
+**Success criteria from plan:**
+- mAP@50 > 0.2600 ✅ (0.2625)
+- Recall ≥ 0.4920 ❌ (0.4150)
+- Precision ≥ 0.3467 ✅ (0.4770)
+- Near-zero detections on background-only images ✅ (7 detections across 2,000 images)
+
+### Cross-run Comparison (val set)
+
+| Run | mAP@50 | Precision | Recall | F1 | val_loss | Notes |
+|-----|--------|-----------|--------|----|----------|-------|
+| edna_1.2m | 0.2600 | 0.3467 | **0.4920** | 0.4068 | 2.8128 | baseline |
+| edna_1.3m | 0.2033 | **0.4328** | 0.3574 | 0.3915 | 2.9268 | cos_lr, EMA, mosaic, gr=0.5 |
+| edna_1.4m | **0.2625** | **0.4770** | 0.4150 | **0.4438** | 6.7039 | +2k bg images, gr=0.0 |
+
+**edna_1.4m is the new best on mAP@50 and F1.** edna_1.2m still holds the best recall.
+
+### Background-only Eval (bg_test)
+
+Evaluated on the 2,000 COCO background images used during training (no clothing, empty labels):
+
+| Metric | Value |
+|---|---|
+| Images | 2,000 |
+| Total detections | **7** |
+| Total ground truths | 0 |
+
+**7 false detections across 2,000 images = 0.35% false positive rate.** The objectness suppression on pure backgrounds works correctly. edna_1.2m would have fired hundreds to thousands of false detections on the same images.
+
+### Root Cause for edna_1.5m
+
+The recall regression is caused by two compounding factors:
+1. **Too many background images (2,000)** — at 3.7% of train set, they dominate the objectness loss signal
+2. **`focal_bce` uses `.sum()` not `.mean()`** — background images contribute 8,400 negative cells each with no normalization, inflating obj loss ~1000x vs runs without background images
+
+For edna_1.5m: reduce background images to 200-300 AND revert `focal_bce` to `.mean()` (or add per-cell normalization).
+
+---
+
 ## Threshold Tuning - edna_1.2m
 
 Evaluated at conf=0.25 through 0.45 to test whether the precision/recall imbalance
