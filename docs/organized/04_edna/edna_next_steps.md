@@ -1056,11 +1056,13 @@ trains so effectively.
 |----------|-----------|--------|---------------|
 | 1 | Threshold tuning | Done | +0.005 F1 |
 | 2 | C1: IoU-aware objectness targets | Done | Largest available gain |
-| 3 | C2: Mosaic augmentation | Done | High â€” matches YOLOv8 methodology |
-| 4 | Retrain with all flags + code changes | **Ready to run** | +0.02â€“0.05 mAP (flags) + C1/C2 gains |
-| 5 | Add images to weak classes | Not started | Directly addresses missed detections |
-| 6 | Scale=l retrain | Not started | Architecture ceiling test |
-| ~~7~~ | ~~Class merge~~ | â€” | Ruled out â€” wrong failure mode |
+| 3 | C2: Mosaic augmentation | Done | High — matches YOLOv8 methodology |
+| 4 | Retrain with all flags + code changes | Done (edna_1.3m) | Recall regression due to gr=0.5 |
+| 5 | Background images (edna_1.4m) | Done | +0.0025 mAP, +0.13 precision, -0.077 recall vs 1.2m |
+| 6 | edna_1.5m: fix focal_bce (.mean) + fewer bg images | **Next** | Recover recall while keeping precision gains |
+| 7 | Add images to weak classes | Not started | Directly addresses missed detections |
+| 8 | Scale=l retrain | Not started | Architecture ceiling test |
+| ~~9~~ | ~~Class merge~~ | — | Ruled out — wrong failure mode |
 
 # edna Training Results
 
