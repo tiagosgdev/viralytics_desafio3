@@ -1365,18 +1365,20 @@ def _build_ranked_results(hits: list) -> list[dict[str, Any]]:
 
     return ranked_results
 
-
 def search_detected_items(
     detected_categories: list[str] | None,
     strict: bool = False,
+    # ── optional profile filters ─────────────────────────────────────────────
+    colors: list[str] | None = None,
+    styles: list[str] | None = None,
+    materials: list[str] | None = None,
+    seasons: list[str] | None = None,
+    occasions: list[str] | None = None,
+    gender: str | None = None,
+    age_group: str | None = None,
 ) -> tuple[list[dict[str, Any]], str | None]:
-    """
-    Returns ranked DB items for a set of detected categories.
 
-    This is intended for API/FE integration paths that need real catalogue items
-    without running the full conversational confirmation flow.
-    """
-
+    print("detected_categories:", detected_categories + "color" if colors else "", styles if styles else "", materials if materials else "", seasons if seasons else "", occasions if occasions else "", f"gender: {gender}" if gender else "", f"age_group: {age_group}" if age_group else "")
     detected = _dedupe_preserve_order(
         [
             str(cat).strip().lower()
@@ -1385,20 +1387,88 @@ def search_detected_items(
         ]
     )
 
+    # ─────────────────────────────────────────────────────────────
+    # HARD FILTERS (used to restrict database results)
+    # ─────────────────────────────────────────────────────────────
+    include: dict[str, list[str]] = {}
+
+    if detected:
+        include["type"] = detected
+
+    if gender and gender.strip():
+        include["gender"] = [gender.strip().lower()]
+
+    if age_group and age_group.strip():
+        include["age_group"] = [age_group.strip().lower()]
+
     filters = {
-        "include": {"type": detected} if detected else {},
+        "include": include,
         "exclude": {},
     }
 
-    if detected:
-        query = (
-            "The user is wearing "
-            + ", ".join(cat.replace("_", " ") for cat in detected)
-            + ". Find complementary clothing recommendations."
-        )
-    else:
-        query = "Find versatile clothing recommendations for everyday wear."
+    # ─────────────────────────────────────────────────────────────
+    # SOFT PROFILE SIGNALS (ONLY for semantic ranking)
+    # ─────────────────────────────────────────────────────────────
+    profile_parts = []
 
+    if colors:
+        cleaned = [c.strip() for c in colors if c and c.strip()]
+        if cleaned:
+            profile_parts.append(f"preferred colors: {', '.join(cleaned)}")
+
+    if styles:
+        cleaned = [s.strip() for s in styles if s and s.strip()]
+        if cleaned:
+            profile_parts.append(f"styles: {', '.join(cleaned)}")
+
+    if materials:
+        cleaned = [m.strip() for m in materials if m and m.strip()]
+        if cleaned:
+            profile_parts.append(f"materials: {', '.join(cleaned)}")
+
+    if seasons:
+        cleaned = [s.strip() for s in seasons if s and s.strip()]
+        if cleaned:
+            profile_parts.append(f"seasons: {', '.join(cleaned)}")
+
+    if occasions:
+        cleaned = [o.strip() for o in occasions if o and o.strip()]
+        if cleaned:
+            profile_parts.append(f"occasions: {', '.join(cleaned)}")
+
+    profile_ctx = ""
+    if profile_parts:
+        profile_ctx = "User preferences (soft ranking signals): " + "; ".join(profile_parts) + ". "
+
+    # ─────────────────────────────────────────────────────────────
+    # SEMANTIC QUERY (clean + model-friendly)
+    # ─────────────────────────────────────────────────────────────
+    if detected:
+        worn = "The user is wearing " + ", ".join(
+            cat.replace("_", " ") for cat in detected
+        ) + ". "
+    else:
+        worn = "Find versatile clothing recommendations. "
+
+    query = (
+        f"{worn}"
+        f"{profile_ctx}"
+        "Recommend visually compatible clothing items that match style and aesthetic."
+    )
+
+    # ─────────────────────────────────────────────────────────────
+    # DEBUG
+    # ─────────────────────────────────────────────────────────────
+    print("\n" + "=" * 60)
+    print("🔍 search_detected_items QUERY")
+    print(f"query   : {query}")
+    print(f"filters : {filters}")
+    print(f"strict  : {strict}")
+    print("=" * 60 + "\n")
+
+    # ─────────────────────────────────────────────────────────────
+    # VECTOR DB CHECK
+    # ─────────────────────────────────────────────────────────────
     db_ready, db_error = _ensure_vector_db_ready()
     if not db_ready:
         return [], db_error
@@ -1410,6 +1480,9 @@ def search_detected_items(
         except Exception as exc:
             return [], f"Embedding model load failed ({exc})."
 
+    # ─────────────────────────────────────────────────────────────
+    # SEARCH
+    # ─────────────────────────────────────────────────────────────
     try:
         hits = filtered_search(
             query,
@@ -1421,7 +1494,6 @@ def search_detected_items(
         return [], f"Search failed ({exc})."
 
     return _build_ranked_results(hits), None
-
 
 def _parse_with_mode(mode: str, message: str) -> tuple[dict, str, str | None]:
     normalized_mode = _normalize_assistant_mode(mode)

@@ -92,18 +92,18 @@ def _merge_filters(base: dict, user: dict) -> dict:
     for section in ("include", "exclude"):
         target: Dict[str, List[str]] = {}
         for source in (base.get(section, {}), user.get(section, {})):
-            for field, values in source.items():
-                target[field] = _dedupe(target.get(field, []) + list(values))
+            for f, values in source.items():
+                target[f] = _dedupe(target.get(f, []) + list(values))
         if target:
             merged[section] = target
 
     include = merged.get("include", {})
     exclude = merged.get("exclude", {})
-    for field, ex_values in exclude.items():
-        if field in include:
-            include[field] = [v for v in include[field] if v not in ex_values]
-            if not include[field]:
-                del include[field]
+    for f, ex_values in exclude.items():
+        if f in include:
+            include[f] = [v for v in include[f] if v not in ex_values]
+            if not include[f]:
+                del include[f]
     if include:
         merged["include"] = include
     elif "include" in merged:
@@ -111,13 +111,97 @@ def _merge_filters(base: dict, user: dict) -> dict:
     return merged
 
 
+# ── NEW: build preference filters from a user profile dict ────────────────
+
+def _profile_to_filters(profile: dict | None) -> dict:
+    """
+    Convert a user profile (from get_user_profile) into a search filter dict
+    that can be merged with the session's base filters.
+
+    Only non-empty preference lists are added so we never restrict results
+    against an empty set.
+    """
+    if not profile:
+        return {}
+
+    include: Dict[str, List[str]] = {}
+
+    mapping = {
+        "favorite_colors":    "color",
+        "favorite_styles":    "style",
+        "favorite_materials": "material",
+        "preferred_seasons":  "season",
+        "preferred_occasions":"occasion",
+    }
+    for profile_key, filter_key in mapping.items():
+        values = profile.get(profile_key) or []
+        if values:
+            include[filter_key] = values
+
+    scalar_mapping = {
+        "age_group": "age_group",
+        "gender":    "gender",
+    }
+    for profile_key, filter_key in scalar_mapping.items():
+        value = (profile.get(profile_key) or "").strip()
+        if value:
+            include[filter_key] = [value]
+
+    return {"include": include} if include else {}
+
+
+# ── NEW: build a human-readable profile context string for LLM prompts ────
+
+def _profile_to_context_string(profile: dict | None) -> str:
+    """
+    Return a compact natural-language sentence describing the user's style
+    preferences, to be injected into the search query sent to the LLM /
+    vector store.
+
+    Example output:
+        "The user prefers colors Red, Blue; styles Casual, Sporty;
+         materials Cotton; seasons Summer; occasions Work.
+         They are a Male adult (25-34)."
+    """
+    if not profile:
+        return ""
+
+    parts: list[str] = []
+
+    def _fmt(label: str, values: list[str]) -> None:
+        if values:
+            parts.append(f"{label} {', '.join(values)}")
+
+    _fmt("colors", profile.get("favorite_colors") or [])
+    _fmt("styles", profile.get("favorite_styles") or [])
+    _fmt("materials", profile.get("favorite_materials") or [])
+    _fmt("seasons", profile.get("preferred_seasons") or [])
+    _fmt("occasions", profile.get("preferred_occasions") or [])
+
+    sentence = "; ".join(parts) + "." if parts else ""
+
+    age   = (profile.get("age_group") or "").strip()
+    gender = (profile.get("gender") or "").strip()
+    demo  = " ".join(filter(None, [gender, age]))
+    if demo:
+        sentence += f" The user is a {demo}."
+
+    return sentence.strip()
+
+
+# ── Unchanged helpers ──────────────────────────────────────────────────────
+
 def _build_search_cards(hits: List) -> List[dict]:
     cards = []
     for hit in hits:
         payload = getattr(hit, "payload", {}) or {}
         item_type = payload.get("type", "item")
         brand = payload.get("brand")
-        display_name = f"{brand} {item_type.replace('_', ' ')}".title() if brand else item_type.replace("_", " ").title()
+        display_name = (
+            f"{brand} {item_type.replace('_', ' ')}".title()
+            if brand
+            else item_type.replace("_", " ").title()
+        )
         price_val = payload.get("price")
         if isinstance(price_val, (int, float)):
             price = f"EUR {price_val:.2f}"
@@ -172,12 +256,25 @@ def _strict_for_persona(persona: str) -> bool:
     return normalize_persona(persona) == "cruella"
 
 
-def _build_contextual_query(state: "SearchSession", message: str, mode: str) -> str:
+def _build_contextual_query(
+    state: "SearchSession",
+    message: str,
+    mode: str,
+) -> str:
+    """
+    Build the semantic search query for chat/refinement turns.
+
+    NOTE: user profile is intentionally NOT included here.  It is applied
+    once — at session-creation time — to seed the base_filters and the
+    initial recommendations.  Follow-up chat turns use only the detected
+    outfit and the user's own words so the conversation stays responsive.
+    """
     if mode == "override":
         return message
 
     worn = ", ".join(c.replace("_", " ") for c in state.detected_categories) or "an outfit"
     seed = ", ".join(c.replace("_", " ") for c in state.seed_categories)
+
     if seed:
         return (
             f"The user is wearing {worn}. Look for items that complement that outfit, "
@@ -186,6 +283,8 @@ def _build_contextual_query(state: "SearchSession", message: str, mode: str) -> 
         )
     return f"The user is wearing {worn}. Find complementary fashion items. User refinement: {message}"
 
+
+# ── Data classes ───────────────────────────────────────────────────────────
 
 @dataclass
 class SearchSession:
@@ -199,7 +298,11 @@ class SearchSession:
     last_results: List[dict] = field(default_factory=list)
     mode: str = "vision"
     history: List[dict] = field(default_factory=list)
+    # user_profile is NOT stored here - it is consumed once in create_session()
+    # to seed base_filters, then discarded so chat/refine turns stay clean.
 
+
+# ── Service ────────────────────────────────────────────────────────────────
 
 class UnifiedSearchService:
     def __init__(self, recommender: RecommendationEngine):
@@ -233,7 +336,7 @@ class UnifiedSearchService:
             try:
                 parse_query("show me neutral smart casual options", verbose=False)
                 parser_warmed = True
-            except Exception as exc:  # pragma: no cover - external dependency
+            except Exception as exc:  # pragma: no cover
                 parser_warning = str(exc)
 
         return {
@@ -248,17 +351,39 @@ class UnifiedSearchService:
         detected_categories: List[str],
         recommendations: Optional[List[dict]] = None,
         persona: str = "cruella",
+        user_profile: dict | None = None,
     ) -> SearchSession:
         persona = normalize_persona(persona)
         detected_categories = _dedupe(detected_categories)
+
         if recommendations is not None:
             recs = recommendations
         elif detected_categories:
             recs = self.recommender.recommend(detected_categories)
         else:
             recs = []
-        seed_categories = _dedupe([rec.get("category") for rec in recs if rec.get("category")])
+
+        seed_categories = _dedupe(
+            [rec.get("category") for rec in recs if rec.get("category")]
+        )
+
+        # Merge type-based filters with profile filters
         base_filters = {"include": {"type": seed_categories}} if seed_categories else {}
+        if user_profile:
+            profile_filters = _profile_to_filters(user_profile)
+            base_filters = _merge_filters(base_filters, profile_filters)
+
+        # ── DEBUG ──────────────────────────────────────────────────────────────
+        print("\n" + "="*60)
+        print("🔍  SESSION CREATED")
+        print(f"    persona          : {persona}")
+        print(f"    detected         : {detected_categories}")
+        print(f"    seed_categories  : {seed_categories}")
+        print(f"    user_profile     : {user_profile}")
+        print(f"    base_filters     : {base_filters}")
+        print("="*60 + "\n")
+        # ── END DEBUG ──────────────────────────────────────────────────────────
+
         session = SearchSession(
             id=uuid.uuid4().hex,
             persona=persona,
@@ -292,7 +417,12 @@ class UnifiedSearchService:
         mode = _determine_mode(message, replace_vision, session.mode)
         strict = _strict_for_persona(session.persona)
         parsed_filters = self._safe_parse(message, parser_backend=parser_backend)
-        effective_filters = parsed_filters if mode == "override" else _merge_filters(session.base_filters, parsed_filters)
+        effective_filters = (
+            parsed_filters
+            if mode == "override"
+            else _merge_filters(session.base_filters, parsed_filters)
+        )
+        # Pass the session's cached user_profile into the query builder
         search_query = _build_contextual_query(session, message, mode)
 
         results, warning = self._run_search(search_query, effective_filters, strict)
@@ -332,7 +462,10 @@ class UnifiedSearchService:
 
         if results:
             return f"{base} I found {len(results)} option(s) to explore next."
-        return f"{base} I found 0 results with the current filters, so you may want to try a more specific refinement."
+        return (
+            f"{base} I found 0 results with the current filters, "
+            "so you may want to try a more specific refinement."
+        )
 
     def _safe_parse(self, message: str, parser_backend: str = "llm") -> dict:
         if parser_backend == "custom":
@@ -341,7 +474,7 @@ class UnifiedSearchService:
             return {}
         try:
             return parse_query(message, verbose=False)
-        except Exception as exc:  # pragma: no cover - external dependency
+        except Exception as exc:  # pragma: no cover
             print(f"Warning: query parser failed: {exc}")
             return {}
 
@@ -357,8 +490,24 @@ class UnifiedSearchService:
 
         try:
             hits = filtered_search(query, filters, model, strict=strict)
+
+            # ── DEBUG ──────────────────────────────────────────────────────────
+            print("\n" + "="*60)
+            print("🔍  RAW HITS FROM VECTOR SEARCH")
+            print(f"    query   : {query}")
+            print(f"    filters : {filters}")
+            print(f"    strict  : {strict}")
+            print(f"    hits    : {len(hits)}")
+            for i, hit in enumerate(hits[:5]):   # print first 5 only
+                payload = getattr(hit, "payload", {}) or {}
+                print(f"\n    [{i}] score={getattr(hit, 'score', '?'):.4f}")
+                for key in ("type", "color", "style", "material", "season", "occasion", "gender", "age_group"):
+                    print(f"         {key:12}: {payload.get(key, '—')}")
+            print("="*60 + "\n")
+            # ── END DEBUG ──────────────────────────────────────────────────────
+
             return _build_search_cards(hits), None
-        except Exception as exc:  # pragma: no cover - external dependency
+        except Exception as exc:
             return [], str(exc)
 
     def _get_embedding_model(self):
@@ -368,7 +517,7 @@ class UnifiedSearchService:
             return None
         try:
             self._embedding_model = _load_model()
-        except Exception as exc:  # pragma: no cover - external dependency
+        except Exception as exc:  # pragma: no cover
             print(f"Warning: embedding model load failed: {exc}")
             return None
         return self._embedding_model
@@ -382,6 +531,6 @@ class UnifiedSearchService:
                 return _collection_exists(client)
             finally:
                 client.close()
-        except Exception as exc:  # pragma: no cover - external dependency
+        except Exception as exc:  # pragma: no cover
             print(f"Warning: vector collection check failed: {exc}")
             return False
