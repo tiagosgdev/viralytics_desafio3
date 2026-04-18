@@ -86,8 +86,7 @@ def focal_bce(pred: torch.Tensor, target: torch.Tensor,
     alpha_t = alpha * target + (1 - alpha) * (1 - target)
     loss    = alpha_t * (1 - p_t) ** gamma * bce
 
-    # NOTE: should be mean()
-    return loss.sum()
+    return loss.mean()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
