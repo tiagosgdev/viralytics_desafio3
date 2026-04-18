@@ -231,11 +231,77 @@
     </section>
   </div>
 
+  <!-- Notification Modals Container -->
+  <div class="notification-modal-shell" id="notification-shell"></div>
+
 <script>
 function buildWsUrl() {
   const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
   const persona = encodeURIComponent(selectedPersona || 'cruella');
   return protocol + location.host + '/ws/camera?persona=' + persona;
+}
+
+/**
+ * Display a notification modal
+ * @param {string} type - 'success', 'error', or 'warning'
+ * @param {string} title - Modal title
+ * @param {string} message - Modal message
+ * @param {function|null} onAction - Callback when action button is clicked
+ * @param {string} actionText - Action button text
+ * @param {number} autoDismiss - Auto dismiss after ms (0 = no auto dismiss)
+ */
+function showNotification(type = 'success', title = '', message = '', onAction = null, actionText = 'OK', autoDismiss = 3000) {
+  const shell = document.getElementById('notification-shell');
+  const modal = document.createElement('div');
+  modal.className = `notification-modal ${type}`;
+  
+  const iconMap = {
+    success: '<i class="fas fa-check-circle"></i>',
+    error: '<i class="fas fa-exclamation-circle"></i>',
+    warning: '<i class="fas fa-exclamation-triangle"></i>'
+  };
+  
+  modal.innerHTML = `
+    <button class="notification-close-btn" aria-label="Dismiss notification">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="notification-header">
+      <div class="notification-icon">${iconMap[type] || iconMap['success']}</div>
+      <div class="notification-content">
+        ${title ? `<h3 class="notification-title">${title}</h3>` : ''}
+        <p class="notification-message">${message}</p>
+        ${onAction ? `<div class="notification-action">
+          <button class="notification-btn notification-btn-primary">${actionText}</button>
+        </div>` : ''}
+      </div>
+    </div>
+  `;
+  
+  shell.appendChild(modal);
+  
+  const closeBtn = modal.querySelector('.notification-close-btn');
+  const actionBtn = modal.querySelector('.notification-btn-primary');
+  
+  function dismiss() {
+    modal.classList.add('removing');
+    setTimeout(() => {
+      modal.remove();
+    }, 280);
+  }
+  
+  closeBtn.addEventListener('click', dismiss);
+  if (actionBtn) {
+    actionBtn.addEventListener('click', () => {
+      dismiss();
+      if (onAction) onAction();
+    });
+  }
+  
+  if (autoDismiss > 0) {
+    setTimeout(() => {
+      if (modal.parentNode) dismiss();
+    }, autoDismiss);
+  }
 }
 
 function initHelpers() {
@@ -887,17 +953,39 @@ function handleLogin(event) {
       if (data.user_id) {
         localStorage.setItem('userId', data.user_id);
       }
-      alert('Login successful! Welcome back.');
-      toggleLoginModal(false);
-      document.getElementById('login-email').value = '';
-      document.getElementById('login-password').value = '';
+      showNotification(
+        'success',
+        'Login Successful!',
+        'Welcome back. You have been logged in successfully.',
+        () => {
+          toggleLoginModal(false);
+          document.getElementById('login-email').value = '';
+          document.getElementById('login-password').value = '';
+        },
+        'Continue',
+        0
+      );
     } else {
-      alert('Login failed: ' + (data.message || 'Unknown error'));
+      showNotification(
+        'error',
+        'Login Failed',
+        data.message || 'Invalid email or password. Please try again.',
+        null,
+        'OK',
+        4000
+      );
     }
   })
   .catch(error => {
     console.error('Login error:', error);
-    alert('Login error: ' + error.message);
+    showNotification(
+      'error',
+      'Login Error',
+      error.message || 'An error occurred while logging in. Please try again.',
+      null,
+      'OK',
+      4000
+    );
   });
 }
 
@@ -909,7 +997,14 @@ function handleRegister(event) {
   const confirm = document.getElementById('register-confirm').value;
   
   if (password !== confirm) {
-    alert('Passwords do not match!');
+    showNotification(
+      'warning',
+      'Passwords Don\'t Match',
+      'Please verify that both password fields contain the same value and try again.',
+      null,
+      'I\'ll Fix It',
+      0
+    );
     return;
   }
   
@@ -932,19 +1027,41 @@ function handleRegister(event) {
       if (data.user_id) {
         localStorage.setItem('userId', data.user_id);
       }
-      alert('Registration successful! You can now log in.');
-      switchAuthForm('login');
-      document.getElementById('register-name').value = '';
-      document.getElementById('register-email').value = '';
-      document.getElementById('register-password').value = '';
-      document.getElementById('register-confirm').value = '';
+      showNotification(
+        'success',
+        'Registration Complete!',
+        'Your account has been created successfully. You can now log in with your credentials.',
+        () => {
+          switchAuthForm('login');
+          document.getElementById('register-name').value = '';
+          document.getElementById('register-email').value = '';
+          document.getElementById('register-password').value = '';
+          document.getElementById('register-confirm').value = '';
+        },
+        'Go to Login',
+        0
+      );
     } else {
-      alert('Registration failed: ' + (data.message || 'Unknown error'));
+      showNotification(
+        'error',
+        'Registration Failed',
+        data.message || 'An error occurred during registration. Please try again.',
+        null,
+        'OK',
+        4000
+      );
     }
   })
   .catch(error => {
     console.error('Register error:', error);
-    alert('Registration error: ' + error.message);
+    showNotification(
+      'error',
+      'Registration Error',
+      error.message || 'An error occurred during registration. Please try again.',
+      null,
+      'OK',
+      4000
+    );
   });
 }
 
