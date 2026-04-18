@@ -2041,6 +2041,8 @@ docs/organized/
 | fashionnet_balanced_v1 | balanced (84k) | 0.276 | Fixed pipeline, 100 epochs |
 | edna_1m_balanced_100 | balanced (84k) | 0.187 | Default flags, 100 epochs |
 | edna_1.2m | balanced (84k) | 0.260 | scale=m, aug=medium, multi_cell |
+| edna_1.3m | balanced (84k) | 0.203 | + cos_lr, EMA, mosaic, gr=0.5 — recall regression |
+| edna_1.4m | balanced + 2k bg (54k) | **0.2625** | gr=0.0, bg images — best mAP, precision 0.477, recall 0.415 |
 
 ---
 

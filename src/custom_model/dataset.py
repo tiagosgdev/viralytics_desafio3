@@ -79,7 +79,8 @@ def get_train_transforms(img_size: int = 640, level: str = "light",
     return A.Compose(
         common_pre + spatial + grayscale_tf + common_post,
         bbox_params=A.BboxParams(
-            format='yolo', label_fields=['class_labels'], min_visibility=0.3
+            format='yolo', label_fields=['class_labels'], min_visibility=0.3,
+            clip=True,
         ),
     )
 
@@ -93,7 +94,8 @@ def get_val_transforms(img_size: int = 640, grayscale: bool = False) -> A.Compos
         A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
         ToTensorV2(),
     ], bbox_params=A.BboxParams(
-        format='yolo', label_fields=['class_labels'], min_visibility=0.3
+        format='yolo', label_fields=['class_labels'], min_visibility=0.3,
+        clip=True,
     ))
 
 
@@ -164,7 +166,10 @@ class FashionDataset(Dataset):
                     parts = line.strip().split()
                     if len(parts) == 5:
                         cls, cx, cy, w, h = parts
-                        boxes.append([float(cx), float(cy), float(w), float(h)])
+                        fw, fh = float(w), float(h)
+                        if fw <= 0 or fh <= 0:
+                            continue  # skip degenerate zero-area boxes
+                        boxes.append([float(cx), float(cy), fw, fh])
                         classes.append(int(cls))
         return img, boxes, classes
 
@@ -274,7 +279,7 @@ class FashionDataset(Dataset):
                 A.PadIfNeeded(self.img_size, self.img_size, border_mode=cv2.BORDER_CONSTANT),
                 A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
                 ToTensorV2(),
-            ], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels'], min_visibility=0.3))
+            ], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels'], min_visibility=0.3, clip=True))
             aug    = fallback(image=img, bboxes=boxes, class_labels=classes)
             img_t  = aug['image']
             boxes  = list(aug['bboxes'])
