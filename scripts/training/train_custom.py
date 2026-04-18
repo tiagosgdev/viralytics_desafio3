@@ -204,6 +204,7 @@ def validate(model, loader, criterion, device):
     return {"val_loss": total_loss / max(len(loader), 1)}
 
 
+
 def main():
     args   = parse_args()
     device = pick_device(args.device)
@@ -254,13 +255,9 @@ def main():
     )
 
     # ── Model ─────────────────────────────────────────────────────────────
-    if args.fast:
-        model = TinyFashionNet(num_classes=num_classes).to(device)
-        print(f"  Mode: FAST (TinyFashionNet — reduced channels)")
-    else:
-        model = FashionNet(num_classes=num_classes, dropout=args.dropout,
-                           scale=args.model_scale).to(device)
-        print(f"  Model scale: {args.model_scale}")
+    model = FashionNet(num_classes=num_classes, dropout=args.dropout,
+                       scale=args.model_scale).to(device)
+    print(f"  Model scale: {args.model_scale}")
     print(f"  Parameters: {model.count_parameters():,}")
 
     # ── Loss ──────────────────────────────────────────────────────────────

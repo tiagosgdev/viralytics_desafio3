@@ -85,7 +85,9 @@ def focal_bce(pred: torch.Tensor, target: torch.Tensor,
     p_t     = torch.exp(-bce)
     alpha_t = alpha * target + (1 - alpha) * (1 - target)
     loss    = alpha_t * (1 - p_t) ** gamma * bce
-    return loss.mean()
+
+    # NOTE: should be mean()
+    return loss.sum()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -220,6 +222,7 @@ class FashionNetLoss(nn.Module):
         loss_obj = torch.tensor(0., device=device)
         loss_cls = torch.tensor(0., device=device)
 
+        # map groud truth to prediction grid
         scale_targets = build_targets(preds, targets,
                                       self.img_size, self.num_classes,
                                       self.multi_cell)
