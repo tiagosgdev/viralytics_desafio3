@@ -359,6 +359,13 @@ def filtered_search(
     """
     Semantic search with Qdrant metadata filters, applying strict or soft filtering.
     """
+
+    print("\n" + "="*60)
+    print("🔍  FILTERED_SEARCH CALLED")
+    print(f"    strict  : {strict}")
+    print(f"    filters : {parsed_filters}")
+    print("="*60 + "\n")
+
     query_emb = model.encode(
         [BGE_QUERY_PREFIX + query],
         normalize_embeddings=True,

@@ -932,6 +932,8 @@ function switchAuthForm(formType) {
 }
 
 function handleLogin(event) {
+  
+
   event.preventDefault();
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
@@ -954,8 +956,10 @@ function handleLogin(event) {
 
         // ── KEY: if a scan already ran, re-fetch personalised recs now ──
         if (currentDetectedCategories.length > 0) {
-          console.log('🔄 Re-fetching personalised recs after login...');
+          console.log('Re-fetching after login, categories:', currentDetectedCategories);
           initializeSearchSession(currentDetectedCategories, []);
+        } else {
+          console.log('No categories yet at login time, currentDetectedCategories:', currentDetectedCategories);
         }
       } else {
         alert('Login failed: ' + (data.message || 'Unknown error'));
@@ -1582,6 +1586,8 @@ function stopVoiceUI() {
 }
 
 function initializeSearchSession(detectedCategories, recommendations) {
+  console.log('initializeSearchSession called with:', detectedCategories); // ← add this
+
   const token = localStorage.getItem('authToken');
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = 'Bearer ' + token;

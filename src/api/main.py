@@ -440,23 +440,15 @@ async def start_session(
     persona = normalize_persona(payload.persona)
     user_profile = await run_in_threadpool(_get_user_profile, user_id)
 
-    if user_profile and payload.detected_categories:
-        # Logged-in user: always re-fetch with profile filters applied,
-        # ignoring the unfiltered recs the camera/frontend already sent.
-        recs = await run_in_threadpool(
-            _db_backed_recommendations_with_profile_sync,
-            payload.detected_categories,
-            user_profile,
-        )
-    else:
-        # Guest: use whatever the frontend sent, or fall back to plain fetch.
-        recs = payload.recommendations
-        if not recs and payload.detected_categories:
-            recs = await run_in_threadpool(
-                _db_backed_recommendations_with_profile_sync,
-                payload.detected_categories,
-                None,
-            )
+    recs = await run_in_threadpool(
+        _db_backed_recommendations_with_profile_sync,
+        payload.detected_categories or [],
+        user_profile,                           # ← always pass, even if categories empty
+    )
+
+    # Fall back to whatever the frontend sent if the fetch returned nothing
+    if not recs:
+        recs = payload.recommendations or []
 
     session = search_service.create_session(
         detected_categories=payload.detected_categories,
@@ -501,6 +493,8 @@ def _db_backed_recommendations_with_profile_sync(
     detected_categories: list[str],
     user_profile: dict | None = None,
 ) -> list[dict]:
+    print(f"DEBUG user_profile received: {user_profile}")  # ← add this
+
     try:
         from LNIAGIA.search_app import search_detected_items
     except Exception as exc:

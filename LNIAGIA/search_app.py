@@ -1378,7 +1378,6 @@ def search_detected_items(
     age_group: str | None = None,
 ) -> tuple[list[dict[str, Any]], str | None]:
 
-    print("detected_categories:", detected_categories + "color" if colors else "", styles if styles else "", materials if materials else "", seasons if seasons else "", occasions if occasions else "", f"gender: {gender}" if gender else "", f"age_group: {age_group}" if age_group else "")
     detected = _dedupe_preserve_order(
         [
             str(cat).strip().lower()
