@@ -1546,6 +1546,8 @@ body[data-persona='cruella'] .rec-detail-row {
 }
 
 .rec-detail-section p {
+  margin: 0.45rem 0 0;
+  line-height: 1.7;
 }
 
 /* ========== NOTIFICATION MODALS ========== */
@@ -1782,9 +1784,6 @@ body[data-persona='cruella'] .notification-close-btn {
 body[data-persona='cruella'] .notification-close-btn:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fff7f5;
-}
-  margin: 0.45rem 0 0;
-  line-height: 1.7;
 }
 
 .rec-detail-grid {
