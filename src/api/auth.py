@@ -24,7 +24,19 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import Depends, Header, HTTPException, status
-from jose import JWTError, jwt
+
+try:
+    from jose import JWTError, jwt
+except SyntaxError as exc:
+    raise RuntimeError(
+        "Detected incompatible 'jose' package. "
+        "Install 'python-jose[cryptography]' and remove 'jose'."
+    ) from exc
+except ImportError as exc:
+    raise RuntimeError(
+        "Missing dependency 'python-jose[cryptography]'. "
+        "Install it in the active virtual environment."
+    ) from exc
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 

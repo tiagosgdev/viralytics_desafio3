@@ -37,7 +37,7 @@ BATCH_SIZE = 64
 # Weights for soft filtering
 PENALTY_WEIGHT = 0.4
 EXTENDED_PENALTY_WEIGHT = 0.2
-BOOST_WEIGHT = 0.1  # Positive boost applied per include-field match in soft mode.
+BOOST_WEIGHT = 0.2 
 
 # Deterministic exclude expansion for semantically close values.
 # This is used to improve behavior for negations like "not too fitted"
