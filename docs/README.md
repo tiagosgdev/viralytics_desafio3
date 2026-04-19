@@ -1,14 +1,27 @@
 # Documentation
 
-The docs folder is split into a few clearer buckets:
+All curated documentation lives in `docs/organized/`. Start there.
 
-- `docs/organized/`: curated write-ups for the thesis/research narrative
-- `docs/figures/raw_dataset/`: generated plots from raw dataset analysis
-- `docs/artifacts/`: generated JSON comparison outputs
-- root `docs/*.md`: working notes and experiment write-ups that are still useful but less curated
+## Structure
+
+```
+docs/organized/
+├── README.md                          # Research index and navigation
+├── 01_dataset/                        # Dataset analysis (DeepFashion2)
+│   └── dataset_analysis.md
+├── 02_yolo_experiments/               # YOLO baseline results
+│   └── yolo_results.md
+├── 03_fashionnet_experiments/         # Custom FashionNet experiments
+│   ├── fashionnet_pipeline_fixes.md
+│   └── fashionnet_results.md
+├── 04_edna/                           # edna custom detector iterations
+│   └── edna_results.md
+├── 05_evaluation/                     # Evaluation methodology
+│   └── evaluation_methodology.md
+└── 06_codebase/                       # Architecture walkthrough
+    └── codebase_explanation.md
+```
 
 Good starting points:
-
-- architecture walkthrough: `docs/organized/06_codebase/codebase_explanation.md`
-- research index: `docs/organized/README.md`
-- repo layout overview: `README.md` and `scripts/README.md`
+- Research index: `docs/organized/README.md`
+- Architecture walkthrough: `docs/organized/06_codebase/codebase_explanation.md`

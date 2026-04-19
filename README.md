@@ -1,273 +1,264 @@
-﻿# FashionSense
+# FashionSense
 > Master's Project | Computer Vision + Semantic Fashion Search
 
-FashionSense is now a single integrated application with two runtime personas:
+FashionSense is a fashion outfit detection and recommendation system with two runtime personas:
 
-- `Cruella`: trained YOLO-based outfit detection + LLM-powered text refinement
-- `Edna`: custom FashionNet outfit detection + local custom text parsing
+- **Cruella** — trained YOLO-based outfit detection + LLM-powered semantic search
+- **Edna** — custom FashionNet (edna) outfit detection + local text parsing
 
-The app starts on a landing screen where the user chooses which persona to use. After that, the user can:
-
-- scan an outfit with the live camera flow,
-- get initial store recommendations,
-- refine the search through chat or voice,
-- switch back to the persona chooser and reset the active session.
+The user selects a persona on the landing screen, scans an outfit via live camera, receives store recommendations, and can refine results through chat or voice.
 
 ---
 
-## Quick Start
+## Requirements
 
-Web:
+- Python 3.10+
+- CUDA GPU recommended for training (CPU and Apple MPS supported)
+- `ffmpeg` installed for voice transcription
+- Ollama running locally for Cruella's LLM text backend
 
-- `.\scripts\app\start_full_app.ps1`
+Install Python dependencies:
 
-LAN / mobile testing:
-
-- `.\scripts\app\start_full_app.ps1 -BindHost 0.0.0.0 -BindPort 8000`
-
-Android app:
-
-- open `android_app/` in Android Studio
-- build `Build > Build Bundle(s) / APK(s) > Build APK(s)`
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
-## What The App Does
+## Datasets
 
-The runtime system combines:
+### DeepFashion2 (required for training)
 
-1. clothing detection from a live camera or uploaded image
-2. rule-based initial complementary recommendations
-3. semantic follow-up search through natural language
-4. voice transcription for chat input
-5. a JSON-backed mock store catalogue for recommendation details
+Dataset source: [Kaggle — DeepFashion2 Original with Dataframes](https://www.kaggle.com/datasets/thusharanair/deepfashion2-original-with-dataframes?resource=download)
 
-The current web experience has:
+A Kaggle account is required. Download and extract to `data/raw/` with this structure:
 
-- a landing screen with `Cruella` and `Edna`
-- separate `Camera` and `Chat` tabs
-- a recommendation modal with item details
-- a side carousel of store recommendations
-- persona-specific visual themes
+```
+data/raw/
+├── train/
+│   ├── image/
+│   └── annos/
+├── validation/
+│   ├── image/
+│   └── annos/
+└── DeepFashion2/
+    └── img_info_dataframes/
+        ├── train.csv
+        └── validation.csv
+```
+
+### Build the balanced dataset
+
+Once raw data is in place, run:
+
+```bash
+python scripts/data_prep/sample_balanced.py \
+    --train_csv data/raw/DeepFashion2/img_info_dataframes/train.csv \
+    --val_csv   data/raw/DeepFashion2/img_info_dataframes/validation.csv \
+    --img_dirs  data/raw/train/image data/raw/validation/image \
+    --output_dir data/balanced_dataset \
+    --n_per_class 7641 \
+    --seed 42
+```
+
+This produces an 84,051-image balanced dataset across 11 classes (70/15/15 split) at `data/balanced_dataset/`.
+
+### Background images (required for edna_1.4m+)
+
+Download 2,000 COCO val2017 background images (no people or clothing) used as negative training examples:
+
+```bash
+python scripts/data/download_bg_images.py
+```
+
+Then add them to the training split:
+
+```bash
+cp bg_images/*.jpg data/balanced_dataset/images/train/
+
+for f in bg_images/*.jpg; do
+    touch data/balanced_dataset/labels/train/$(basename $f .jpg).txt
+done
+```
 
 ---
 
-## Persona Modes
+## Running the App
 
-### Cruella
+**Windows (PowerShell):**
 
-- Vision backend: trained YOLO detector
-- Text backend: LNIAGIA conversation flow with the LLM parser
-- Theme: dark red / black
+```powershell
+.\scripts\app\start_full_app.ps1
+```
 
-### Edna
+**LAN / mobile testing:**
 
-- Vision backend: custom `FashionNet`
-- Text backend: local custom parser path
-- Theme: current light neutral palette
+```powershell
+.\scripts\app\start_full_app.ps1 -BindHost 0.0.0.0 -BindPort 8000
+```
 
-Notes:
+**Python (cross-platform):**
 
-- `Cruella` is the more LLM-centric path.
-- `Edna` is the more custom-model-centric path.
-- If the custom FashionNet weights are missing, `Edna` falls back to the standard vision backend.
+```bash
+python scripts/app/start_full_app.py
+```
+
+The launcher checks all dependencies before starting. Open `http://localhost:8000` in a browser.
+
+**Android app:**
+
+1. Open `android_app/` in Android Studio
+2. Set the server IP in the app to point to your machine
+3. `Build > Build Bundle(s) / APK(s) > Build APK(s)`
 
 ---
 
-## Runtime Architecture
+## Training
 
-High-level runtime flow:
+Train the custom FashionNet (edna) model:
 
-`Landing screen -> persona selection -> camera scan -> recommendations -> chat refinement`
+```bash
+# GPU (recommended)
+python scripts/training/train_custom.py \
+    --data data/balanced_dataset \
+    --model_scale m \
+    --epochs 100 \
+    --batch 32 \
+    --lr 0.001 \
+    --lambda_box 5.0 \
+    --lambda_obj 1.0 \
+    --lambda_cls 0.5 \
+    --gr 0.0 \
+    --augment medium \
+    --multi_cell \
+    --optimizer adamw \
+    --weight_decay 0.01 \
+    --device cuda \
+    --output models/weights/fashionnet
 
-Backend components:
+# CPU (slow — use for testing only)
+python scripts/training/train_custom.py --epochs 10 --batch 4 --device cpu
 
-- `src/api/main.py`
-- `src/api/search_service.py`
-- `src/api/personas.py`
-- `src/api/custom_text_parser.py`
-- `src/detection/detector.py`
-- `src/detection/fashionnet_detector.py`
-- `src/detection/camera.py`
-- `src/recommendations/engine.py`
+# Apple Silicon
+python scripts/training/train_custom.py --epochs 50 --batch 16 --device mps
+```
 
-Frontend components:
+Checkpoints are saved to `models/weights/fashionnet/`. The best validation checkpoint is saved as `best.pt`.
 
-- `frontend/index.html`
-- `frontend/static/css/style.css`
+---
 
-Integrated search subsystem:
+## Evaluation
 
-- `LNIAGIA/search_app.py`
-- `LNIAGIA/llm_query_parser.py`
-- `LNIAGIA/DB/vector/*`
+Evaluate a trained model on the balanced dataset:
+
+```bash
+python scripts/evaluation/evaluate_custom.py \
+    --weights models/weights/fashionnet/best.pt \
+    --data data/balanced_dataset \
+    --conf 0.25
+```
+
+Generate training plots:
+
+```bash
+python scripts/evaluation/visualize_results.py \
+    --metrics_json models/weights/fashionnet/metrics.json \
+    --output docs/organized/04_edna/plots/
+```
+
+---
+
+## Dataset Analysis
+
+Generate EDA figures for the raw dataset:
+
+```bash
+python scripts/data_prep/analyze_raw_dataset.py \
+    --csv data/raw/DeepFashion2/img_info_dataframes/train.csv \
+    --output docs/organized/01_dataset/raw_dataset/
+```
 
 ---
 
 ## Project Structure
 
-```text
-viralytics_desafio3/
-|
-|-- android_app/                    # Native Android client
-|-- data/
-|   |-- mock_store_catalogue_template.json
-|   `-- sample_dataset/
-|-- docs/
-|   |-- README.md
-|   |-- artifacts/
-|   |-- figures/
-|   `-- organized/
-|-- frontend/
-|   |-- index.html
-|   `-- static/
-|       `-- css/style.css
-|-- LNIAGIA/                        # Semantic search subsystem
-|-- models/
-|   `-- weights/
-|       |-- fashionnet/
-|       |-- yolov8n_fashion/
-|       `-- yolov8s_fashion/
-|-- scripts/
-|   |-- README.md
-|   |-- app/
-|   |-- data_prep/
-|   |-- evaluation/
-|   `-- training/
-`-- src/
-    |-- api/
-    |   |-- main.py
-    |   |-- schemas.py
-    |   |-- search_service.py
-    |   |-- personas.py
-    |   `-- custom_text_parser.py
-    |-- custom_model/
-    |-- detection/
-    |   |-- detector.py
-    |   |-- fashionnet_detector.py
-    |   |-- yolo_world.py
-    |   `-- camera.py
-    `-- recommendations/
-        |-- engine.py
-        `-- catalogue.py
+```
+FashionSense/
+├── android_app/                    # Native Android client
+├── data/
+│   ├── mock_store_catalogue_template.json
+│   └── raw/                        # DeepFashion2 raw data (not committed)
+├── docs/
+│   ├── README.md
+│   └── organized/                  # Research documentation
+│       ├── 01_dataset/
+│       ├── 02_yolo_experiments/
+│       ├── 03_fashionnet_experiments/
+│       ├── 04_edna/
+│       ├── 05_evaluation/
+│       └── 06_codebase/
+├── frontend/
+│   ├── index.html
+│   └── static/css/style.css
+├── LNIAGIA/                        # Semantic search subsystem (Cruella)
+├── models/
+│   └── weights/                    # Trained model weights (not committed)
+│       └── fashionnet/
+├── notebooks/
+│   ├── 01_EDA.ipynb
+│   └── 02_model_comparison.ipynb
+├── scripts/
+│   ├── app/
+│   ├── data/
+│   ├── data_prep/
+│   ├── evaluation/
+│   └── training/
+├── src/
+│   ├── api/
+│   │   ├── main.py
+│   │   ├── schemas.py
+│   │   ├── search_service.py
+│   │   ├── personas.py
+│   │   └── custom_text_parser.py
+│   ├── custom_model/               # FashionNet architecture
+│   ├── detection/
+│   │   ├── detector.py
+│   │   ├── fashionnet_detector.py
+│   │   └── camera.py
+│   └── recommendations/
+│       ├── engine.py
+│       └── catalogue.py
+├── requirements.txt
+└── docker-compose.yml
 ```
 
 ---
 
-## Main API Surface
+## API Routes
 
-Important routes:
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/` | Serve frontend |
+| GET | `/health` | Health check |
+| POST | `/api/detect/image` | Detect clothing in uploaded image |
+| POST | `/api/mobile/scan` | Mobile scan endpoint |
+| POST | `/api/session/start` | Start a new session |
+| GET | `/api/session/{session_id}` | Get session state |
+| POST | `/api/chat` | Chat refinement |
+| POST | `/api/chat/warmup` | Warmup LLM |
+| POST | `/api/transcribe` | Transcribe voice input |
+| GET | `/api/conf` | Get detection confidence threshold |
+| POST | `/api/conf/{value}` | Set detection confidence threshold |
+| WS | `/ws/camera` | Live camera WebSocket stream |
 
-- `GET /`
-- `GET /health`
-- `POST /api/detect/image`
-- `POST /api/mobile/scan`
-- `POST /api/session/start`
-- `GET /api/session/{session_id}`
-- `POST /api/chat`
-- `POST /api/chat/warmup`
-- `POST /api/transcribe`
-- `GET /api/conf`
-- `POST /api/conf/{value}`
-- `WS /ws/camera`
-
-Important runtime behavior:
-
-- scan/image/chat/session requests now carry a `persona`
-- the camera WebSocket also uses the selected `persona`
-- sessions store persona information
-- chat results and recommendations are persona-aware
-
----
-
-## Model Backends
-
-### Vision
-
-Available runtime paths:
-
-- `FashionDetector` in `src/detection/detector.py`
-- `FashionNetDetector` in `src/detection/fashionnet_detector.py`
-- `YOLOWorldDetector` in `src/detection/yolo_world.py`
-
-Current persona mapping:
-
-| Persona | Vision backend |
-|---------|----------------|
-| `cruella` | trained YOLO |
-| `edna` | FashionNet |
-
-### Text
-
-Available runtime paths:
-
-- LLM-based parser / conversation flow in `LNIAGIA/`
-- local custom parser in `src/api/custom_text_parser.py`
-
-Current persona mapping:
-
-| Persona | Text backend |
-|---------|--------------|
-| `cruella` | LLM conversation search |
-| `edna` | custom local parser |
-
----
-
-## Mobile / Android
-
-The repository includes a native Android client in `android_app/`.
-
-Current Android direction:
-
-- native APK client
-- separate scan and chat tabs
-- default LAN server target
-- recommendation cards and detail dialog
-
-The Android app uses the backend running on the PC as the server.
-
----
-
-## Catalogue
-
-Recommendations are now backed by the editable JSON catalogue:
-
-- `data/mock_store_catalogue_template.json`
-
-This file is intended to be:
-
-- easy to edit manually
-- replaceable per store
-- extensible with new attributes
-
-Recommendation details shown in the UI are populated from this data source.
-
----
-
-## Training / Evaluation Scripts
-
-YOLO path:
-
-- `scripts/training/train.py`
-- `scripts/evaluation/evaluate.py`
-
-Custom FashionNet path:
-
-- `scripts/training/train_custom.py`
-- `scripts/evaluation/evaluate_custom.py`
-- `scripts/evaluation/compare_models.py`
-
-These support the two main research directions in the repository:
-
-- strong fine-tuned baseline with YOLO
-- from-scratch detector experimentation with FashionNet
+All scan/chat/session requests carry a `persona` field (`cruella` or `edna`).
 
 ---
 
 ## Notes
 
-- The app launcher checks for integrated-search dependencies before starting.
-- Voice transcription depends on Whisper plus `ffmpeg`.
-- The current frontend and backend are aligned around `/api/chat`; this is no longer just a placeholder.
-- The app now has a working persona-selection layer, so documentation or older notes referring to a single startup detector are outdated.
-
+- Model weights are not committed. Place trained weights at `models/weights/fashionnet/best.pt` for Edna to load automatically.
+- Cruella requires Ollama running locally with a compatible model pulled.
+- Voice transcription requires `ffmpeg` on PATH and `faster-whisper` installed.
+- The store catalogue at `data/mock_store_catalogue_template.json` can be replaced with real store data.
+- See `docs/organized/` for full research documentation including dataset analysis, experiment results, and architecture details.
