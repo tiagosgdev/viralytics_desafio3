@@ -10,6 +10,24 @@ The user selects a persona on the landing screen, scans an outfit via live camer
 
 ---
 
+## Model Weights
+
+Pre-trained edna model weights are too large for the repository. Download from SharePoint:
+
+**[Download model weights](https://myisepipp-my.sharepoint.com/:u:/g/personal/1140331_isep_ipp_pt/IQCCukBlXdvVRoOwaETcMQwwAbNnmYm78sjY0hEas7aCeS4?e=1mLUmX)**
+
+Extract and place under `models/weights/` so the structure matches:
+
+```
+models/weights/
+└── edna_1.5m/
+    └── best.pt
+```
+
+Then run the app with `--edna-weights edna_1.5m` (see Running the App below).
+
+---
+
 ## Requirements
 
 - Python 3.10+
