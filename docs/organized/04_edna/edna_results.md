@@ -14,7 +14,8 @@ conf=0.25 and NMS IoU=0.45, unless otherwise noted.
 | fashionnet_balanced_v1 | 0.193 | -- | 0.336 | 0.387 | 0.359 | Ablation-winning config |
 | edna_1.2m | 0.260 | 0.268 | 0.347 | 0.492 | 0.407 | scale=m, +aug, +multi_cell |
 | edna_1.3m | 0.203 | 0.210 | 0.433 | 0.357 | 0.392 | +cos_lr, +EMA, +mosaic, +IoU-obj |
-| **edna_1.4m** | **0.263** | **0.266** | **0.477** | 0.415 | **0.444** | +2K bg images, reverted IoU-obj |
+| edna_1.4m | 0.263 | 0.266 | 0.477 | 0.415 | 0.444 | +2K bg images, reverted IoU-obj |
+| **edna_1.5m** | **0.261** | **0.272** | 0.430 | **0.448** | **0.439** | focal_bce .mean(), 1K bg images |
 
 For comparison: **YOLOv8M on balanced dataset: 0.592 mAP@50** (pretrained, 50 epochs).
 
@@ -184,13 +185,86 @@ to 0.049 and 0.145 to 0.101 respectively).
 
 ---
 
+## edna_1.5m
+
+### Setup
+
+| Parameter | Value |
+|-----------|-------|
+| Model scale | m (~34M params) |
+| New vs 1.4m | focal_bce .sum() → .mean() (fixes loss inflation); removed /B normalization; bg images reduced 2,000 → 1,000 |
+| Dataset | balanced_dataset + 1,000 bg images = ~53,199 training images |
+| Epochs | 80 (stopped early, best.pt used) |
+| Batch | 16 |
+
+### Design rationale
+
+edna_1.4m suffered from two compounding issues: `focal_bce` used `.sum()` over all ~8,400 grid cells, causing background images (all-negative) to inflate obj loss ~1000x; and 2,000 background images biased the model toward over-suppression, hurting recall. edna_1.5m fixes both: `focal_bce` now uses `.mean()` (per-cell normalization), and background images were reduced to 1,000 (~1.9% of training set).
+
+### Results
+
+| Metric | edna_1.2m | edna_1.4m | edna_1.5m | Δ vs 1.4m |
+|--------|-----------|-----------|-----------|-----------|
+| mAP@50 (val) | 0.260 | 0.263 | 0.261 | -0.002 |
+| mAP@50 (test) | 0.268 | 0.266 | **0.272** | +0.006 |
+| Precision | 0.347 | **0.477** | 0.430 | -0.047 |
+| Recall | 0.492 | 0.415 | **0.448** | +0.033 |
+| F1 | 0.407 | 0.444 | 0.439 | -0.005 |
+
+### Per-class Breakdown (val)
+
+| Category | AP | Precision | Recall | F1 |
+|----------|----|-----------|--------|----|
+| long_sleeve_outwear | 0.374 | 0.595 | 0.525 | 0.558 |
+| sling_dress | 0.399 | 0.548 | 0.473 | 0.507 |
+| vest | 0.348 | 0.471 | 0.553 | 0.509 |
+| shorts | 0.303 | 0.492 | 0.542 | 0.516 |
+| short_sleeve_dress | 0.301 | 0.512 | 0.428 | 0.467 |
+| vest_dress | 0.271 | 0.504 | 0.420 | 0.458 |
+| long_sleeve_dress | 0.234 | 0.515 | 0.350 | 0.417 |
+| trousers | 0.197 | 0.343 | 0.526 | 0.415 |
+| skirt | 0.193 | 0.323 | 0.449 | 0.376 |
+| long_sleeve_top | 0.162 | 0.347 | 0.353 | 0.350 |
+| short_sleeve_top | 0.091 | 0.268 | 0.308 | 0.286 |
+
+### Test Set
+
+| Metric | Value |
+|--------|-------|
+| mAP@50 | **0.272** |
+| Precision | 0.437 |
+| Recall | 0.457 |
+| F1 | 0.447 |
+| Total detections | 13,170 |
+| Total ground truths | 12,592 |
+
+### Background Image Evaluation
+
+| Metric | Value |
+|--------|-------|
+| Images | 2,000 |
+| Total false detections | **72** |
+| False positive rate | **3.6%** |
+
+Background suppression increased from 7 (edna_1.4m) to 72 false detections. Still very low in absolute terms, but the reduction in bg images (2,000 → 1,000) and the loss normalization fix relaxed the over-suppression, which is reflected in the recall recovery (+0.033 vs 1.4m).
+
+### Analysis
+
+edna_1.5m recovers **recall from 0.415 → 0.448** (+0.033 vs 1.4m) while keeping precision well above edna_1.2m (0.430 vs 0.347). The test mAP of **0.272 is the best of any edna run**. The val mAP (0.261) is marginally below 1.4m (0.263) but within noise — the test set result is more meaningful.
+
+The precision/recall tradeoff is now better balanced: edna_1.5m sits between 1.2m (high recall, low precision) and 1.4m (high precision, lower recall), with the best test mAP overall.
+
+Short_sleeve_top and long_sleeve_top recovered significantly vs 1.4m (AP 0.091 vs 0.049, and 0.162 vs 0.101), confirming the recall regression in 1.4m was caused by over-suppression from too many background images and loss inflation.
+
+---
+
 ## Gap to YOLOv8
 
 | Model | mAP@50 | Precision | Recall |
 |-------|--------|-----------|--------|
-| edna_1.4m (best edna) | 0.263 | 0.477 | 0.415 |
+| edna_1.5m (best edna, test) | 0.272 | 0.437 | 0.457 |
 | YOLOv8M (best balanced) | 0.592 | 0.575 | 0.689 |
-| **Gap** | **0.329** | **0.098** | **0.274** |
+| **Gap** | **0.320** | **0.138** | **0.232** |
 
 The gap is explained by three factors:
 

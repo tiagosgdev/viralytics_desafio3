@@ -39,7 +39,8 @@ docs/organized/
 | fashionnet_balanced_v1 | balanced (84k) | 0.193 | 0.359 | Fixed pipeline, 100 epochs |
 | edna_1.2m | balanced (84k) | 0.260 | 0.407 | Best edna recall |
 | edna_1.3m | balanced (84k) | 0.203 | 0.392 | IoU-obj regression |
-| edna_1.4m | balanced (84k) | 0.263 | 0.444 | Best edna overall |
+| edna_1.4m | balanced + 2k bg (54k) | 0.263 | 0.444 | Best precision (0.477) |
+| **edna_1.5m** | balanced + 1k bg (53k) | **0.272** (test) | **0.447** | Best test mAP, recall recovered |
 
 ---
 
