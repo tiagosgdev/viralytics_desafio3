@@ -17,8 +17,8 @@ Architecture overview:
 
 Model scales (--model_scale flag):
   s:  ~11.7M params   (64→128→256→512,  CSP n=1,2,3,2)
-  m:  ~25M  params   (96→192→384→768,  CSP n=2,3,4,3)
-  l:  ~43M  params   (128→256→512→1024, CSP n=3,4,6,3)
+  m:  ~34M  params   (96→192→384→768,  CSP n=2,3,4,3)
+  l:  ~63M  params   (128→256→512→1024, CSP n=3,4,6,3)
 """
 
 import torch
@@ -103,7 +103,7 @@ class CSPBlock(nn.Module):
     """
     Cross Stage Partial block — splits channels, processes one half through
     residual blocks, then concatenates. Reduces computation while maintaining
-    representational power. A key design pattern we implement from scratch.
+    representational power. A key design pattern we implement from scratch (no pretrained weights).
     """
     def __init__(self, in_ch: int, out_ch: int, n: int = 1):
         super().__init__()
@@ -281,8 +281,8 @@ class FashionNet(nn.Module):
 
     Usage:
         model = FashionNet()                          # scale "s" (default, ~11.7M)
-        model = FashionNet(scale="m")                 # scale "m" (~25M)
-        model = FashionNet(scale="l")                 # scale "l" (~43M)
+        model = FashionNet(scale="m")                 # scale "m" (~34M)
+        model = FashionNet(scale="l")                 # scale "l" (~63M)
         preds = model(images)   # list of 3 tensors, one per scale
 
     The 3 output tensors have shape:
@@ -318,71 +318,3 @@ class FashionNet(nn.Module):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
 
-# ──────────────────────────────��──────────────────────────────────��───────────
-# Tiny variant — for fast CPU testing only
-# ───────���──────────────��─────────────────────────────────���────────────────────
-
-class TinyFashionNet(nn.Module):
-    """
-    Stripped-down version of FashionNet for fast CPU prototyping.
-    Uses ~10x fewer channels than the full model (~400K params vs 11M).
-    Results will be poor — use only to verify the pipeline runs end-to-end.
-
-    To get real results, train FashionNet (full) on a GPU.
-    """
-    def __init__(self, num_classes: int = NUM_CLASSES):
-        super().__init__()
-        self.num_classes = num_classes
-
-        # Minimal backbone — 4 downsampling convs, no residual blocks
-        self.b1 = ConvBnRelu(3,   16, k=3, s=2, p=1)   # /2
-        self.b2 = ConvBnRelu(16,  32, k=3, s=2, p=1)   # /4  -> P3
-        self.b3 = ConvBnRelu(32,  64, k=3, s=2, p=1)   # /8  -> P4
-        self.b4 = ConvBnRelu(64, 128, k=3, s=2, p=1)   # /16 -> P5
-
-        # Minimal neck — single lateral connection
-        self.lat = ConvBnRelu(128, 64, k=1, s=1, p=0)
-        self.fuse= ConvBnRelu(64+64, 64, k=1, s=1, p=0)
-
-        # Single-scale head (P4 only — good enough for pipeline testing)
-        self.head = nn.Conv2d(64, 5 + num_classes, kernel_size=1)
-        nn.init.normal_(self.head.weight, std=0.01)
-        nn.init.constant_(self.head.bias, 0)
-
-    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
-        p2 = self.b2(self.b1(x))          # 160x160, 32ch
-        p3 = self.b3(p2)                   # 80x80,   64ch
-        p4 = self.b4(p3)                   # 40x40,  128ch
-
-        # Simple FPN: upsample P4 -> fuse with P3
-        lat = self.lat(p4)                 # 40x40, 64ch
-        up  = F.interpolate(lat, scale_factor=2, mode='nearest')  # 80x80
-        fused = self.fuse(torch.cat([up, p3], dim=1))             # 80x80, 64ch
-
-        # Return 3 scales (head runs on fused only; other two are copies for
-        # loss compatibility — they produce near-zero predictions by design)
-        pred = self.head(fused)
-        return [pred,
-                self.head(F.avg_pool2d(fused, 2)),   # 40x40
-                self.head(F.avg_pool2d(fused, 4))]   # 20x20
-
-    def count_parameters(self) -> int:
-        return sum(p.numel() for p in self.parameters() if p.requires_grad)
-
-if __name__ == "__main__":
-    dummy = torch.zeros(1, 3, 640, 640)
-
-    for scale in ("s", "m", "l"):
-        model = FashionNet(scale=scale)
-        outs  = model(dummy)
-        print(f"FashionNet-{scale}: {model.count_parameters():,} params")
-        for i, o in enumerate(outs):
-            print(f"  Scale {i+1} output shape: {tuple(o.shape)}")
-        print()
-
-    print("--- TinyFashionNet ---")
-    tiny   = TinyFashionNet()
-    outs_t = tiny(dummy)
-    print(f"TinyFashionNet parameter count: {tiny.count_parameters():,}")
-    for i, o in enumerate(outs_t):
-        print(f"  Scale {i+1} output shape: {tuple(o.shape)}")

@@ -14,7 +14,6 @@ If the prerequisites are satisfied, it starts uvicorn in the foreground.
 Usage:
     python scripts/app/start_full_app.py
     python scripts/app/start_full_app.py --reload
-    python scripts/app/start_full_app.py --detector-backend yolo_world
 """
 
 from __future__ import annotations
@@ -47,7 +46,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--detector-backend",
         default="yolov8",
-        choices=["yolov8", "yolo_world"],
+        choices=["yolov8"],
         help="Detector backend to expose through the API",
     )
     parser.add_argument(

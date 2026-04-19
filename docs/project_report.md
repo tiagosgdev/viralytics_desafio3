@@ -25,7 +25,7 @@ FashionNet is a **custom single-shot anchor-based detector built from scratch in
 | Scale | Params | Channel widths | CSP depths |
 |-------|--------|----------------|------------|
 | s | ~11.7M | 64-128-256-512 | 1,2,3,2 |
-| m | ~25M | 96-192-384-768 | 2,3,4,3 |
+| m | ~34M | 96-192-384-768 | 2,3,4,3 |
 | l | ~43M | 128-256-512-1024 | 3,4,6,3 |
 
 **"edna"** = FashionNet trained at full scale on the balanced dataset with iterative bug fixes and hyperparameter tuning. **Why custom vs YOLO?** The goal was to build and understand the full detection pipeline — loss functions, target assignment, post-processing, evaluation — rather than treating Ultralytics as a black box. YOLOv8 serves as performance ceiling and comparison baseline.
@@ -74,34 +74,44 @@ A 12-experiment ablation study (2K samples, 20 epochs each) identified winning c
 | edna_1m_balanced_100 | 0.187 | 0.348 | 0.372 | 0.360 | No aug/multi_cell, longer training |
 | **edna_1.2m** | **0.260** | 0.347 | **0.492** | **0.407** | scale=m, aug=medium, multi_cell, adamw |
 | edna_1.3m | 0.203 | **0.433** | 0.357 | 0.392 | +cos_lr, +EMA, +mosaic, +IoU-obj (gr=0.5) |
-| edna_1.4m | — | — | — | — | Bug fixes (see below), +2K background images |
+| edna_1.4m | **0.263** | **0.477** | 0.415 | **0.444** | +2K COCO bg images, gr=0.0, bug fixes |
 
-**edna_1.2m remains best** on mAP@50 and F1. edna_1.3m regressed (-0.057 mAP) despite gaining precision (+0.086): IoU-aware objectness targets (gr=0.5) suppressed recall (-0.135). Model became more conservative — fewer but more accurate detections.
+**edna_1.4m is new best** on mAP@50 and F1. edna_1.2m still holds best recall. edna_1.3m regressed (-0.057 mAP) due to IoU-aware objectness targets (gr=0.5) suppressing recall (-0.135).
 
-**Test set confirmation** (held-out, 11,186 images): edna_1.2m 0.268 | edna_1.3m 0.210. Ranking holds. edna_1.3m fires 42% fewer detections (10,221 vs 17,540).
+**Test set confirmation** (held-out, 11,186 images): edna_1.2m 0.268 | edna_1.3m 0.210 | edna_1.4m **0.266**. edna_1.4m test results consistent with val (0.263) — no overfitting. edna_1.3m fires 42% fewer detections than 1.2m (10,221 vs 17,540).
 
-**Gap to YOLO:** edna_1.2m vs YOLOv8M (balanced): **0.332 mAP@50 gap** (0.260 vs 0.592), explained by COCO pretraining, years of architecture optimisation, and mature training recipes. Notably, edna-l has *more* parameters than YOLOv8M — capacity is not the bottleneck.
+**Gap to YOLO:** edna_1.4m vs YOLOv8M (balanced): **0.329 mAP@50 gap** (0.263 vs 0.592), explained by COCO pretraining, years of architecture optimisation, and mature training recipes. Notably, edna-m (~34M params) exceeds YOLOv8M (~25.8M) — capacity is not the bottleneck.
 
-### 3.4 edna 1.4m (Currently Training)
+### 3.4 edna 1.4m Results
 
-**Bugs fixed going into 1.4:**
+**Changes vs 1.2m:** +2,000 COCO background images (empty labels), explicit gr=0.0, reverted lambda_obj=1.0, no cos_lr/mosaic/EMA. Bug fixes applied: C1 (CIoU obj target → plain IoU), H1 (p_wh decoding unified to `.clamp()`), H5 (silent aug failure → logged fallback), H6 (invalid class IDs skip cell).
 
-| Bug | Issue | Fix |
-|-----|-------|-----|
-| C1 | CIoU used for soft objectness target — distance/aspect penalties made targets systematically low | Separate plain IoU for target; gr=0.0 |
-| C2 | Objectness loss `.mean()` over ~8400 cells — ~5 positives/image → near-zero gradient | `.sum() / batch_size` |
-| H1 | `compare_models.py` decoded p_wh with `.abs()`, postprocess used `.clamp()` — all A/B metrics invalid | Unified to `.clamp(min=0)` |
-| H5 | Silent augmentation failure returned all-zero tensor | Logs warning + resize-only fallback |
-| H6 | Out-of-range class IDs set obj_mask=1 with zero class targets — contradictory gradient | Skip cell entirely |
+| Metric | edna_1.2m | edna_1.3m | edna_1.4m |
+|--------|-----------|-----------|-----------|
+| mAP@50 (val) | 0.260 | 0.203 | **0.263** |
+| mAP@50 (test) | 0.268 | 0.210 | **0.266** |
+| Precision | 0.347 | 0.433 | **0.477** |
+| Recall | **0.492** | 0.357 | 0.415 |
+| F1 | 0.407 | 0.392 | **0.444** |
+| BG false detections | untested | untested | **7 / 2,000 images** |
 
-**Expected outcomes:**
+**Early convergence:** Best checkpoint at epoch 57 of 100 — val_loss plateaued/regressed after. Despite stopping early, edna_1.4m still beats edna_1.2m's full 100-epoch result on mAP@50 and F1.
 
-| Metric | edna_1.2m | edna_1.4m |
-|--------|-----------|-----------|
-| mAP@50 | 0.260 | — |
-| Precision | 0.347 | — |
-| Recall | 0.492 | — |
-| BG detections | untested | — |
+**Background suppression confirmed:** 7 false detections across 2,000 pure-background COCO images (0.35% FP rate). Objectness suppression on empty regions works correctly.
+
+**Recall regression:** Background images dominated objectness loss — 2,000 images × 8,400 negative cells each with no positive counterbalance caused model to over-predict "no object". edna_1.5m target: reduce background images to 200–300 to rebalance.
+
+**val_loss caveat:** edna_1.4m val_loss (6.70) is ~2.4× higher than edna_1.2m (2.81) — misleading. Caused by `focal_bce` using `.sum()` over all ~8,400 grid cells: background images contribute 8,400 negative cells each with no positive signal, inflating obj loss ~1000×. mAP is the reliable metric; val_loss is not comparable across runs with different background image counts.
+
+---
+
+## 5. Next Steps — edna 1.5m
+
+edna_1.4m confirmed background suppression works but over-corrected on recall. Plan for edna_1.5m:
+
+- **Reduce background images: 2,000 → 200–300** — at 3.7% of train set, negatives dominate objectness loss; ~0.4% expected to recover recall while preserving BG suppression
+- **Revert `focal_bce` to `.mean()`** — `.sum()` normalization interacts badly with variable background image counts, making val_loss uninterpretable across runs
+- **Target:** recover recall toward edna_1.2m levels (≥0.49) while keeping BG false positive rate near 1.4m's 0.35%
 
 ---
 
@@ -110,8 +120,10 @@ A 12-experiment ablation study (2K samples, 20 epochs each) identified winning c
 - **COCO pretraining worth ~7% mAP** even on domain-specific fashion; training from scratch is a severe handicap
 - **Pipeline bugs dominated early results** — lambda_box=0.05 alone explained most of the 0.001 mAP; fixing to 5.0 gave 275× improvement before any architectural change
 - **IoU-aware objectness (gr=0.5) traded recall for precision** — net-negative for mAP; sound in principle but requires careful threshold tuning or gradual annealing
-- **val_loss and mAP@50 weakly coupled** — edna_1m had better val_loss than fashionnet_balanced_v1 but worse mAP
+- **val_loss and mAP@50 weakly coupled** — edna_1m had better val_loss than fashionnet_balanced_v1 but worse mAP; edna_1.4m val_loss 2.4× higher than 1.2m yet better mAP — loss scale depends on background image count, not just model quality
 - **Medium augmentation helps; heavy hurts** — excessive geometric distortion destroys signal at limited epoch counts
-- **Background images are critical** — 100% foreground training set causes systematic false positives that threshold tuning cannot fix (best conf sweep gain: +0.005 F1)
-- **Off-the-shelf YOLO significantly outperforms custom detector** (0.592 vs 0.260 mAP@50) — architecture maturity and pretrained features matter more than model capacity alone
+- **Background images are critical** — 100% foreground training set causes systematic false positives; 2K COCO negatives reduced BG false detections from hundreds to 7 across 2,000 images
+- **Background image count needs calibration** — 2,000 images (3.7% of train set) over-suppressed recall (-0.077 vs 1.2m); 200–300 images likely optimal
+- **Threshold tuning is cheap but limited** — best conf sweep gain was +0.005 F1; structural false positives cannot be fixed post-hoc
+- **Off-the-shelf YOLO significantly outperforms custom detector** (0.592 vs 0.263 mAP@50) — architecture maturity and pretrained features matter more than model capacity alone
 - **YOLOv8L vs YOLOv8M not directly comparable** across datasets; higher L score (0.767) reflects easier sample dataset, not model superiority

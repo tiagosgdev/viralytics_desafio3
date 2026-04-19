@@ -11,36 +11,42 @@ Usage:
 import requests, json, os, shutil
 from pathlib import Path
 
-print("Downloading COCO annotations...")
-os.system("wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip -q")
-os.system("unzip -q annotations_trainval2017.zip annotations/instances_val2017.json")
 
-with open("annotations/instances_val2017.json") as f:
-    coco = json.load(f)
+def main():
+    print("Downloading COCO annotations...")
+    os.system("wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip -q")
+    os.system("unzip -q annotations_trainval2017.zip annotations/instances_val2017.json")
 
-# Exclude: person + clothing-adjacent categories
-EXCLUDE = {1, 27, 28, 31, 32}  # person, backpack, umbrella, handbag, tie
+    with open("annotations/instances_val2017.json") as f:
+        coco = json.load(f)
 
-ann_by_img = {}
-for ann in coco['annotations']:
-    ann_by_img.setdefault(ann['image_id'], set()).add(ann['category_id'])
+    # Exclude: person + clothing-adjacent categories
+    EXCLUDE = {1, 27, 28, 31, 32}  # person, backpack, umbrella, handbag, tie
 
-clean_imgs = [
-    img for img in coco['images']
-    if not ann_by_img.get(img['id'], set()) & EXCLUDE
-][:2000]
+    ann_by_img = {}
+    for ann in coco['annotations']:
+        ann_by_img.setdefault(ann['image_id'], set()).add(ann['category_id'])
 
-print(f"Found {len(clean_imgs)} clean background images")
+    clean_imgs = [
+        img for img in coco['images']
+        if not ann_by_img.get(img['id'], set()) & EXCLUDE
+    ][:2000]
 
-out = Path("bg_images")
-out.mkdir(exist_ok=True)
-for i, img in enumerate(clean_imgs):
-    url = img['coco_url']
-    fname = out / f"bg_{img['id']}.jpg"
-    r = requests.get(url, stream=True)
-    with open(fname, 'wb') as f:
-        shutil.copyfileobj(r.raw, f)
-    if i % 50 == 0:
-        print(f"  {i}/{len(clean_imgs)}")
+    print(f"Found {len(clean_imgs)} clean background images")
 
-print("Done.")
+    out = Path("bg_images")
+    out.mkdir(exist_ok=True)
+    for i, img in enumerate(clean_imgs):
+        url = img['coco_url']
+        fname = out / f"bg_{img['id']}.jpg"
+        r = requests.get(url, stream=True)
+        with open(fname, 'wb') as f:
+            shutil.copyfileobj(r.raw, f)
+        if i % 50 == 0:
+            print(f"  {i}/{len(clean_imgs)}")
+
+    print("Done.")
+
+
+if __name__ == "__main__":
+    main()

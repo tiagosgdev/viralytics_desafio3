@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 import torch
 
-from src.custom_model.model import FashionNet, TinyFashionNet
+from src.custom_model.model import FashionNet
 from src.custom_model.postprocess import postprocess
 from src.detection.detector import (
     BaseDetector,
@@ -115,7 +115,6 @@ class FashionNetDetector(BaseDetector):
         config_path = weights_path.parent / "config.json"
 
         num_classes = 13
-        is_fast = False
         grayscale = False
         dropout = 0.0
         scale = "s"
@@ -124,7 +123,6 @@ class FashionNetDetector(BaseDetector):
             with open(config_path, "r", encoding="utf-8") as handle:
                 config = json.load(handle)
             num_classes = config.get("num_classes_resolved", num_classes)
-            is_fast = config.get("fast", False)
             grayscale = config.get("grayscale", False)
             dropout = config.get("dropout", 0.0)
             scale = config.get("model_scale", "s")
@@ -133,10 +131,7 @@ class FashionNetDetector(BaseDetector):
             if head_weight is not None:
                 num_classes = int(head_weight.shape[0] - 5)
 
-        if is_fast:
-            model = TinyFashionNet(num_classes=num_classes)
-        else:
-            model = FashionNet(num_classes=num_classes, dropout=dropout, scale=scale)
+        model = FashionNet(num_classes=num_classes, dropout=dropout, scale=scale)
 
         if "ema" in ckpt and ckpt["ema"]:
             model.load_state_dict(ckpt["ema"])

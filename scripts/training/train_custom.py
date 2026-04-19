@@ -28,7 +28,7 @@ from torch.optim.lr_scheduler import OneCycleLR, CosineAnnealingLR, LinearLR, Se
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from src.custom_model.model   import FashionNet, TinyFashionNet
+from src.custom_model.model   import FashionNet
 from src.custom_model.loss    import FashionNetLoss
 from src.custom_model.dataset import build_dataloaders
 
@@ -49,8 +49,6 @@ def parse_args():
     p.add_argument("--output",   default="models/weights/fashionnet")
     p.add_argument("--resume",   default="",
                    help="Path to checkpoint .pt to resume from")
-    p.add_argument("--fast",     action="store_true",
-                   help="Use TinyFashionNet (fewer channels) for quick testing")
     p.add_argument("--max_samples", type=int, default=0,
                    help="Cap dataset size for quick testing (0 = use all)")
 
@@ -239,8 +237,6 @@ def main():
     print(f"  EMA       : {args.ema}")
     print(f"  Mosaic    : {args.mosaic}")
     print(f"  Grayscale : {args.grayscale}")
-    if args.fast:
-        print(f"  Mode      : FAST (TinyFashionNet + capped samples)")
     if args.max_samples:
         print(f"  Samples   : max {args.max_samples} per split")
     print(f"{'='*55}\n")

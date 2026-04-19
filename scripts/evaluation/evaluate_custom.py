@@ -28,7 +28,7 @@ from torch.utils.data import DataLoader
 # Allow imports from project root
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from src.custom_model.model import FashionNet, TinyFashionNet
+from src.custom_model.model import FashionNet
 from src.custom_model.dataset import (
     FashionDataset, collate_fn, get_val_transforms, CATEGORY_NAMES,
 )
@@ -83,7 +83,6 @@ def load_model(weights_path: str, device: torch.device, num_classes_override: in
 
     # Resolve num_classes
     num_classes = num_classes_override
-    is_fast = False
     grayscale = False
 
     if config_path.exists():
@@ -91,7 +90,6 @@ def load_model(weights_path: str, device: torch.device, num_classes_override: in
             config = json.load(f)
         if not num_classes:
             num_classes = config.get("num_classes_resolved", 13)
-        is_fast = config.get("fast", False)
         grayscale = config.get("grayscale", False)
     elif not num_classes:
         # Infer from checkpoint head weight shape
@@ -102,17 +100,14 @@ def load_model(weights_path: str, device: torch.device, num_classes_override: in
             num_classes = 13
 
     # Instantiate model
-    if is_fast:
-        model = TinyFashionNet(num_classes=num_classes)
-    else:
-        dropout = 0.0
-        scale = "s"
-        if config_path.exists():
-            with open(config_path) as f:
-                cfg = json.load(f)
-            dropout = cfg.get("dropout", 0.0)
-            scale = cfg.get("model_scale", "s")
-        model = FashionNet(num_classes=num_classes, dropout=dropout, scale=scale)
+    dropout = 0.0
+    scale = "s"
+    if config_path.exists():
+        with open(config_path) as f:
+            cfg = json.load(f)
+        dropout = cfg.get("dropout", 0.0)
+        scale = cfg.get("model_scale", "s")
+    model = FashionNet(num_classes=num_classes, dropout=dropout, scale=scale)
 
     # Load weights (prefer EMA if available)
     if "ema" in ckpt and ckpt["ema"]:

@@ -10,8 +10,7 @@ from __future__ import annotations
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import cv2
 import numpy as np

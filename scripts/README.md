@@ -22,6 +22,5 @@ The repository scripts are now grouped by purpose instead of living in one flat 
 
 - `scripts/evaluation/evaluate.py`: YOLOv8 evaluation
 - `scripts/evaluation/evaluate_custom.py`: FashionNet evaluation
-- `scripts/evaluation/evaluate_yolo_world.py`: YOLO-World zero-shot evaluation
 - `scripts/evaluation/compare_models.py`: side-by-side model comparison
 - `scripts/evaluation/visualize_results.py`: plots from training/evaluation outputs

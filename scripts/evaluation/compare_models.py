@@ -37,7 +37,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.custom_model.model   import FashionNet
 from src.custom_model.dataset import FashionDataset, get_val_transforms, collate_fn
-from src.utils.metrics        import iou, detection_report, per_class_ap
+from src.utils.metrics        import per_class_ap
 
 
 def load_category_names(data_dir: str) -> list:
@@ -196,7 +196,11 @@ def evaluate_fashionnet(weights_path, data_dir, device, img_size=640, batch=8):
     model.load_state_dict(ckpt['model'])
     model.to(device).eval()
 
-    grayscale = config_path.exists() and json.load(open(config_path)).get("grayscale", False)
+    if config_path.exists():
+        with open(config_path) as _f:
+            grayscale = json.load(_f).get("grayscale", False)
+    else:
+        grayscale = False
     val_ds = FashionDataset(data_dir, "val", img_size, get_val_transforms(img_size, grayscale=grayscale))
     val_dl = DataLoader(val_ds, batch_size=batch, collate_fn=collate_fn, num_workers=0)
 

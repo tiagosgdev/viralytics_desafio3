@@ -51,7 +51,6 @@ from src.api.search_service import UnifiedSearchService
 from src.detection.camera import CameraStream
 from src.detection.detector import BaseDetector, FashionDetector
 from src.detection.fashionnet_detector import FashionNetDetector
-from src.detection.yolo_world import YOLOWorldDetector
 from src.recommendations.engine import RecommendationEngine
 
 # ── App setup ──────────────────────────────────────────────────────────────
@@ -112,8 +111,6 @@ whisper_model = None
 search_service: UnifiedSearchService = None
 detectors_by_persona: dict[str, BaseDetector] = {}
 cameras_by_persona: dict[str, CameraStream] = {}
-
-DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "yolov8").lower()
 
 
 def _find_ffmpeg_exe() -> str | None:
@@ -277,13 +274,9 @@ async def startup():
     global detector, recommender, camera, whisper_model, search_service
     global detectors_by_persona, cameras_by_persona
 
-    if DETECTOR_BACKEND == "yolo_world":
-        print("\n🚀  Starting with YOLO-World zero-shot detector")
-        cruella_detector = YOLOWorldDetector(conf_thres=0.15)
-    else:
-        weights = WEIGHTS_PATH
-        print(f"\n🚀  Loading model from: {weights}")
-        cruella_detector = FashionDetector(weights=weights, conf_thres=0.60)
+    weights = WEIGHTS_PATH
+    print(f"\n🚀  Loading model from: {weights}")
+    cruella_detector = FashionDetector(weights=weights, conf_thres=0.60)
 
     fashionnet_weights = _find_fashionnet_weights()
     if fashionnet_weights:
@@ -778,6 +771,10 @@ async def get_conf(persona: str = "cruella"):
 
 @app.post("/api/conf/{value}")
 async def set_conf(value: float, persona: str = "cruella"):
+    """
+    Update the detection confidence threshold live (0.01 – 0.99).
+    Affects both the live camera stream and result filtering.
+    """
     if not (0.01 <= value <= 0.99):
         raise HTTPException(status_code=400, detail="conf must be between 0.01 and 0.99")
     active_detector = _resolve_detector(persona)
@@ -797,6 +794,7 @@ _WHISPER_JUNK = {
 
 @app.post("/api/transcribe")
 async def transcribe_audio(audio: UploadFile = File(...)):
+    """Accept an audio file (webm/opus from browser) and return transcribed text."""
     if whisper_model is None:
         raise HTTPException(status_code=503, detail="Whisper model not loaded")
 
