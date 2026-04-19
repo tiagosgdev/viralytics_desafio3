@@ -85,30 +85,44 @@ done
 
 ## Running the App
 
-**Windows (PowerShell):**
+The launcher checks all dependencies (Ollama, vector DB, imports) before starting uvicorn.
 
-```powershell
-.\scripts\app\start_full_app.ps1
+**Standard launch (edna 1.5m weights):**
+
+```bash
+python3 scripts/app/start_full_app.py --edna-weights edna_1.5m --auto-pull-model
+```
+
+**With auto-reload (development):**
+
+```bash
+python3 scripts/app/start_full_app.py --edna-weights edna_1.5m --auto-pull-model --reload
 ```
 
 **LAN / mobile testing:**
 
-```powershell
-.\scripts\app\start_full_app.ps1 -BindHost 0.0.0.0 -BindPort 8000
-```
-
-**Python (cross-platform):**
-
 ```bash
-python scripts/app/start_full_app.py
+python3 scripts/app/start_full_app.py --edna-weights edna_1.5m --auto-pull-model --host 0.0.0.0 --port 8000
 ```
 
-The launcher checks all dependencies before starting. Open `http://localhost:8000` in a browser.
+Open `http://localhost:8000` in a browser (or the machine's LAN IP for mobile).
+
+**Key flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--edna-weights <folder>` | Weights folder under `models/weights/` for Edna (e.g. `edna_1.5m`) |
+| `--auto-pull-model` | Automatically pull the required Ollama model (`qwen2.5:3b-instruct`) if missing |
+| `--reload` | Enable uvicorn auto-reload (development only) |
+| `--host <ip>` | Bind host — use `0.0.0.0` for LAN access (default: `127.0.0.1`) |
+| `--port <n>` | Bind port (default: `8000`) |
+| `--skip-ollama` | Skip Ollama checks (use if running Edna-only without Cruella) |
+| `--skip-vector-check` | Skip vector DB check (use if LNIAGIA collection not yet built) |
 
 **Android app:**
 
 1. Open `android_app/` in Android Studio
-2. Set the server IP in the app to point to your machine
+2. Set the server IP in the app to your machine's LAN IP
 3. `Build > Build Bundle(s) / APK(s) > Build APK(s)`
 
 ---
