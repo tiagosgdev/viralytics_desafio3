@@ -5,6 +5,8 @@ param(
     [ValidateSet("yolov8", "yolo_world")]
     [string]$DetectorBackend = "yolov8",
     [string]$ModelWeights = "",
+    [string]$RefinerModel = "",
+    [string]$RouterModel = "",
     [switch]$SkipOllama,
     [switch]$SkipVectorCheck,
     [switch]$AutoPullModel
@@ -23,6 +25,14 @@ if ($Reload) {
 
 if ($ModelWeights) {
     $argsList += @("--model-weights", $ModelWeights)
+}
+
+if ($RefinerModel) {
+    $argsList += @("--refiner-model", $RefinerModel)
+}
+
+if ($RouterModel) {
+    $argsList += @("--router-model", $RouterModel)
 }
 
 if ($SkipOllama) {

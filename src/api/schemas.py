@@ -49,16 +49,24 @@ class ChatRequest(BaseModel):
     session_id: Optional[str] = None
     persona: str = "cruella"
     replace_vision: Optional[bool] = None
-    strict: bool = False
+    strict: bool = Field(
+        default=False,
+        description="Deprecated. Strictness is derived from assistant_mode/persona.",
+    )
+    assistant_mode: Optional[str] = None
     state: Optional[Dict[str, Any]] = None
     detected_categories: List[str] = Field(default_factory=list)
     recommendations: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class ConversationRequest(BaseModel):
-    detected_type: str
+    detected_type: Optional[str] = None
     message: Optional[str] = None
-    strict: bool = False
+    strict: bool = Field(
+        default=False,
+        description="Deprecated. Strictness is derived from assistant_mode/persona.",
+    )
+    assistant_mode: Optional[str] = None
     state: Optional[Dict[str, Any]] = None
 
 
@@ -72,3 +80,21 @@ class ChatResponse(BaseModel):
     state: Optional[Dict[str, Any]] = None
     strict: bool = False
     warning: Optional[str] = None
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+
+
+class AuthResponse(BaseModel):
+    success: bool
+    message: Optional[str] = None
+    user_id: Optional[str] = None
+    token: Optional[str] = None

@@ -700,6 +700,68 @@ BRANDS_PER_TYPE = {
     )
 }
 
+# ═════════ USER PROFILE SCHEMA ═════════
+
+USER_AGE_GROUP = AGE_GROUP  # reuse existing system
+
+USER_GENDER = GENDER
+
+# Users don't need all values, but we sample from REAL item space
+USER_PROFILE_FIELDS = {
+    "favorite_colors": COLOR,
+    "favorite_styles": STYLE,
+    "favorite_materials": MATERIAL,
+    "preferred_seasons": SEASON,
+    "preferred_occasions": OCCASION,
+}
+
+# ═════════ REAL-WORLD DISTRIBUTION WEIGHTS ═════════
+
+AGE_GROUP_WEIGHTS = {
+    "baby": 0.05,
+    "child": 0.10,
+    "teenager": 0.15,
+    "young adult": 0.30,
+    "adult": 0.30,
+    "senior": 0.10
+}
+
+GENDER_WEIGHTS = {
+    "male": 0.49,
+    "female": 0.49,
+    "unisex": 0.02
+}
+
+STYLE_WEIGHTS = {
+    "casual": 0.25,
+    "streetwear": 0.15,
+    "smart casual": 0.12,
+    "sporty": 0.12,
+    "minimalist": 0.10,
+    "elegant": 0.10,
+    "formal": 0.08,
+    "vintage": 0.05,
+    "bohemian": 0.02,
+    "preppy": 0.01
+}
+
+COLOR_WEIGHTS = {
+    "black": 0.12,
+    "white": 0.10,
+    "gray": 0.10,
+    "navy": 0.10,
+    "blue": 0.10,
+    "beige": 0.08,
+    "cream": 0.06,
+    "green": 0.06,
+    "red": 0.05,
+    "brown": 0.05,
+    "pink": 0.05,
+    "yellow": 0.04,
+    "orange": 0.03,
+    "purple": 0.03,
+    "multicolor": 0.02
+}
 
 # ═══ HELPER FUNCTIONS ═══
 

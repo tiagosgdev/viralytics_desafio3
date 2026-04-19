@@ -32,7 +32,11 @@ import requests
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OLLAMA_URL = "http://127.0.0.1:11434"
-EXPECTED_OLLAMA_MODEL = "qwen2.5:3b-instruct"
+DEFAULT_OLLAMA_REFINER_MODEL = "qwen2.5:7b-instruct-q3_K_M"
+DEFAULT_OLLAMA_ROUTER_MODEL = "qwen2.5:7b-instruct-q3_K_M"
+
+# Backward-compatible alias used in legacy messages.
+EXPECTED_OLLAMA_MODEL = DEFAULT_OLLAMA_REFINER_MODEL
 
 
 def parse_args() -> argparse.Namespace:
@@ -70,6 +74,16 @@ def parse_args() -> argparse.Namespace:
         "--auto-pull-model",
         action="store_true",
         help="Automatically pull the required Ollama model if it is missing",
+    )
+    parser.add_argument(
+        "--refiner-model",
+        default="",
+        help="Optional Ollama model for parser/refinement (defaults to env or legacy model)",
+    )
+    parser.add_argument(
+        "--router-model",
+        default="",
+        help="Optional Ollama model for interaction tasks (defaults to env value or the lightweight router model)",
     )
     return parser.parse_args()
 
@@ -148,7 +162,34 @@ def start_ollama_if_needed() -> None:
     )
 
 
-def ensure_ollama_model() -> bool:
+def _resolve_ollama_models(args: argparse.Namespace) -> dict[str, str | list[str]]:
+    legacy_model = (os.getenv("OLLAMA_MODEL") or "").strip()
+
+    refiner_model = (
+        (args.refiner_model or "").strip()
+        or (os.getenv("OLLAMA_REFINER_MODEL") or "").strip()
+        or legacy_model
+        or DEFAULT_OLLAMA_REFINER_MODEL
+    )
+    router_model = (
+        (args.router_model or "").strip()
+        or (os.getenv("OLLAMA_ROUTER_MODEL") or "").strip()
+        or DEFAULT_OLLAMA_ROUTER_MODEL
+    )
+
+    required: list[str] = []
+    for model_name in (refiner_model, router_model):
+        if model_name and model_name not in required:
+            required.append(model_name)
+
+    return {
+        "refiner": refiner_model,
+        "router": router_model,
+        "required": required,
+    }
+
+
+def _query_ollama_models() -> set[str]:
     try:
         response = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
         response.raise_for_status()
@@ -156,32 +197,50 @@ def ensure_ollama_model() -> bool:
         raise SystemExit(f"Could not query Ollama models: {exc}") from exc
 
     models = response.json().get("models", [])
-    available = {model.get("name") for model in models}
-    if EXPECTED_OLLAMA_MODEL in available:
-        print(f"Found Ollama model: {EXPECTED_OLLAMA_MODEL}")
-        return True
+    return {
+        str(model.get("name") or "").strip()
+        for model in models
+        if str(model.get("name") or "").strip()
+    }
 
-    return False
+
+def ensure_ollama_models(required_models: list[str]) -> list[str]:
+    available = _query_ollama_models()
+    missing = []
+
+    for model_name in required_models:
+        if model_name in available:
+            print(f"Found Ollama model: {model_name}")
+        else:
+            missing.append(model_name)
+
+    return missing
 
 
-def pull_ollama_model() -> None:
+def pull_ollama_models(model_names: list[str]) -> None:
+    if not model_names:
+        return
+
     ollama_exe = find_ollama_exe()
     if not ollama_exe:
         raise SystemExit(
-            f"Required Ollama model `{EXPECTED_OLLAMA_MODEL}` is missing, and `ollama.exe` could not be found.\n"
+            "Required Ollama model(s) are missing, and `ollama.exe` could not be found.\n"
             "Add Ollama to PATH or reinstall it, then retry."
         )
 
-    print(f"Pulling Ollama model `{EXPECTED_OLLAMA_MODEL}`...")
-    completed = subprocess.run([ollama_exe, "pull", EXPECTED_OLLAMA_MODEL], cwd=str(REPO_ROOT))
-    if completed.returncode != 0:
-        raise SystemExit(
-            f"Failed to pull `{EXPECTED_OLLAMA_MODEL}`.\n"
-            f"You can try manually with:\n\"{ollama_exe}\" pull {EXPECTED_OLLAMA_MODEL}"
-        )
+    for model_name in model_names:
+        print(f"Pulling Ollama model `{model_name}`...")
+        completed = subprocess.run([ollama_exe, "pull", model_name], cwd=str(REPO_ROOT))
+        if completed.returncode != 0:
+            raise SystemExit(
+                f"Failed to pull `{model_name}`.\n"
+                f"You can try manually with:\n\"{ollama_exe}\" pull {model_name}"
+            )
 
-    if not ensure_ollama_model():
-        raise SystemExit(f"Model pull completed, but `{EXPECTED_OLLAMA_MODEL}` still does not appear in Ollama.")
+    missing_after_pull = ensure_ollama_models(model_names)
+    if missing_after_pull:
+        missing_text = ", ".join(missing_after_pull)
+        raise SystemExit(f"Model pull completed, but these model(s) are still missing: {missing_text}.")
 
 
 def ensure_vector_collection() -> None:
@@ -214,11 +273,13 @@ def ensure_vector_collection() -> None:
     )
 
 
-def build_env(args: argparse.Namespace) -> dict:
+def build_env(args: argparse.Namespace, refiner_model: str, router_model: str) -> dict:
     env = os.environ.copy()
     env["PYTHONPATH"] = str(REPO_ROOT) + os.pathsep + env.get("PYTHONPATH", "")
     env["DETECTOR_BACKEND"] = args.detector_backend
-    env.setdefault("OLLAMA_MODEL", EXPECTED_OLLAMA_MODEL)
+    env["OLLAMA_REFINER_MODEL"] = refiner_model
+    env["OLLAMA_ROUTER_MODEL"] = router_model
+    env["OLLAMA_MODEL"] = refiner_model
     if args.model_weights:
         env["MODEL_WEIGHTS"] = args.model_weights
     if args.edna_weights:
@@ -241,8 +302,11 @@ def run_uvicorn(args: argparse.Namespace, env: dict) -> int:
         command.append("--reload")
 
     print("\nStarting FashionSense...")
-    print(f"  URL: http://{args.host}:{args.port}")
+    print("  Bootstrapping services (models, vectors, camera, speech)...")
+    print("  URL will be announced by Uvicorn after startup completes.")
     print(f"  Detector backend: {args.detector_backend}")
+    print(f"  Parser/refiner model: {env.get('OLLAMA_REFINER_MODEL')}")
+    print(f"  Interaction model : {env.get('OLLAMA_ROUTER_MODEL')}")
     if args.model_weights:
         print(f"  MODEL_WEIGHTS: {args.model_weights}")
     if args.edna_weights:
@@ -256,23 +320,35 @@ def run_uvicorn(args: argparse.Namespace, env: dict) -> int:
 def main() -> int:
     args = parse_args()
     ensure_imports()
+    ollama_models = _resolve_ollama_models(args)
+    required_models = list(ollama_models.get("required", []))
+    refiner_model = str(ollama_models.get("refiner") or DEFAULT_OLLAMA_REFINER_MODEL)
+    router_model = str(ollama_models.get("router") or DEFAULT_OLLAMA_ROUTER_MODEL)
 
     if not args.skip_ollama:
         start_ollama_if_needed()
-        if not ensure_ollama_model():
+        missing_models = ensure_ollama_models(required_models)
+        if missing_models:
             if args.auto_pull_model:
-                pull_ollama_model()
+                pull_ollama_models(missing_models)
             else:
                 ollama_exe = find_ollama_exe()
+                missing_text = ", ".join(missing_models)
+
+                if ollama_exe:
+                    commands_text = "\n".join(f"\"{ollama_exe}\" pull {name}" for name in missing_models)
+                else:
+                    commands_text = "\n".join(f"ollama pull {name}" for name in missing_models)
+
                 if ollama_exe:
                     raise SystemExit(
-                        f"Required Ollama model `{EXPECTED_OLLAMA_MODEL}` is not installed.\n"
-                        f"Run:\n\"{ollama_exe}\" pull {EXPECTED_OLLAMA_MODEL}\n"
+                        f"Required Ollama model(s) are missing: {missing_text}.\n"
+                        f"Run:\n{commands_text}\n"
                         "Or rerun this launcher with --auto-pull-model."
                     )
                 raise SystemExit(
-                    f"Required Ollama model `{EXPECTED_OLLAMA_MODEL}` is not installed.\n"
-                    f"Run: ollama pull {EXPECTED_OLLAMA_MODEL}\n"
+                    f"Required Ollama model(s) are missing: {missing_text}.\n"
+                    f"Run:\n{commands_text}\n"
                     "Or rerun this launcher with --auto-pull-model."
                 )
     else:
@@ -283,7 +359,7 @@ def main() -> int:
     else:
         print("Skipping vector collection check.")
 
-    env = build_env(args)
+    env = build_env(args, refiner_model=refiner_model, router_model=router_model)
     return run_uvicorn(args, env)
 
 

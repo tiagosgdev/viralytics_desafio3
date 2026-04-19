@@ -1,0 +1,1370 @@
+{
+  "basic_queries": [
+    {
+      "id": "basic_001",
+      "query": "Show me black t-shirts",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top"],
+          "color": ["black"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_002",
+      "query": "I want a floral summer dress",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress", "sling_dress", "vest_dress"],
+          "pattern": ["floral"],
+          "season": ["summer"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_003",
+      "query": "Show me navy blue trousers",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "color": ["navy"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_004",
+      "query": "I want a white linen shirt",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top"],
+          "color": ["white"],
+          "material": ["linen"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_005",
+      "query": "Show me oversized hoodies",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"],
+          "fit": ["oversized"],
+          "hood": ["attached"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_006",
+      "query": "I want high waisted jeans",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "material": ["denim"],
+          "waist_style": ["high-waisted"],
+          "rise": ["high-rise"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_007",
+      "query": "Show me maxi skirts",
+      "expected_output": {
+        "include": {
+          "type": ["skirt"],
+          "length": ["maxi"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_008",
+      "query": "I want a red casual dress",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress", "long_sleeve_dress", "vest_dress", "sling_dress"],
+          "color": ["red"],
+          "style": ["casual"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_009",
+      "query": "Show me striped long sleeve tops",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_top"],
+          "pattern": ["striped"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_010",
+      "query": "I want a leather jacket",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"],
+          "material": ["leather"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_011",
+      "query": "Show me sporty shorts",
+      "expected_output": {
+        "include": {
+          "type": ["shorts"],
+          "style": ["sporty"],
+          "occasion": ["sport"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_012",
+      "query": "I want a pink silk blouse",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top"],
+          "color": ["pink"],
+          "material": ["silk"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_013",
+      "query": "Show me wide leg trousers",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "leg_style": ["wide leg"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_014",
+      "query": "I want a cozy wool sweater for winter",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_top"],
+          "material": ["wool"],
+          "season": ["winter"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_015",
+      "query": "Show me velvet midi dresses",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress", "long_sleeve_dress", "vest_dress"],
+          "material": ["velvet"],
+          "length": ["midi"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_016",
+      "query": "I want a green cargo pants",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "color": ["green", "olive"],
+          "leg_style": ["cargo"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_017",
+      "query": "Show me polka dot skirts",
+      "expected_output": {
+        "include": {
+          "type": ["skirt"],
+          "pattern": ["polka dot"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_018",
+      "query": "I want a beige trench coat",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"],
+          "color": ["beige"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_019",
+      "query": "Show me sleeveless summer tops",
+      "expected_output": {
+        "include": {
+          "type": ["vest"],
+          "season": ["summer"]
+        },
+        "exclude": {}
+      }
+    },
+    {
+      "id": "basic_020",
+      "query": "I want a wrap midi dress",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress", "long_sleeve_dress"],
+          "dress_style": ["wrap"],
+          "length": ["midi"]
+        },
+        "exclude": {}
+      }
+    }
+  ],
+
+  "negation_queries": [
+    {
+      "id": "negation_001",
+      "query": "I want a casual black top but not long sleeve",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "vest"],
+          "color": ["black"],
+          "style": ["casual"]
+        },
+        "exclude": {
+          "type": ["long_sleeve_top"]
+        }
+      }
+    },
+    {
+      "id": "negation_002",
+      "query": "Show me summer dresses but no floral patterns",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress", "sling_dress", "vest_dress", "long_sleeve_dress"],
+          "season": ["summer"]
+        },
+        "exclude": {
+          "pattern": ["floral"]
+        }
+      }
+    },
+    {
+      "id": "negation_003",
+      "query": "I want blue jeans but not skinny",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "color": ["blue", "navy"],
+          "material": ["denim"]
+        },
+        "exclude": {
+          "leg_style": ["skinny"]
+        }
+      }
+    },
+    {
+      "id": "negation_004",
+      "query": "Show me winter coats but nothing too heavy or bulky",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"],
+          "season": ["winter"]
+        },
+        "exclude": {
+          "insulation": ["heavy", "down"],
+          "fit": ["oversized", "baggy"]
+        }
+      }
+    },
+    {
+      "id": "negation_005",
+      "query": "I want a white dress but not too short",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress", "long_sleeve_dress", "vest_dress", "sling_dress"],
+          "color": ["white"]
+        },
+        "exclude": {
+          "length": ["mini", "short"]
+        }
+      }
+    },
+    {
+      "id": "negation_006",
+      "query": "I want casual trousers but not tight or fitted",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "style": ["casual"]
+        },
+        "exclude": {
+          "fit": ["slim fit", "fitted"],
+          "leg_style": ["skinny", "slim"]
+        }
+      }
+    },
+    {
+      "id": "negation_007",
+      "query": "Show me sporty tops but nothing with graphics or logos",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top", "vest"],
+          "style": ["sporty"]
+        },
+        "exclude": {
+          "pattern": ["graphic"]
+        }
+      }
+    },
+    {
+      "id": "negation_008",
+      "query": "I want a formal shirt but not white",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_top"],
+          "style": ["formal"]
+        },
+        "exclude": {
+          "color": ["white"]
+        }
+      }
+    },
+    {
+      "id": "negation_009",
+      "query": "Show me skirts but nothing too long, I want above the knee",
+      "expected_output": {
+        "include": {
+          "type": ["skirt"],
+          "length": ["mini", "short"]
+        },
+        "exclude": {
+          "length": ["midi", "maxi", "full length", "ankle"]
+        }
+      }
+    },
+    {
+      "id": "negation_010",
+      "query": "I want a jacket for spring but nothing waterproof or heavy",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"],
+          "season": ["spring"],
+          "insulation": ["none", "light"]
+        },
+        "exclude": {
+          "waterproof": ["waterproof"],
+          "insulation": ["heavy", "down", "medium"]
+        }
+      }
+    },
+    {
+      "id": "negation_011",
+      "query": "Show me colorful tops but no yellow or orange",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top", "vest"],
+          "color": ["red", "pink", "purple", "teal", "coral", "green", "multicolor"]
+        },
+        "exclude": {
+          "color": ["yellow", "orange"]
+        }
+      }
+    },
+    {
+      "id": "negation_012",
+      "query": "I want a party dress but nothing too revealing or too short",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_dress", "short_sleeve_dress", "vest_dress"],
+          "occasion": ["party"],
+          "length": ["midi", "knee-length"]
+        },
+        "exclude": {
+          "length": ["mini"],
+          "neckline": ["off-shoulder", "halter", "sweetheart"]
+        }
+      }
+    },
+    {
+      "id": "negation_013",
+      "query": "Show me men's casual outfits but nothing sporty",
+      "expected_output": {
+        "include": {
+          "gender": ["male"],
+          "style": ["casual"],
+          "occasion": ["everyday"]
+        },
+        "exclude": {
+          "style": ["sporty"],
+          "occasion": ["sport"]
+        }
+      }
+    },
+    {
+      "id": "negation_014",
+      "query": "I want a boho dress but not too long",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress", "long_sleeve_dress", "sling_dress", "vest_dress"],
+          "style": ["bohemian"]
+        },
+        "exclude": {
+          "length": ["maxi", "full length", "ankle"]
+        }
+      }
+    },
+    {
+      "id": "negation_015",
+      "query": "Show me patterned skirts but no stripes or checks",
+      "expected_output": {
+        "include": {
+          "type": ["skirt"]
+        },
+        "exclude": {
+          "pattern": ["striped", "checkered", "plaid", "plain"]
+        }
+      }
+    },
+    {
+      "id": "negation_016",
+      "query": "I want a wool coat but not black or gray",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"],
+          "material": ["wool"]
+        },
+        "exclude": {
+          "color": ["black", "gray"]
+        }
+      }
+    },
+    {
+      "id": "negation_017",
+      "query": "Show me high waisted trousers but not wide leg",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "waist_style": ["high-waisted"],
+          "rise": ["high-rise"]
+        },
+        "exclude": {
+          "leg_style": ["wide leg", "flared"]
+        }
+      }
+    },
+    {
+      "id": "negation_018",
+      "query": "I want a summer top but not sleeveless",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top"],
+          "season": ["summer"]
+        },
+        "exclude": {
+          "type": ["vest"]
+        }
+      }
+    },
+    {
+      "id": "negation_019",
+      "query": "Show me formal dresses but no black",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_dress", "short_sleeve_dress", "vest_dress", "sling_dress"],
+          "style": ["formal", "elegant"]
+        },
+        "exclude": {
+          "color": ["black"]
+        }
+      }
+    },
+    {
+      "id": "negation_020",
+      "query": "I want a long sleeve top but not a turtleneck",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_top"]
+        },
+        "exclude": {
+          "neckline": ["turtleneck", "mock neck"]
+        }
+      }
+    },
+    {
+      "id": "negation_021",
+      "query": "Show me athletic shorts but not too baggy or loose",
+      "expected_output": {
+        "include": {
+          "type": ["shorts"],
+          "style": ["sporty"],
+          "occasion": ["sport"]
+        },
+        "exclude": {
+          "fit": ["baggy", "loose", "oversized"]
+        }
+      }
+    },
+    {
+      "id": "negation_022",
+      "query": "I want a printed top but no animal print",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top", "vest"],
+          "pattern": ["floral", "geometric", "abstract", "polka dot", "tie-dye"]
+        },
+        "exclude": {
+          "pattern": ["animal print"]
+        }
+      }
+    },
+    {
+      "id": "negation_023",
+      "query": "Show me beachwear but nothing too formal or structured",
+      "expected_output": {
+        "include": {
+          "occasion": ["beach"],
+          "season": ["summer"],
+          "style": ["casual"]
+        },
+        "exclude": {
+          "style": ["formal", "elegant"],
+          "fit": ["tailored"]
+        }
+      }
+    },
+    {
+      "id": "negation_024",
+      "query": "I want a midi dress but not bodycon or fitted",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_dress", "short_sleeve_dress", "vest_dress", "sling_dress"],
+          "length": ["midi"]
+        },
+        "exclude": {
+          "dress_style": ["bodycon", "sheath"],
+          "fit": ["fitted", "slim fit"]
+        }
+      }
+    },
+    {
+      "id": "negation_025",
+      "query": "Show me green clothing but no camouflage or military patterns",
+      "expected_output": {
+        "include": {
+          "color": ["green", "olive"]
+        },
+        "exclude": {
+          "pattern": ["camouflage"]
+        }
+      }
+    },
+    {
+      "id": "negation_026",
+      "query": "I want a jacket with a hood but nothing too warm or insulated",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"],
+          "hood": ["attached", "detachable"]
+        },
+        "exclude": {
+          "insulation": ["heavy", "down", "medium"]
+        }
+      }
+    },
+    {
+      "id": "negation_027",
+      "query": "Show me women's trousers but not low rise",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "gender": ["female"]
+        },
+        "exclude": {
+          "rise": ["low-rise"],
+          "waist_style": ["low-rise"]
+        }
+      }
+    },
+    {
+      "id": "negation_028",
+      "query": "I want a cropped top but not sleeveless",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top"],
+          "hem_style": ["cropped"]
+        },
+        "exclude": {
+          "type": ["vest"]
+        }
+      }
+    },
+    {
+      "id": "negation_029",
+      "query": "Show me vintage style clothing but no denim",
+      "expected_output": {
+        "include": {
+          "style": ["vintage"]
+        },
+        "exclude": {
+          "material": ["denim"]
+        }
+      }
+    },
+    {
+      "id": "negation_030",
+      "query": "I want a brown or burgundy top but not a turtleneck or mock neck",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top"],
+          "color": ["brown", "burgundy"]
+        },
+        "exclude": {
+          "neckline": ["turtleneck", "mock neck"]
+        }
+      }
+    },
+    {
+      "id": "negation_031",
+      "query": "Show me formal trousers but not black or navy",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "style": ["formal"]
+        },
+        "exclude": {
+          "color": ["black", "navy"]
+        }
+      }
+    },
+    {
+      "id": "negation_032",
+      "query": "I want a cozy autumn sweater but no synthetic materials",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_top"],
+          "season": ["autumn"]
+        },
+        "exclude": {
+          "material": ["polyester", "nylon", "spandex", "rayon"]
+        }
+      }
+    },
+    {
+      "id": "negation_033",
+      "query": "Show me summer shorts but nothing too short or revealing",
+      "expected_output": {
+        "include": {
+          "type": ["shorts"],
+          "season": ["summer"]
+        },
+        "exclude": {
+          "length": ["mini"]
+        }
+      }
+    },
+    {
+      "id": "negation_034",
+      "query": "I want a party top but nothing too casual or plain",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top", "vest"],
+          "occasion": ["party"],
+          "style": ["elegant"]
+        },
+        "exclude": {
+          "style": ["casual"],
+          "pattern": ["plain"]
+        }
+      }
+    },
+    {
+      "id": "negation_035",
+      "query": "Show me floral dresses but not in red or orange",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress", "long_sleeve_dress", "sling_dress", "vest_dress"],
+          "pattern": ["floral"]
+        },
+        "exclude": {
+          "color": ["red", "orange"]
+        }
+      }
+    },
+    {
+      "id": "negation_036",
+      "query": "I want a streetwear outfit but no hoodies",
+      "expected_output": {
+        "include": {
+          "style": ["streetwear"]
+        },
+        "exclude": {
+          "hood": ["attached"],
+          "type": ["long_sleeve_outwear"]
+        }
+      }
+    },
+    {
+      "id": "negation_037",
+      "query": "Show me cargo pants but not in green or khaki",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "leg_style": ["cargo"]
+        },
+        "exclude": {
+          "color": ["green", "olive"]
+        }
+      }
+    },
+    {
+      "id": "negation_038",
+      "query": "I want a maxi dress but not formal or too dressy",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_dress", "short_sleeve_dress", "sling_dress", "vest_dress"],
+          "length": ["maxi"]
+        },
+        "exclude": {
+          "style": ["formal", "elegant"],
+          "occasion": ["formal event", "wedding"]
+        }
+      }
+    },
+    {
+      "id": "negation_039",
+      "query": "Show me patterned jackets but no plaid or checkered",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"]
+        },
+        "exclude": {
+          "pattern": ["plaid", "checkered"]
+        }
+      }
+    },
+    {
+      "id": "negation_040",
+      "query": "I want a fitted dress but not bodycon or too revealing",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_dress", "short_sleeve_dress"],
+          "dress_style": ["sheath", "fit and flare"]
+        },
+        "exclude": {
+          "dress_style": ["bodycon"],
+          "neckline": ["off-shoulder", "halter", "sweetheart"]
+        }
+      }
+    },
+    {
+      "id": "negation_041",
+      "query": "Show me pastel colored tops but no pink",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top", "vest"],
+          "color": ["beige", "cream", "yellow", "teal", "blue"]
+        },
+        "exclude": {
+          "color": ["pink"]
+        }
+      }
+    },
+    {
+      "id": "negation_042",
+      "query": "I want casual everyday trousers but no jeans",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "style": ["casual"],
+          "occasion": ["everyday"]
+        },
+        "exclude": {
+          "material": ["denim"]
+        }
+      }
+    },
+    {
+      "id": "negation_043",
+      "query": "Show me satin or silk dresses but not for casual wear",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_dress", "short_sleeve_dress", "sling_dress", "vest_dress"],
+          "material": ["satin", "silk"]
+        },
+        "exclude": {
+          "style": ["casual"],
+          "occasion": ["everyday"]
+        }
+      }
+    },
+    {
+      "id": "negation_044",
+      "query": "I want a winter jacket but not a puffer or down jacket",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"],
+          "season": ["winter"]
+        },
+        "exclude": {
+          "insulation": ["down"]
+        }
+      }
+    },
+    {
+      "id": "negation_045",
+      "query": "Show me relaxed fit trousers but no sweatpants or joggers",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "fit": ["relaxed"]
+        },
+        "exclude": {
+          "leg_style": ["jogger"],
+          "waist_style": ["elastic"]
+        }
+      }
+    },
+    {
+      "id": "negation_046",
+      "query": "I want a patterned skirt but no animal print or tie-dye",
+      "expected_output": {
+        "include": {
+          "type": ["skirt"],
+          "pattern": ["floral", "geometric", "abstract", "striped", "polka dot"]
+        },
+        "exclude": {
+          "pattern": ["animal print", "tie-dye"]
+        }
+      }
+    },
+    {
+      "id": "negation_047",
+      "query": "Show me long sleeve tops but not for sport or gym",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_top"]
+        },
+        "exclude": {
+          "style": ["sporty"],
+          "occasion": ["sport"]
+        }
+      }
+    },
+    {
+      "id": "negation_048",
+      "query": "I want a purple or teal dress but not mini length",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress", "long_sleeve_dress", "vest_dress", "sling_dress"],
+          "color": ["purple", "teal"]
+        },
+        "exclude": {
+          "length": ["mini", "short"]
+        }
+      }
+    },
+    {
+      "id": "negation_049",
+      "query": "Show me preppy style outfits but no polos or collared shirts",
+      "expected_output": {
+        "include": {
+          "style": ["preppy"]
+        },
+        "exclude": {
+          "neckline": ["collared"],
+          "collar": ["pointed", "spread", "button-down"]
+        }
+      }
+    },
+    {
+      "id": "negation_050",
+      "query": "I want a v-neck top but not fitted or bodycon",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top"],
+          "neckline": ["v-neck"]
+        },
+        "exclude": {
+          "fit": ["fitted", "slim fit"]
+        }
+      }
+    },
+    {
+      "id": "negation_051",
+      "query": "Show me wool or cashmere sweaters but not in dark colors",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_top"],
+          "material": ["wool", "cashmere"]
+        },
+        "exclude": {
+          "color": ["black", "navy", "burgundy", "brown"]
+        }
+      }
+    },
+    {
+      "id": "negation_052",
+      "query": "I want a summer beach outfit but no synthetic fabrics",
+      "expected_output": {
+        "include": {
+          "occasion": ["beach"],
+          "season": ["summer"]
+        },
+        "exclude": {
+          "material": ["polyester", "nylon", "spandex", "rayon"]
+        }
+      }
+    },
+    {
+      "id": "negation_053",
+      "query": "Show me short sleeve dresses but not bodycon",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_dress"]
+        },
+        "exclude": {
+          "dress_style": ["bodycon"]
+        }
+      }
+    },
+    {
+      "id": "negation_054",
+      "query": "I want a gray or beige minimalist outfit but nothing oversized",
+      "expected_output": {
+        "include": {
+          "color": ["gray", "beige"],
+          "style": ["minimalist"]
+        },
+        "exclude": {
+          "fit": ["oversized", "baggy", "loose"]
+        }
+      }
+    },
+    {
+      "id": "negation_055",
+      "query": "Show me embroidered tops but not in plain or neutral colors",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top"],
+          "pattern": ["embroidered"]
+        },
+        "exclude": {
+          "color": ["white", "beige", "cream", "gray"]
+        }
+      }
+    },
+    {
+      "id": "negation_056",
+      "query": "I want an all-season jacket but not too formal or structured",
+      "expected_output": {
+        "include": {
+          "type": ["long_sleeve_outwear"],
+          "season": ["all-season"]
+        },
+        "exclude": {
+          "style": ["formal"],
+          "fit": ["tailored"]
+        }
+      }
+    },
+    {
+      "id": "negation_057",
+      "query": "Show me bootcut or flared jeans but not low rise",
+      "expected_output": {
+        "include": {
+          "type": ["trousers"],
+          "material": ["denim"],
+          "leg_style": ["bootcut", "flared"]
+        },
+        "exclude": {
+          "rise": ["low-rise"]
+        }
+      }
+    },
+    {
+      "id": "negation_058",
+      "query": "I want a graphic tee but not oversized or baggy",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top"],
+          "pattern": ["graphic"]
+        },
+        "exclude": {
+          "fit": ["oversized", "baggy"]
+        }
+      }
+    },
+    {
+      "id": "negation_059",
+      "query": "Show me orange or coral summer tops but not sleeveless",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top"],
+          "color": ["orange", "coral"],
+          "season": ["summer"]
+        },
+        "exclude": {
+          "type": ["vest"]
+        }
+      }
+    },
+    {
+      "id": "negation_060",
+      "query": "I want a velvet top but not for casual or everyday wear",
+      "expected_output": {
+        "include": {
+          "type": ["short_sleeve_top", "long_sleeve_top"],
+          "material": ["velvet"]
+        },
+        "exclude": {
+          "style": ["casual"],
+          "occasion": ["everyday"]
+        }
+      }
+    }
+  ],
+
+  "complex_queries": [
+    {
+      "id": "complex_001",
+      "query": "I have a job interview at a law firm next week, what should I wear?",
+      "expected_output": {
+        "include": {
+          "style": ["formal"],
+          "occasion": ["work"],
+          "color": ["black", "navy", "gray", "white"],
+          "fit": ["tailored", "slim fit"]
+        },
+        "exclude": {
+          "style": ["casual", "sporty", "streetwear"],
+          "pattern": ["graphic", "tie-dye", "animal print", "camouflage"]
+        }
+      }
+    },
+    {
+      "id": "complex_002",
+      "query": "I am going on a first date to a nice restaurant, help me find something",
+      "expected_output": {
+        "include": {
+          "occasion": ["date night"],
+          "style": ["elegant", "smart casual"],
+          "color": ["black", "burgundy", "navy", "red"]
+        },
+        "exclude": {
+          "style": ["sporty", "casual"],
+          "occasion": ["sport", "lounge"]
+        }
+      }
+    },
+    {
+      "id": "complex_003",
+      "query": "My grandmother is turning 90 and we are having a garden party, what do you suggest?",
+      "expected_output": {
+        "include": {
+          "occasion": ["party", "formal event"],
+          "style": ["elegant", "smart casual"],
+          "color": ["pink", "beige", "white", "cream", "blue"],
+          "pattern": ["floral"]
+        },
+        "exclude": {
+          "style": ["streetwear", "sporty"],
+          "color": ["black"]
+        }
+      }
+    },
+    {
+      "id": "complex_004",
+      "query": "I am traveling to Iceland in December, what should I pack?",
+      "expected_output": {
+        "include": {
+          "season": ["winter"],
+          "occasion": ["travel"],
+          "insulation": ["heavy", "medium", "down"],
+          "waterproof": ["waterproof", "water resistant"],
+          "material": ["wool", "fleece", "cashmere"]
+        },
+        "exclude": {
+          "insulation": ["none"],
+          "material": ["linen", "chiffon"]
+        }
+      }
+    },
+    {
+      "id": "complex_005",
+      "query": "I just started going to the gym and need some workout clothes",
+      "expected_output": {
+        "include": {
+          "style": ["sporty"],
+          "occasion": ["sport"],
+          "fit": ["athletic"],
+          "material": ["spandex", "polyester", "nylon"]
+        },
+        "exclude": {
+          "style": ["formal", "elegant"],
+          "material": ["wool", "silk", "velvet"]
+        }
+      }
+    },
+    {
+      "id": "complex_006",
+      "query": "I am attending a music festival this summer, what should I wear?",
+      "expected_output": {
+        "include": {
+          "style": ["bohemian", "streetwear"],
+          "season": ["summer"],
+          "color": ["multicolor"],
+          "pattern": ["tie-dye", "floral", "geometric"]
+        },
+        "exclude": {
+          "style": ["formal"],
+          "fit": ["tailored"]
+        }
+      }
+    },
+    {
+      "id": "complex_007",
+      "query": "I need to look put together for a casual Friday at a tech startup",
+      "expected_output": {
+        "include": {
+          "style": ["smart casual"],
+          "occasion": ["work", "everyday"],
+          "color": ["navy", "gray", "white", "blue"]
+        },
+        "exclude": {
+          "style": ["formal"],
+          "pattern": ["graphic", "tie-dye", "animal print"]
+        }
+      }
+    },
+    {
+      "id": "complex_008",
+      "query": "I am going to a friend's outdoor wedding in spring, what should I wear?",
+      "expected_output": {
+        "include": {
+          "occasion": ["wedding"],
+          "style": ["elegant", "smart casual"],
+          "season": ["spring"],
+          "color": ["pink", "beige", "cream", "blue", "green", "yellow"],
+          "length": ["midi", "knee-length", "maxi"]
+        },
+        "exclude": {
+          "color": ["black", "white"],
+          "style": ["casual", "sporty"]
+        }
+      }
+    },
+    {
+      "id": "complex_009",
+      "query": "I am a teacher and need comfortable clothes I can wear every day in a classroom",
+      "expected_output": {
+        "include": {
+          "style": ["smart casual", "casual"],
+          "occasion": ["work", "everyday"],
+          "fit": ["relaxed", "regular"],
+          "season": ["all-season"]
+        },
+        "exclude": {
+          "style": ["sporty", "streetwear"],
+          "fit": ["tight", "bodycon"]
+        }
+      }
+    },
+    {
+      "id": "complex_010",
+      "query": "I am going on a weekend hiking trip, what kind of clothes do I need?",
+      "expected_output": {
+        "include": {
+          "style": ["sporty"],
+          "occasion": ["sport", "travel"],
+          "material": ["polyester", "nylon", "fleece"],
+          "waterproof": ["water resistant", "waterproof"],
+          "fit": ["relaxed", "athletic"]
+        },
+        "exclude": {
+          "material": ["silk", "velvet", "satin", "linen"],
+          "style": ["formal", "elegant"]
+        }
+      }
+    },
+    {
+      "id": "complex_011",
+      "query": "I want to refresh my wardrobe for spring, something fresh and light",
+      "expected_output": {
+        "include": {
+          "season": ["spring"],
+          "color": ["white", "pink", "yellow", "beige", "cream", "teal", "coral"],
+          "material": ["cotton", "linen"],
+          "style": ["casual", "minimalist"]
+        },
+        "exclude": {
+          "color": ["black", "burgundy"],
+          "material": ["wool", "fleece"],
+          "insulation": ["heavy", "down"]
+        }
+      }
+    },
+    {
+      "id": "complex_012",
+      "query": "I have a very important presentation to give to senior executives",
+      "expected_output": {
+        "include": {
+          "style": ["formal"],
+          "occasion": ["work"],
+          "color": ["black", "navy", "gray"],
+          "fit": ["tailored"]
+        },
+        "exclude": {
+          "style": ["casual", "sporty", "streetwear", "bohemian"],
+          "pattern": ["graphic", "tie-dye", "camouflage", "animal print"]
+        }
+      }
+    },
+    {
+      "id": "complex_013",
+      "query": "I am visiting Paris in autumn and want to look stylish but comfortable",
+      "expected_output": {
+        "include": {
+          "season": ["autumn"],
+          "occasion": ["travel"],
+          "style": ["smart casual", "minimalist"],
+          "color": ["beige", "brown", "burgundy", "navy", "gray"]
+        },
+        "exclude": {
+          "style": ["sporty"],
+          "fit": ["baggy", "oversized"]
+        }
+      }
+    },
+    {
+      "id": "complex_014",
+      "query": "I am throwing a New Year's Eve party and want to dress to impress",
+      "expected_output": {
+        "include": {
+          "occasion": ["party", "formal event"],
+          "style": ["elegant", "formal"],
+          "color": ["black", "gold", "burgundy", "navy"],
+          "material": ["velvet", "satin", "silk"]
+        },
+        "exclude": {
+          "style": ["casual", "sporty"],
+          "fit": ["relaxed", "oversized"]
+        }
+      }
+    },
+    {
+      "id": "complex_015",
+      "query": "I need something comfortable to wear when working from home all day",
+      "expected_output": {
+        "include": {
+          "occasion": ["lounge"],
+          "style": ["casual"],
+          "fit": ["relaxed", "oversized"],
+          "material": ["cotton", "fleece"]
+        },
+        "exclude": {
+          "style": ["formal", "elegant"],
+          "fit": ["tailored", "slim fit", "fitted"]
+        }
+      }
+    },
+    {
+      "id": "complex_016",
+      "query": "I am attending a baby shower brunch with close friends",
+      "expected_output": {
+        "include": {
+          "style": ["smart casual", "elegant"],
+          "occasion": ["party", "everyday"],
+          "color": ["pink", "beige", "cream", "white", "yellow"],
+          "pattern": ["floral"]
+        },
+        "exclude": {
+          "style": ["sporty", "streetwear"],
+          "color": ["black"]
+        }
+      }
+    },
+    {
+      "id": "complex_017",
+      "query": "I am starting college and need a versatile everyday wardrobe",
+      "expected_output": {
+        "include": {
+          "age_group": ["young adult"],
+          "style": ["casual", "streetwear"],
+          "occasion": ["everyday"],
+          "season": ["all-season"],
+          "fit": ["relaxed", "regular"]
+        },
+        "exclude": {
+          "style": ["formal"],
+          "occasion": ["formal event"]
+        }
+      }
+    },
+    {
+      "id": "complex_018",
+      "query": "I am going on a tropical honeymoon, what should I pack?",
+      "expected_output": {
+        "include": {
+          "season": ["summer"],
+          "occasion": ["beach", "date night"],
+          "color": ["white", "pink", "coral", "yellow", "teal"],
+          "style": ["elegant", "casual"],
+          "material": ["linen", "cotton", "chiffon"]
+        },
+        "exclude": {
+          "color": ["black", "navy"],
+          "material": ["wool", "fleece"],
+          "style": ["sporty"]
+        }
+      }
+    },
+    {
+      "id": "complex_019",
+      "query": "I just retired and want a comfortable yet stylish wardrobe for my daily walks and coffee meetups",
+      "expected_output": {
+        "include": {
+          "age_group": ["senior"],
+          "style": ["casual", "smart casual"],
+          "fit": ["relaxed", "regular"],
+          "occasion": ["everyday"],
+          "season": ["all-season"]
+        },
+        "exclude": {
+          "style": ["streetwear"],
+          "fit": ["slim fit", "fitted", "baggy"]
+        }
+      }
+    },
+    {
+      "id": "complex_020",
+      "query": "I need to buy a gift outfit for my teenage nephew who loves skateboarding and rap music",
+      "expected_output": {
+        "include": {
+          "age_group": ["teenager"],
+          "gender": ["male"],
+          "style": ["streetwear"],
+          "fit": ["oversized", "baggy", "relaxed"],
+          "pattern": ["graphic", "tie-dye"]
+        },
+        "exclude": {
+          "style": ["formal", "elegant", "preppy"],
+          "fit": ["tailored", "slim fit"]
+        }
+      }
+    }
+  ]
+}

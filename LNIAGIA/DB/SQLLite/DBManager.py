@@ -3,6 +3,8 @@ import json
 import os
 import glob
 import sys
+import random
+import hashlib
 from pathlib import Path
 
 try:
@@ -12,11 +14,13 @@ except ModuleNotFoundError:
     if str(db_dir) not in sys.path:
         sys.path.insert(0, str(db_dir))
 
-    from models import GLOBAL_FIELDS, TYPE_FIELDS, EXTRA_FIELD_VALUES
+    from models import AGE_GROUP, AGE_GROUP_WEIGHTS, GENDER, GENDER_WEIGHTS, GLOBAL_FIELDS, TYPE_FIELDS, EXTRA_FIELD_VALUES
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'clothing.db')
 DATA_SOURCES_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DataSources')
 
+
+# ------------------ UTIL ------------------
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -36,8 +40,118 @@ def db_exists():
         return False
 
 
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+# ------------------ USERS ------------------
+
+def create_users_table(cursor):
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE,
+            password TEXT NOT NULL,
+
+            age_group TEXT,
+            gender TEXT,
+
+            favorite_colors TEXT,
+            favorite_styles TEXT,
+            favorite_materials TEXT,
+            preferred_seasons TEXT,
+            preferred_occasions TEXT
+        )
+    """)
+
+
+def generate_random_profile(items):
+    def pick(field, k=3):
+        values = list(set(item[field] for item in items if item.get(field)))
+        return random.sample(values, min(k, len(values))) if values else []
+
+    return {
+        "age_group": weighted_choice(AGE_GROUP, AGE_GROUP_WEIGHTS),
+        "gender": weighted_choice(GENDER, GENDER_WEIGHTS),
+        "favorite_colors": ", ".join(pick("color")),
+        "favorite_styles": ", ".join(pick("style")),
+        "favorite_materials": ", ".join(pick("material")),
+        "preferred_seasons": ", ".join(pick("season")),
+        "preferred_occasions": ", ".join(pick("occasion")),
+    }
+
+
+FIRST_NAMES = (
+    "Liam", "Noah", "Oliver", "James", "Elijah", "Mateo", "Ethan", "Lucas",
+    "Sophia", "Emma", "Ava", "Isabella", "Mia", "Amelia", "Harper", "Evelyn",
+    "Daniel", "Michael", "Sebastian", "Benjamin", "William", "Alexander",
+    "Charlotte", "Grace", "Chloe", "Lily", "Hannah", "Zoe", "Sofia"
+)
+
+LAST_NAMES = (
+    "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller",
+    "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez",
+    "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin",
+    "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez"
+)
+
+EMAIL_PROVIDERS = ("gmail.com", "outlook.com", "yahoo.com", "hotmail.com")
+
+def create_random_users(cursor, items, n=10):
+    for _ in range(n):
+        first = random.choice(FIRST_NAMES)
+        last = random.choice(LAST_NAMES)
+
+        # different username styles (adds realism + distribution)
+        style = random.randint(1, 4)
+
+        if style == 1:
+            username = f"{first.lower()}{last.lower()}"
+        elif style == 2:
+            username = f"{first.lower()}.{last.lower()}"
+        elif style == 3:
+            username = f"{first.lower()}_{last.lower()}{random.randint(1, 99)}"
+        else:
+            username = f"{first.lower()}{random.randint(10, 999)}"
+
+        email = f"{username}@{random.choice(EMAIL_PROVIDERS)}"
+        password = hash_password("password123")
+
+        profile = generate_random_profile(items)
+
+        try:
+            cursor.execute("""
+                INSERT INTO users (
+                    username, email, password,
+                    age_group, gender,
+                    favorite_colors, favorite_styles,
+                    favorite_materials, preferred_seasons,
+                    preferred_occasions
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                username,
+                email,
+                password,
+                profile["age_group"],
+                profile["gender"],
+                profile["favorite_colors"],
+                profile["favorite_styles"],
+                profile["favorite_materials"],
+                profile["preferred_seasons"],
+                profile["preferred_occasions"]
+            ))
+        except sqlite3.IntegrityError:
+            continue
+
+def weighted_choice(options, weights_dict):
+    weights = [weights_dict.get(opt, 0.01) for opt in options]
+    return random.choices(options, weights=weights, k=1)[0]
+
+# ------------------ ITEMS ------------------
+
 def get_items_by_ids(item_ids):
-    """Fetch items from SQLite by id while preserving the input order."""
     if not item_ids:
         return []
 
@@ -67,20 +181,9 @@ def get_items_by_ids(item_ids):
 
     conn.close()
 
-    rows_by_id = {}
-    for row in rows:
-        row_id = row.get("id")
-        if row_id is None:
-            continue
-        rows_by_id[int(row_id)] = row
+    rows_by_id = {int(row["id"]): row for row in rows if row.get("id")}
 
-    ordered_rows = []
-    for item_id in normalized_ids:
-        row = rows_by_id.get(item_id)
-        if row is not None:
-            ordered_rows.append(row)
-
-    return ordered_rows
+    return [rows_by_id[i] for i in normalized_ids if i in rows_by_id]
 
 
 def list_json_files():
@@ -105,7 +208,6 @@ def pick_json_file():
 
 
 def _all_columns():
-    """Returns the full ordered list of columns: global fields + every possible type-specific field."""
     seen = set()
     columns = []
     for col in GLOBAL_FIELDS:
@@ -135,6 +237,7 @@ def populate_db(json_path, recreate=False):
 
     if recreate:
         cursor.execute("DROP TABLE IF EXISTS items")
+        cursor.execute("DROP TABLE IF EXISTS users")
 
     cols_def = ', '.join(f'"{col}" TEXT' for col in columns)
     cursor.execute(f'''
@@ -143,6 +246,9 @@ def populate_db(json_path, recreate=False):
             {cols_def}
         )
     ''')
+
+    # ✅ NEW: create users table
+    create_users_table(cursor)
 
     insert_columns = ["id"] + columns
     col_names = ', '.join(f'"{col}"' for col in insert_columns)
@@ -160,17 +266,19 @@ def populate_db(json_path, recreate=False):
             values
         )
 
+    # ✅ NEW: create random users
+    create_random_users(cursor, items, n=10)
+
     conn.commit()
     conn.close()
 
-    print(f"\n  Success! {len(items)} items loaded from '{os.path.basename(json_path)}'.")
+    print(f"\n  Success! {len(items)} items + users loaded.")
 
 
 def manual_query():
     print("\n" + "="*50)
     print("  Manual Query")
     print("="*50)
-    print("  Type your SQL query below, or type 'back' to return.\n")
 
     query = input("  >> ").strip()
 
@@ -184,24 +292,23 @@ def manual_query():
 
         if query.strip().upper().startswith('SELECT'):
             rows = cursor.fetchall()
-            if cursor.description:
-                headers = [desc[0] for desc in cursor.description]
-                col_width = 18
-                header_line = ' | '.join(h.ljust(col_width) for h in headers)
-                print('\n  ' + header_line)
-                print('  ' + '-' * len(header_line))
-                for row in rows:
-                    print('  ' + ' | '.join(str(v).ljust(col_width) for v in row))
-                print(f"\n  {len(rows)} row(s) returned.")
-            else:
-                print("  Query executed with no output.")
+            headers = [desc[0] for desc in cursor.description]
+
+            print("\n  " + " | ".join(headers))
+            print("  " + "-" * 50)
+
+            for row in rows:
+                print("  " + " | ".join(str(v) for v in row))
+
+            print(f"\n  {len(rows)} row(s)")
         else:
             conn.commit()
-            print(f"\n  Query executed successfully. {cursor.rowcount} row(s) affected.")
+            print("Query executed.")
 
         conn.close()
+
     except sqlite3.Error as e:
-        print(f"\n  Error: {e}")
+        print(f"Error: {e}")
 
 
 def show_menu(exists):
@@ -209,6 +316,7 @@ def show_menu(exists):
     print("="*50)
     print("         DB Manager — Viralytics")
     print("="*50)
+
     if not exists:
         print("  Database: NOT created yet\n")
         print("  [1] Create Database")
@@ -218,6 +326,7 @@ def show_menu(exists):
         print("  [1] Recreate / Regenerate Database")
         print("  [2] Manual Query")
         print("  [0] Exit")
+
     print("="*50)
 
 
@@ -234,11 +343,7 @@ def main():
                     populate_db(json_file, recreate=False)
                 input("\n  Press Enter to return to the menu...")
             elif choice == '0':
-                print("\n  Goodbye!\n")
                 break
-            else:
-                print("\n  Invalid option. Please try again.")
-                input("  Press Enter to continue...")
         else:
             if choice == '1':
                 json_file = pick_json_file()
@@ -249,11 +354,7 @@ def main():
                 manual_query()
                 input("\n  Press Enter to return to the menu...")
             elif choice == '0':
-                print("\n  Goodbye!\n")
                 break
-            else:
-                print("\n  Invalid option. Please try again.")
-                input("  Press Enter to continue...")
 
 
 if __name__ == '__main__':

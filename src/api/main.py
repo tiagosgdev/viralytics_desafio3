@@ -6,7 +6,8 @@ FastAPI application.
 Endpoints:
   GET  /                    → HTML dashboard (serves frontend/index.html)
   GET  /health              → health check
-  GET  /api/detect/image    → single image upload detection
+  POST /api/detect/image    → single image upload detection
+  POST /api/mobile/scan     → mobile alias for image scan
   WS   /ws/camera           → real-time WebSocket camera stream
 
 Run:
@@ -15,28 +16,36 @@ Run:
 
 import asyncio
 import base64
+import hashlib
 import os
 import shutil
+import sqlite3
 import tempfile
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 import cv2
+import httpx
 import numpy as np
-from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from src.api.schemas import (
+    AuthResponse,
     ChatRequest,
     ChatResponse,
     ConversationRequest,
     DetectionResponse,
     HealthResponse,
+    LoginRequest,
+    RegisterRequest,
     SessionResponse,
     SessionStartRequest,
 )
+from src.api.auth import create_access_token, get_optional_user_id
 from src.api.personas import PERSONA_CONFIGS, normalize_persona
 from src.api.search_service import UnifiedSearchService
 from src.detection.camera import CameraStream
@@ -45,40 +54,34 @@ from src.detection.fashionnet_detector import FashionNetDetector
 from src.detection.yolo_world import YOLOWorldDetector
 from src.recommendations.engine import RecommendationEngine
 
-# ── App setup ─────────────────────────────────────────────────────────────
+# ── App setup ──────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title       = "FashionSense API",
-    description = "Real-time clothing detection & recommendation system",
-    version     = "1.0.0",
+    title="FashionSense API",
+    description="Real-time clothing detection & recommendation system",
+    version="1.0.0",
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins  = ["*"],
-    allow_methods  = ["*"],
-    allow_headers  = ["*"],
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# ── Serve frontend ─────────────────────────────────────────────────────────
+# ── Serve frontend ──────────────────────────────────────────────────────────
 FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
-STATIC_DIR   = FRONTEND_DIR / "static"
+STATIC_DIR = FRONTEND_DIR / "static"
 
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# ── Shared singletons (loaded once at startup) ─────────────────────────────
-
-# Project root = three levels up from src/api/main.py
+# ── Shared singletons ───────────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
-# Priority order for weights (largest/best model first):
-#   1. MODEL_WEIGHTS env var (set in .env or docker-compose)
-#   2. yolov8l_fashion  (large — best accuracy)
-#   3. yolov8m_fashion  (medium)
-#   4. yolov8s_fashion  (small)
-#   5. yolov8n_fashion  (nano — fastest)
-#   6. Base yolov8n.pt  (fallback, no fashion fine-tuning)
+DB_PATH = str(PROJECT_ROOT / "LNIAGIA" / "DB" / "SQLLite" / "clothing.db")
+
+
 def _find_weights() -> str:
     env = os.getenv("MODEL_WEIGHTS")
     if env:
@@ -97,18 +100,18 @@ def _find_weights() -> str:
             print(f"Found trained weights: {full}")
             return str(full)
     print("⚠️  No fine-tuned weights found, using base yolov8n.pt")
-    return "yolov8n.pt"   # base fallback
+    return "yolov8n.pt"
+
 
 WEIGHTS_PATH = _find_weights()
 
-detector    : BaseDetector        = None
-recommender : RecommendationEngine = None
-camera      : CameraStream       = None
+detector: BaseDetector = None
+recommender: RecommendationEngine = None
+camera: CameraStream = None
 whisper_model = None
 search_service: UnifiedSearchService = None
 detectors_by_persona: dict[str, BaseDetector] = {}
 cameras_by_persona: dict[str, CameraStream] = {}
-
 
 DETECTOR_BACKEND = os.getenv("DETECTOR_BACKEND", "yolov8").lower()
 
@@ -117,7 +120,6 @@ def _find_ffmpeg_exe() -> str | None:
     exe = shutil.which("ffmpeg")
     if exe:
         return exe
-
     local_appdata = Path(os.environ.get("LOCALAPPDATA", ""))
     candidates = [
         local_appdata / "Microsoft" / "WinGet" / "Links" / "ffmpeg.exe",
@@ -127,7 +129,6 @@ def _find_ffmpeg_exe() -> str | None:
         Path("C:/Program Files/ffmpeg/bin/ffmpeg.exe"),
         Path("C:/Program Files (x86)/ffmpeg/bin/ffmpeg.exe"),
     ]
-
     for candidate in candidates:
         if candidate.exists():
             return str(candidate)
@@ -140,7 +141,7 @@ def _find_fashionnet_weights() -> str | None:
         full = PROJECT_ROOT / "models" / "weights" / env / "best.pt"
         if full.exists():
             return str(full)
-        print(f"⚠️  FASHIONNET_WEIGHTS={env!r} not found at {full}, falling back to default")
+        print(f"⚠️  FASHIONNET_WEIGHTS={env!r} not found at {full}, falling back")
     candidate = PROJECT_ROOT / "models" / "weights" / "fashionnet" / "best.pt"
     return str(candidate) if candidate.exists() else None
 
@@ -156,6 +157,119 @@ def _resolve_camera(persona: str) -> CameraStream:
 def _persona_text_backend(persona: str) -> str:
     key = normalize_persona(persona)
     return PERSONA_CONFIGS[key].text_backend
+
+
+def _strict_for_persona(persona: str) -> bool:
+    return normalize_persona(persona) == "cruella"
+
+
+def _resolve_assistant_mode(payload: ConversationRequest) -> str:
+    if isinstance(payload.assistant_mode, str) and payload.assistant_mode.strip():
+        return normalize_persona(payload.assistant_mode)
+    if isinstance(payload.state, dict):
+        state_mode = payload.state.get("assistant_mode")
+        if isinstance(state_mode, str) and state_mode.strip():
+            return normalize_persona(state_mode)
+    return "cruella"
+
+
+# ── User-profile helpers ───────────────────────────────────────────────────
+
+def _get_user_profile_from_db(user_id: int) -> dict | None:
+    """
+    Fetch a user's preference profile from the SQLite DB.
+    Returns None if the user doesn't exist or the DB is unreachable.
+    """
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        cur.execute(
+            """
+            SELECT age_group, gender,
+                   favorite_colors, favorite_styles, favorite_materials,
+                   preferred_seasons, preferred_occasions
+            FROM   users
+            WHERE  id = ?
+            """,
+            (int(user_id),),
+        )
+        row = cur.fetchone()
+        conn.close()
+    except Exception as exc:
+        print(f"⚠️  Could not fetch user profile for user_id={user_id}: {exc}")
+        return None
+
+    if row is None:
+        return None
+
+    def _split(value: str | None) -> list[str]:
+        if not value:
+            return []
+        return [v.strip() for v in value.split(",") if v.strip()]
+
+    return {
+        "age_group":           row["age_group"] or "",
+        "gender":              row["gender"] or "",
+        "favorite_colors":     _split(row["favorite_colors"]),
+        "favorite_styles":     _split(row["favorite_styles"]),
+        "favorite_materials":  _split(row["favorite_materials"]),
+        "preferred_seasons":   _split(row["preferred_seasons"]),
+        "preferred_occasions": _split(row["preferred_occasions"]),
+    }
+
+
+def _get_user_profile(user_id: int | None) -> dict | None:
+    """
+    Resolve a user_id (already extracted + validated by JWT) to a DB profile.
+    Returns None for guests or users with no profile row.
+    """
+    if user_id is None:
+        return None
+    return _get_user_profile_from_db(user_id)
+
+
+# ── Existing DB-backed recommendation helper (unchanged) ───────────────────
+
+# def _db_backed_recommendations_sync(detected_categories: list[str]) -> list[dict]:
+#     try:
+#         from LNIAGIA.search_app import search_detected_items
+#     except Exception as exc:
+#         print(f"⚠️  Could not import DB search helper: {exc}")
+#         return []
+
+#     print(f"\n🔍  Fetching DB recommendations for detected categories: {detected_categories}")
+#     ranked_results, warning = search_detected_items(detected_categories, strict=False)
+#     if warning:
+#         print(f"⚠️  DB recommendation warning: {warning}")
+
+#     return _format_conversation_results(ranked_results)
+
+
+def _preload_search_embeddings_sync() -> str | None:
+    global search_service
+
+    if search_service is None:
+        return "search service is not initialized"
+
+    try:
+        from LNIAGIA.DB.vector.VectorDBManager import _load_model
+        from LNIAGIA.search_app import set_conversation_embedding_model
+    except Exception as exc:
+        return f"could not import embedding preload helpers ({exc})"
+
+    try:
+        shared_model = _load_model()
+    except Exception as exc:
+        return f"embedding model load failed ({exc})"
+
+    try:
+        search_service.set_embedding_model(shared_model)
+        set_conversation_embedding_model(shared_model)
+    except Exception as exc:
+        return f"could not share embedding model across search paths ({exc})"
+
+    return None
 
 
 @app.on_event("startup")
@@ -184,15 +298,24 @@ async def startup():
         edna_detector = cruella_detector
 
     detector = cruella_detector
-    detectors_by_persona = {
-        "cruella": cruella_detector,
-        "edna": edna_detector,
-    }
+    detectors_by_persona = {"cruella": cruella_detector, "edna": edna_detector}
 
     recommender = RecommendationEngine(top_k=5)
     search_service = UnifiedSearchService(recommender)
+
+    preload_warning = await run_in_threadpool(_preload_search_embeddings_sync)
+    if preload_warning:
+        print(f"⚠️  Embedding preload skipped: {preload_warning}")
+    else:
+        print("🧠  Embedding model preloaded for API and conversation search")
+
     cameras_by_persona = {
-        key: CameraStream(detector_instance, recommender, source=0)
+        key: CameraStream(
+            detector_instance,
+            recommender,
+            recommendation_resolver=_db_backed_recommendations_with_profile_sync,
+            source=0,
+        )
         for key, detector_instance in detectors_by_persona.items()
     }
     camera = cameras_by_persona["cruella"]
@@ -203,17 +326,17 @@ async def startup():
         except Exception as e:
             print(f"⚠️  Camera warmup failed for {key}: {e}")
 
-    # Load Whisper for voice transcription in a background thread
-    # (can be slow on first run — downloads model weights)
     async def _load_whisper():
         global whisper_model
         try:
             from faster_whisper import WhisperModel
+
             loop = asyncio.get_event_loop()
             print("🎙️  Loading Whisper model (may download on first run)...")
             whisper_model = await asyncio.wait_for(
                 loop.run_in_executor(
-                    None, lambda: WhisperModel("base", device="cpu", compute_type="int8")
+                    None,
+                    lambda: WhisperModel("base", device="cpu", compute_type="int8"),
                 ),
                 timeout=60,
             )
@@ -224,7 +347,6 @@ async def startup():
             print(f"⚠️  Whisper not available: {e}")
 
     asyncio.create_task(_load_whisper())
-
     print("✅  API ready\n")
 
 
@@ -235,7 +357,31 @@ async def shutdown():
         camera_instance.shutdown()
 
 
-# ── Routes ─────────────────────────────────────────────────────────────────
+# ── Static / proxy routes ───────────────────────────────────────────────────
+
+_GOOGLE_IMAGE_HOSTS = {"drive.google.com", "drive.usercontent.google.com"}
+
+
+def _extract_google_drive_file_id(raw_url: str) -> str | None:
+    parsed = urlparse(raw_url)
+    host = parsed.netloc.lower()
+    if host not in _GOOGLE_IMAGE_HOSTS:
+        return None
+    path_parts = [part for part in parsed.path.split("/") if part]
+    if len(path_parts) >= 3 and path_parts[0] == "file" and path_parts[1] == "d":
+        return path_parts[2]
+    query_id = parse_qs(parsed.query).get("id")
+    if query_id and query_id[0].strip():
+        return query_id[0].strip()
+    return None
+
+
+def _normalize_google_drive_image_url(raw_url: str) -> str:
+    file_id = _extract_google_drive_file_id(raw_url)
+    if not file_id:
+        return raw_url
+    return f"https://drive.usercontent.google.com/download?id={file_id}&export=view"
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -250,14 +396,67 @@ async def health():
     return HealthResponse(status="ok", model_loaded=detector is not None)
 
 
+@app.get("/api/image-proxy")
+async def image_proxy(url: str):
+    raw_url = (url or "").strip()
+    if not raw_url:
+        raise HTTPException(status_code=400, detail="Missing 'url' query parameter")
+
+    normalized_url = _normalize_google_drive_image_url(raw_url)
+    parsed = urlparse(normalized_url)
+    if parsed.scheme not in {"http", "https"}:
+        raise HTTPException(status_code=400, detail="Only http/https image URLs are allowed")
+    if parsed.netloc.lower() not in _GOOGLE_IMAGE_HOSTS:
+        raise HTTPException(status_code=400, detail="Only Google Drive image hosts are allowed")
+
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=20.0) as client:
+            upstream = await client.get(normalized_url, headers={"User-Agent": "Mozilla/5.0"})
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Could not fetch image: {exc}") from exc
+
+    if upstream.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"Image host returned status {upstream.status_code}")
+
+    content_type = (upstream.headers.get("content-type") or "").lower()
+    if not content_type.startswith("image/"):
+        raise HTTPException(status_code=502, detail="Image URL did not return image content")
+
+    media_type = content_type.split(";", 1)[0]
+    return Response(
+        content=upstream.content,
+        media_type=media_type,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
+# ── Session endpoints ────────────────────────────────────────────────────────
+
 @app.post("/api/session/start", response_model=SessionResponse)
-async def start_session(payload: SessionStartRequest):
+async def start_session(
+    payload: SessionStartRequest,
+    user_id: int | None = Depends(get_optional_user_id),
+):
     persona = normalize_persona(payload.persona)
+    user_profile = await run_in_threadpool(_get_user_profile, user_id)
+
+    recs = await run_in_threadpool(
+        _db_backed_recommendations_with_profile_sync,
+        payload.detected_categories or [],
+        user_profile,                           # ← always pass, even if categories empty
+    )
+
+    # Fall back to whatever the frontend sent if the fetch returned nothing
+    if not recs:
+        recs = payload.recommendations or []
+
     session = search_service.create_session(
         detected_categories=payload.detected_categories,
-        recommendations=payload.recommendations,
+        recommendations=recs,
         persona=persona,
+        user_profile=user_profile,
     )
+
     return SessionResponse(
         session_id=session.id,
         mode=session.mode,
@@ -268,15 +467,11 @@ async def start_session(payload: SessionStartRequest):
         results=session.last_results,
     )
 
-
 @app.get("/api/session/{session_id}", response_model=SessionResponse)
 async def get_session(session_id: str):
-    from fastapi import HTTPException
-
     session = search_service.get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
-
     return SessionResponse(
         session_id=session.id,
         mode=session.mode,
@@ -292,31 +487,116 @@ async def get_session(session_id: str):
 async def warmup_chat():
     return search_service.warmup()
 
+# ── NEW: profile-aware DB recommendation fetch ─────────────────────────────
 
-async def _detect_image_impl(file: UploadFile, persona: str = "cruella") -> DetectionResponse:
-    """Shared implementation for image/mobile scan uploads."""
+def _db_backed_recommendations_with_profile_sync(
+    detected_categories: list[str],
+    user_profile: dict | None = None,
+) -> list[dict]:
+    print(f"DEBUG user_profile received: {user_profile}")  # ← add this
+
+    try:
+        from LNIAGIA.search_app import search_detected_items
+    except Exception as exc:
+        print(f"⚠️  Could not import DB search helper: {exc}")
+        return []
+
+    # Build filter kwargs from profile if available
+    profile_filters = {}
+    if user_profile:
+        if user_profile.get("favorite_colors"):
+            profile_filters["colors"] = user_profile["favorite_colors"]
+        if user_profile.get("favorite_styles"):
+            profile_filters["styles"] = user_profile["favorite_styles"]
+        if user_profile.get("favorite_materials"):
+            profile_filters["materials"] = user_profile["favorite_materials"]
+        if user_profile.get("preferred_seasons"):
+            profile_filters["seasons"] = user_profile["preferred_seasons"]
+        if user_profile.get("preferred_occasions"):
+            profile_filters["occasions"] = user_profile["preferred_occasions"]
+        if user_profile.get("gender"):
+            profile_filters["gender"] = user_profile["gender"]
+        if user_profile.get("age_group"):
+            profile_filters["age_group"] = user_profile["age_group"]
+
+    # ── DEBUG ──────────────────────────────────────────────────────────────
+    print("\n" + "="*60)
+    print("🔍  INITIAL REC QUERY")
+    print(f"    detected_categories : {detected_categories}")
+    print(f"    profile_filters     : {profile_filters}")
+    print("="*60 + "\n")
+    # ── END DEBUG ──────────────────────────────────────────────────────────
+
+    ranked_results, warning = search_detected_items(
+        detected_categories,
+        strict=False,
+        colors=profile_filters.get("colors"),
+        styles=profile_filters.get("styles"),
+        materials=profile_filters.get("materials"),
+        seasons=profile_filters.get("seasons"),
+        occasions=profile_filters.get("occasions"),
+        gender=profile_filters.get("gender"),
+        age_group=profile_filters.get("age_group")
+    )
+    if warning:
+        print(f"⚠️  DB recommendation warning: {warning}")
+
+    return _format_conversation_results(ranked_results)
+
+# ── Core detection implementation ─────────────────────────────────────────────
+
+async def _detect_image_impl(
+    file: UploadFile,
+    persona: str = "cruella",
+    user_profile: dict | None = None,       # ← NEW
+) -> DetectionResponse:
+    """
+    Shared implementation for image/mobile scan uploads.
+
+    When `user_profile` is provided (logged-in user), it is:
+      1. Stored on the search session so every subsequent refinement query
+         is enriched with the user's style preferences.
+      2. Used to pre-filter recommendations toward the user's preferred
+         colors, styles, materials, seasons and occasions.
+    """
     persona = normalize_persona(persona)
     contents = await file.read()
-    arr   = np.frombuffer(contents, np.uint8)
+    arr = np.frombuffer(contents, np.uint8)
     frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
 
     if frame is None:
-        from fastapi import HTTPException
         raise HTTPException(status_code=400, detail="Could not decode image")
 
     active_detector = _resolve_detector(persona)
     result = active_detector.detect(frame)
-    cats   = list({d.class_name for d in result.detections})
-    recs   = recommender.recommend(cats)
-    session = search_service.create_session(cats, recs, persona=persona)
+    cats = list({d.class_name for d in result.detections})
+
+    # ── CHANGED: pass user_profile into the recommendation fetch ──────────
+    recs = await run_in_threadpool(
+        _db_backed_recommendations_with_profile_sync,
+        cats,
+        user_profile,   # ← was just cats before
+    )
+    
+    if not isinstance(recs, list):
+        recs = []
+
+    # Pass user_profile into create_session so it enriches base_filters
+    # and is persisted on the session for follow-up chat turns.
+    session = search_service.create_session(
+        cats,
+        recs,
+        persona=persona,
+        user_profile=user_profile,          # ← NEW
+    )
 
     # Encode annotated frame
     annotated = active_detector.draw(frame, result)
-    _, buf    = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    _, buf = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
     b64_frame = base64.b64encode(buf).decode("utf-8")
 
     return DetectionResponse(
-        detections = [
+        detections=[
             {
                 "class_id":   d.class_id,
                 "class_name": d.class_name,
@@ -325,13 +605,50 @@ async def _detect_image_impl(file: UploadFile, persona: str = "cruella") -> Dete
             }
             for d in result.detections
         ],
-        recommendations = recs,
-        inference_ms    = round(result.inference_ms, 1),
-        annotated_frame = b64_frame,
-        session_id      = session.id,
-        persona         = persona,
+        recommendations=recs,
+        inference_ms=round(result.inference_ms, 1),
+        annotated_frame=b64_frame,
+        session_id=session.id,
+        persona=persona,
     )
 
+
+@app.post("/api/detect/image", response_model=DetectionResponse)
+async def detect_image(
+    persona: str = "cruella",
+    file: UploadFile = File(...),
+    user_id: int | None = Depends(get_optional_user_id),
+):
+    """
+    Accepts an uploaded image, runs detection, returns detections + recommendations.
+
+    If the request carries a valid JWT in the Authorization header, the user's
+    saved style preferences are loaded from the DB and used to personalise the
+    initial recommendations only.  Chat/refinement turns are not affected.
+    """
+    user_profile = await run_in_threadpool(_get_user_profile, user_id)
+    if user_profile:
+        print(f"👤  Personalising detection for user_id={user_id}")
+    return await _detect_image_impl(file, persona=persona, user_profile=user_profile)
+
+
+@app.post("/api/mobile/scan", response_model=DetectionResponse)
+async def mobile_scan(
+    persona: str = "cruella",
+    file: UploadFile = File(...),
+    user_id: int | None = Depends(get_optional_user_id),
+):
+    """
+    Mobile-friendly alias for image scan uploads from native clients.
+    Supports the same user-profile personalisation as /api/detect/image.
+    """
+    user_profile = await run_in_threadpool(_get_user_profile, user_id)
+    if user_profile:
+        print(f"👤  Personalising mobile scan for user_id={user_id}")
+    return await _detect_image_impl(file, persona=persona, user_profile=user_profile)
+
+
+# ── Conversation / chat endpoints ─────────────────────────────────────────────
 
 def _get_detected_type(session_id: str | None, detected_categories: list[str]) -> str | None:
     if detected_categories:
@@ -353,7 +670,11 @@ def _format_conversation_results(raw_results: list[dict]) -> list[dict]:
             item.get("name")
             or item.get("title")
             or item.get("product_name")
-            or (f"{brand} {item_type.replace('_', ' ')}".title() if brand else item_type.replace("_", " ").title())
+            or (
+                f"{brand} {item_type.replace('_', ' ')}".title()
+                if brand
+                else item_type.replace("_", " ").title()
+            )
         )
         price_value = item.get("price")
         if isinstance(price_value, (int, float)):
@@ -378,7 +699,11 @@ def _format_conversation_results(raw_results: list[dict]) -> list[dict]:
                 "reason": reason,
                 "score": round(float(entry.get("score", 0.0)), 4),
                 "brand": brand,
-                "description": item.get("description"),
+                "description": (
+                    item.get("description")
+                    or item.get("short_description")
+                    or item.get("summary")
+                ),
                 "metadata": {
                     key: item.get(key)
                     for key in (
@@ -408,12 +733,16 @@ async def _run_conversation_search(payload: ConversationRequest) -> dict:
             detail=f"Could not import conversation search module: {exc}",
         ) from exc
 
+    assistant_mode = _resolve_assistant_mode(payload)
+    strict = _strict_for_persona(assistant_mode)
+
     result = await run_in_threadpool(
         run_conversation_model,
         detected_type=payload.detected_type,
         user_input=payload.message,
         conversation_state=payload.state,
-        strict=payload.strict,
+        strict=strict,
+        assistant_mode=assistant_mode,
     )
 
     if not result.get("ok", False):
@@ -427,58 +756,28 @@ async def _run_conversation_search(payload: ConversationRequest) -> dict:
 
 @app.post("/api/search/conversation")
 async def search_conversation(payload: ConversationRequest, persona: str = "cruella"):
-    """
-    HTTP conversation step for the LNIAGIA search flow.
-
-    The frontend should send `state` from the previous response to keep context.
-    """
-    if _persona_text_backend(persona) == "custom":
-        session = search_service.create_session(
-            detected_categories=[payload.detected_type],
-            recommendations=None,
-            persona=persona,
-        )
-        return search_service.refine(
-            session_id=session.id,
-            message=payload.message or "",
-            replace_vision=False,
-            parser_backend="custom",
+    assistant_mode = payload.assistant_mode or normalize_persona(persona)
+    return await _run_conversation_search(
+        ConversationRequest(
+            detected_type=payload.detected_type,
+            message=payload.message,
+            strict=_strict_for_persona(assistant_mode),
+            assistant_mode=assistant_mode,
             state=payload.state,
         )
-    return await _run_conversation_search(payload)
+    )
 
 
-@app.post("/api/detect/image", response_model=DetectionResponse)
-async def detect_image(persona: str = "cruella", file: UploadFile = File(...)):
-    """
-    Accepts an uploaded image, runs detection, returns detections + recommendations.
-    """
-    return await _detect_image_impl(file, persona=persona)
-
-
-@app.post("/api/mobile/scan", response_model=DetectionResponse)
-async def mobile_scan(persona: str = "cruella", file: UploadFile = File(...)):
-    """
-    Mobile-friendly alias for image scan uploads from native clients.
-    """
-    return await _detect_image_impl(file, persona=persona)
-
-
+# ── Confidence threshold endpoints ─────────────────────────────────────────────
 
 @app.get("/api/conf")
 async def get_conf(persona: str = "cruella"):
-    """Return the current confidence threshold."""
     active_detector = _resolve_detector(persona)
     return {"conf_thres": round(active_detector.conf_thres, 2), "persona": normalize_persona(persona)}
 
 
 @app.post("/api/conf/{value}")
 async def set_conf(value: float, persona: str = "cruella"):
-    """
-    Update the detection confidence threshold live (0.01 – 0.99).
-    Affects both the live camera stream and result filtering.
-    """
-    from fastapi import HTTPException
     if not (0.01 <= value <= 0.99):
         raise HTTPException(status_code=400, detail="conf must be between 0.01 and 0.99")
     active_detector = _resolve_detector(persona)
@@ -486,7 +785,8 @@ async def set_conf(value: float, persona: str = "cruella"):
     return {"conf_thres": round(active_detector.conf_thres, 2), "persona": normalize_persona(persona)}
 
 
-# Common Whisper hallucinations on silence/noise
+# ── Voice transcription ─────────────────────────────────────────────────────────
+
 _WHISPER_JUNK = {
     "you", "thank you", "thanks", "thanks for watching",
     "thank you for watching", "bye", "goodbye", "hello",
@@ -497,9 +797,6 @@ _WHISPER_JUNK = {
 
 @app.post("/api/transcribe")
 async def transcribe_audio(audio: UploadFile = File(...)):
-    """Accept an audio file (webm/opus from browser) and return transcribed text."""
-    from fastapi import HTTPException
-
     if whisper_model is None:
         raise HTTPException(status_code=503, detail="Whisper model not loaded")
 
@@ -516,22 +813,25 @@ async def transcribe_audio(audio: UploadFile = File(...)):
     if suffix not in {".webm", ".wav", ".ogg", ".mp3", ".m4a", ".mp4"}:
         suffix = ".webm"
 
-    # Write browser audio to a temp file, then convert to WAV for Whisper.
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(data)
         source_path = tmp.name
 
     wav_path = source_path.rsplit(".", 1)[0] + ".wav"
     import subprocess
+
     result = subprocess.run(
         [ffmpeg_path, "-y", "-i", source_path, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wav_path],
-        capture_output=True, text=True, timeout=10,
+        capture_output=True,
+        text=True,
+        timeout=10,
     )
     if result.returncode != 0:
         print(f"🎙️  ffmpeg stderr: {result.stderr}")
         if os.path.exists(source_path):
             os.unlink(source_path)
         raise HTTPException(status_code=400, detail="Could not decode uploaded audio")
+
     wav_size = os.path.getsize(wav_path) if os.path.exists(wav_path) else 0
     print(f"🎙️  Converted to WAV: {wav_size} bytes")
     os.unlink(source_path)
@@ -542,13 +842,10 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 
         parts = []
         for seg in segments:
-            print(f"🎙️  Segment [{seg.start:.1f}s-{seg.end:.1f}s] "
-                  f"no_speech={seg.no_speech_prob:.2f}: {seg.text!r}")
+            print(f"🎙️  Segment [{seg.start:.1f}s-{seg.end:.1f}s] no_speech={seg.no_speech_prob:.2f}: {seg.text!r}")
             parts.append(seg.text.strip())
 
         text = " ".join(parts).strip()
-
-        # Filter known hallucinations
         if text.lower().rstrip(".!?, ") in _WHISPER_JUNK:
             print(f"🎙️  Filtered as hallucination: {text!r}")
             text = ""
@@ -560,6 +857,8 @@ async def transcribe_audio(audio: UploadFile = File(...)):
 
     return {"text": text}
 
+
+# ── Chat endpoint ────────────────────────────────────────────────────────────────
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(payload: ChatRequest):
@@ -578,74 +877,124 @@ async def chat(payload: ChatRequest):
             persona = session.persona
 
     detected_type = _get_detected_type(session_id, payload.detected_categories)
-    if detected_type and _persona_text_backend(persona) == "llm":
-        conversation_result = await _run_conversation_search(
-            ConversationRequest(
-                detected_type=detected_type,
-                message=payload.message,
-                strict=payload.strict,
-                state=payload.state,
-            )
+    assistant_mode = payload.assistant_mode or persona
+    conversation_result = await _run_conversation_search(
+        ConversationRequest(
+            detected_type=detected_type,
+            message=payload.message,
+            strict=_strict_for_persona(assistant_mode),
+            assistant_mode=assistant_mode,
+            state=payload.state,
         )
-        results = _format_conversation_results(conversation_result.get("results", []))
-        state = conversation_result.get("state") or {}
-        active_filters = state.get("filters") if isinstance(state.get("filters"), dict) else {}
-        mode = "override" if payload.replace_vision else "vision"
-
-        reply = (
-            f"I replaced the scan context and used your message as the main search direction. "
-            f"I found {len(results)} option(s) to explore next."
-            if mode == "override"
-            else f"I refined the results using the scanned clothing context. "
-                 f"I found {len(results)} option(s) to explore next."
-        )
-        if not results:
-            reply = (
-                "I couldn't find strong matches from that refinement. Try a more specific request."
-            )
-
-        return ChatResponse(
-            reply=reply,
-            session_id=session_id,
-            mode=mode,
-            persona=persona,
-            active_filters=active_filters,
-            results=results,
-            state=state,
-            strict=payload.strict,
-            warning=None,
-        )
-
-    fallback = search_service.refine(
-        session_id=session_id,
-        message=payload.message,
-        history=[
-            message.model_dump() if hasattr(message, "model_dump") else message.dict()
-            for message in payload.history
-        ],
-        replace_vision=payload.replace_vision,
-        parser_backend=_persona_text_backend(persona),
-        state=payload.state,
     )
-    return ChatResponse(**fallback)
 
+    results = _format_conversation_results(conversation_result.get("results", []))
+    state = conversation_result.get("state") or {}
+    active_filters = state.get("filters") if isinstance(state.get("filters"), dict) else {}
+    mode = "override" if payload.replace_vision else "vision"
+
+    reply = str(conversation_result.get("reply") or "I processed your request.")
+    warning = conversation_result.get("warning")
+
+    model_mode = conversation_result.get("mode")
+    if isinstance(model_mode, str) and model_mode.strip():
+        persona = normalize_persona(model_mode)
+
+    strict_value = _strict_for_persona(persona)
+    if isinstance(state, dict) and isinstance(state.get("strict"), bool):
+        strict_value = state.get("strict")
+
+    return ChatResponse(
+        reply=reply,
+        session_id=session_id,
+        mode=mode,
+        persona=persona,
+        active_filters=active_filters,
+        results=results,
+        state=state,
+        strict=strict_value,
+        warning=warning,
+    )
+
+
+# ── Auth endpoints ───────────────────────────────────────────────────────────────
+
+@app.post("/api/auth/login", response_model=AuthResponse)
+async def login(payload: LoginRequest):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT id, password FROM users WHERE email = ?", (payload.email,))
+    user = cur.fetchone()
+    conn.close()
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    user_id, stored_password = user
+    if not _verify_password(payload.password, stored_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    return AuthResponse(
+        success=True,
+        message="Login successful",
+        user_id=str(user_id),
+        token=create_access_token(user_id),
+    )
+
+
+@app.post("/api/auth/register", response_model=AuthResponse)
+async def register(payload: RegisterRequest):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM users WHERE email = ?", (payload.email,))
+    if cur.fetchone():
+        conn.close()
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    password = _hash_password(payload.password)
+    cur.execute(
+        "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+        (payload.name, payload.email, password),
+    )
+    conn.commit()
+    user_id = cur.lastrowid
+    conn.close()
+
+    return AuthResponse(
+        success=True,
+        message="Registration successful",
+        user_id=str(user_id),
+        token=create_access_token(user_id),
+    )
+
+
+def _hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
+def _verify_password(password: str, hashed: str) -> bool:
+    return _hash_password(password) == hashed
+
+
+# ── WebSocket camera endpoint ─────────────────────────────────────────────────
 
 @app.websocket("/ws/camera")
 async def websocket_camera(ws: WebSocket):
-    """
-    WebSocket endpoint — runs the 3-phase session loop.
-
-    Server → Client message types:
-      { type: "frame",   phase: "capturing"|"analysing", frame: <b64>, countdown: int }
-      { type: "results", detections: [...], recommendations: [...] }
-      { type: "error",   message: str }
-
-    Client → Server commands:
-      { cmd: "retry" }      — retake the 3-second scan
-      { cmd: "more_recs" }  — keep outfit, get new recommendations
-    """
     await ws.accept()
     persona = normalize_persona(ws.query_params.get("persona"))
+
+    token = ws.query_params.get("token")
+    user_profile = None
+    if token:
+        try:
+            from src.api.auth import _decode_token
+            user_id = _decode_token(token)
+            user_profile = await run_in_threadpool(_get_user_profile, user_id)
+            if user_profile:
+                print(f"👤  WebSocket personalised for user_id={user_id}")
+        except Exception as e:
+            print(f"⚠️  WebSocket token decode failed: {e}")
+
     active_camera = _resolve_camera(persona)
     print(f"🔌  WebSocket client connected ({persona})")
 
@@ -662,7 +1011,7 @@ async def websocket_camera(ws: WebSocket):
             return None
 
     try:
-        await active_camera.run_session(send, receive)
+        await active_camera.run_session(send, receive, user_profile=user_profile)
     except WebSocketDisconnect:
         pass
     except Exception as e:

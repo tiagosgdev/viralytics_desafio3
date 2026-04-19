@@ -23,6 +23,11 @@ tqdm>=4.66.0
 # ── NLP utilities for query-parsing dataset generation ────────
 # Optional (better tokenization): python -m spacy download en_core_web_sm
 spacy>=3.8.0
+scikit-learn>=1.4.0
+sklearn-crfsuite>=0.3.6
+
+# ── Benchmark reporting (tables/plots) ─────────────────────────
+matplotlib>=3.8.0
 
 # ── Numerical compute (pulled in by sentence-transformers) ───
 numpy==2.2.3

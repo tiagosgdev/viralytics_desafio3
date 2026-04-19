@@ -1,0 +1,49 @@
+{
+  "artifact_version": 1,
+  "created_at_utc": "2026-04-10T07:51:31.295142Z",
+  "model": "rule_based",
+  "folder_size": 2000,
+  "folder_name": "2000(1000-1000)",
+  "selection_metric": "tradeoff_score",
+  "selection_row": {
+    "folder_size": 2000,
+    "folder_name": "2000(1000-1000)",
+    "model": "rule_based",
+    "structured_micro_precision": 0.49255989911727616,
+    "structured_micro_recall": 0.8226621735467565,
+    "structured_micro_f1": 0.6161855182205395,
+    "structured_macro_f1": 0.6244794349836683,
+    "negation_accuracy": 0.9112412177985948,
+    "strict_exact_match_rate": 0.08533333333333333,
+    "token_accuracy": 0.9007016228375556,
+    "token_micro_f1": 0.8144377602961592,
+    "token_macro_f1": 0.5994896584376884,
+    "latency_mean_ms": 4.646598466788419,
+    "latency_median_ms": 4.2708999826572835,
+    "latency_p95_ms": 7.245299970963968,
+    "throughput_qps": 215.2111931227766,
+    "fit_time_s": 0.03379039996070787,
+    "quality_score": 0.624184918838212,
+    "tradeoff_score": 0.5820161060738386,
+    "val_model_score": 0.0,
+    "train_val_overlap_queries": 137
+  },
+  "results_dir": "LNIAGIA\\query_parsing_models\\results",
+  "artifact_dir": "20260410_075131_rule_based_size2000",
+  "benchmark_context": {
+    "full_outputs_dir": "LNIAGIA\\query_parsing_models\\data_generation\\full_outputs",
+    "requested_sizes": [
+      2000,
+      4000,
+      6000,
+      8000,
+      10000
+    ],
+    "fixed_test_path": "LNIAGIA\\query_parsing_models\\data_generation\\full_outputs\\10000(5000-5000)\\test.json",
+    "fixed_test_sha256": "35c19b89e49129e42864110edd6e44275a67f277e7a09199f0b8331107ae8205",
+    "fixed_test_selector": "largest requested size"
+  },
+  "files": {
+    "state": "parser_state.json"
+  }
+}

@@ -28,7 +28,7 @@ import base64
 import json
 import os
 import time
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import cv2
 import numpy as np
@@ -52,12 +52,14 @@ class CameraStream:
         self,
         detector:    BaseDetector,
         recommender: RecommendationEngine,
+        recommendation_resolver: Optional[Callable[[List[str]], List[dict]]] = None,
         source:      int | str = 0,
         width:       int = 1280,
         height:      int = 720,
     ):
         self.detector    = detector
         self.recommender = recommender
+        self.recommendation_resolver = recommendation_resolver
         self.source      = source
         self.width       = width
         self.height      = height
@@ -66,12 +68,13 @@ class CameraStream:
 
     # ── Public API ─────────────────────────────────────────────────────────
 
-    async def run_session(self, send, receive):
+    async def run_session(self, send, receive, user_profile=None):
         """
         Full session loop for one WebSocket connection.
 
-        send    : async callable — sends a JSON string to the client
-        receive : async callable — returns next raw client message string
+        send         : async callable — sends a JSON string to the client
+        receive      : async callable — returns next raw client message string
+        user_profile : optional dict with age_group, gender, preferences
         """
         self._open()
         try:
@@ -101,7 +104,7 @@ class CameraStream:
                     if conf >= threshold
                 }
                 dominant_cats = self._dominant_categories(filtered)
-                recs = self.recommender.recommend(dominant_cats)
+                recs = self._resolve_recommendations(dominant_cats, user_profile=user_profile)
                 final_detections, final_b64 = self._build_final_results_frame(last_frame, filtered)
 
                 await send(json.dumps({
@@ -129,7 +132,7 @@ class CameraStream:
                 elif cmd == "more_recs":
                     # Keep same outfit detections, cycle through new recs
                     while True:
-                        new_recs = self.recommender.recommend(dominant_cats)
+                        new_recs = self._resolve_recommendations(dominant_cats, user_profile=user_profile)
                         await send(json.dumps({
                             "type": "results",
                             "detections": [
@@ -331,6 +334,16 @@ class CameraStream:
             cat for cat, _ in
             sorted(accumulated.items(), key=lambda x: x[1], reverse=True)[:5]
         ]
+
+    def _resolve_recommendations(self, categories: List[str], user_profile=None) -> List[dict]:
+        if self.recommendation_resolver is not None:
+            try:
+                resolved = self.recommendation_resolver(categories, user_profile)
+                if isinstance(resolved, list):
+                    return resolved
+            except Exception as exc:
+                print(f"Warning: DB recommendation resolver failed: {exc}")
+        return self.recommender.recommend(categories)
 
     def _draw_capture_overlay(
         self, frame: np.ndarray, result: DetectionResult, countdown: int
