@@ -201,6 +201,10 @@ def _payload_matches_any(payload_value: object, values: list[str]) -> bool:
 
     if isinstance(payload_value, list):
         return any(v in payload_value for v in values)
+    # Handle comma-separated strings stored as a single string (e.g. "adult, young adult")
+    if isinstance(payload_value, str) and "," in payload_value:
+        csv_vals = [v.strip() for v in payload_value.split(",")]
+        return any(v in csv_vals for v in values)
     return payload_value in values
 
 
@@ -379,6 +383,10 @@ def filtered_search(
     excludes_raw = parsed_filters.get("exclude", {}) if isinstance(parsed_filters.get("exclude", {}), dict) else {}
     exact_excludes, extended_excludes = _expand_exclude_filters(excludes_raw)
 
+    # Fields that are always enforced as hard Qdrant must-conditions regardless of strict mode.
+    # All other include fields are applied as soft score boosts in non-strict mode.
+    HARD_INCLUDE_FIELDS = {"gender", "age_group"}
+
     if strict:
         strict_filters = {
             "include": includes,
@@ -393,21 +401,26 @@ def filtered_search(
         )
         hits = results.points
     else:
+        # Split includes: gender/age_group are always hard; everything else is a soft boost.
+        # NOTE: age_group is stored as CSV strings in Qdrant (e.g. "adult, young adult"),
+        # so Qdrant MatchAny cannot be used for hard filtering — we post-filter instead.
+        hard_includes = {k: v for k, v in includes.items() if k in HARD_INCLUDE_FIELDS}
+        soft_includes = {k: v for k, v in includes.items() if k not in HARD_INCLUDE_FIELDS}
+
+        # Fetch extra candidates to compensate for post-filtering by hard includes.
+        candidate_limit = fetch_limit * 4 if hard_includes else fetch_limit
+
         if not exact_excludes:
-            # no values on "exclude" -> search normally without any filtering
             results = client.query_points(
                 collection_name=COLLECTION_NAME,
                 query=query_emb,
-                limit=fetch_limit,
+                limit=candidate_limit,
             )
             hits = results.points
         else:
-            # two searches
+            # Two searches: one with excludes enforced, one without.
             qfilter_exclude = _build_qdrant_filter(
-                {
-                    "include": includes,
-                    "exclude": exact_excludes,
-                },
+                {"include": {}, "exclude": exact_excludes},
                 strict_exclude=True,
                 strict_include=False,
             )
@@ -415,21 +428,33 @@ def filtered_search(
                 collection_name=COLLECTION_NAME,
                 query=query_emb,
                 query_filter=qfilter_exclude,
-                limit=fetch_limit,
+                limit=candidate_limit,
             )
             results_normal = client.query_points(
                 collection_name=COLLECTION_NAME,
                 query=query_emb,
-                limit=fetch_limit,
+                limit=candidate_limit,
             )
-            
+
             # merge hits, avoiding duplicates
             hits_dict = {}
             for hit in results_normal.points + results_exclude.points:
                 if hit.id not in hits_dict:
                     hits_dict[hit.id] = hit
             hits = list(hits_dict.values())
-            
+
+        # Post-filter: hard fields (gender, age_group) must match — handles CSV payloads.
+        if hard_includes:
+            before = len(hits)
+            hits = [
+                h for h in hits
+                if all(
+                    _payload_matches_any(h.payload.get(field), values)
+                    for field, values in hard_includes.items()
+                )
+            ]
+            print(f"[POST-FILTER] hard_includes={hard_includes} | before={before} after={len(hits)}")
+
         p_exact = penalty_weight if penalty_weight is not None else PENALTY_WEIGHT
         p_extended = (
             extended_penalty_weight
@@ -438,7 +463,7 @@ def filtered_search(
         )
         b_include = boost_weight if boost_weight is not None else BOOST_WEIGHT
 
-        if exact_excludes or extended_excludes or includes:
+        if exact_excludes or extended_excludes or soft_includes:
             for hit in hits:
                 # Strong penalty for exact excludes.
                 for field, values in exact_excludes.items():
@@ -452,26 +477,11 @@ def filtered_search(
                     if _payload_matches_any(payload_val, values):
                         hit.score -= p_extended
 
-                # Positive boost for include matches in soft mode.
-                for field, values in includes.items():
+                # Positive boost for soft include matches only.
+                for field, values in soft_includes.items():
                     payload_val = hit.payload.get(field)
                     if _payload_matches_any(payload_val, values):
                         hit.score += b_include
-
-                # # Check if it lacks anything in include
-                # for field, values in includes.items():
-                #     payload_val = hit.payload.get(field)
-                #     has_include = False
-                #     if payload_val is not None:
-                #         if isinstance(payload_val, list):
-                #             if any(v in payload_val for v in values):
-                #                 has_include = True
-                #         else:
-                #             if payload_val in values:
-                #                 has_include = True
-                #     # The user said: "penalising... the ones that do not have something in the "include""
-                #     if not has_include:
-                #         hit.score -= p_weight
 
     client.close()
 

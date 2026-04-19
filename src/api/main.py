@@ -992,8 +992,8 @@ async def websocket_camera(ws: WebSocket):
             user_profile = await run_in_threadpool(_get_user_profile, user_id)
             if user_profile:
                 print(f"👤  WebSocket personalised for user_id={user_id}")
-        except Exception:
-            pass  # invalid token — continue as guest
+        except Exception as e:
+            print(f"⚠️  WebSocket token decode failed: {e}")
 
     active_camera = _resolve_camera(persona)
     print(f"🔌  WebSocket client connected ({persona})")
@@ -1011,7 +1011,7 @@ async def websocket_camera(ws: WebSocket):
             return None
 
     try:
-        await active_camera.run_session(send, receive)
+        await active_camera.run_session(send, receive, user_profile=user_profile)
     except WebSocketDisconnect:
         pass
     except Exception as e:

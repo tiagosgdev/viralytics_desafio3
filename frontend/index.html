@@ -954,6 +954,16 @@ function handleLogin(event) {
         document.getElementById('login-email').value = '';
         document.getElementById('login-password').value = '';
 
+        // Reconnect WebSocket with the auth token so the server can load the
+        // user profile and apply demographic filtering from the next scan onwards.
+        if (ws) {
+          const oldWs = ws;
+          ws = null;           // clear ref so connectCamera() won't bail early
+          oldWs.onclose = null; // suppress the "Camera offline" UI side-effect
+          oldWs.close();
+          connectCamera();
+        }
+
         // ── KEY: if a scan already ran, re-fetch personalised recs now ──
         if (currentDetectedCategories.length > 0) {
           console.log('Re-fetching after login, categories:', currentDetectedCategories);
