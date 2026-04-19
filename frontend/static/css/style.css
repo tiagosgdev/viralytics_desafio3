@@ -183,6 +183,7 @@ button,
 input,
 select {
   font: inherit;
+  color: inherit;
 }
 
 button {
@@ -500,6 +501,7 @@ body[data-persona='cruella'] .cname,
 body[data-persona='cruella'] .ph,
 body[data-persona='cruella'] .chat-welcome-sub,
 body[data-persona='cruella'] .rec-modal-header p,
+body[data-persona='cruella'] .rec-modal-name,
 body[data-persona='cruella'] .rec-modal-category,
 body[data-persona='cruella'] .rec-modal-price,
 body[data-persona='cruella'] .rec-detail-category,
