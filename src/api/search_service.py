@@ -111,84 +111,6 @@ def _merge_filters(base: dict, user: dict) -> dict:
     return merged
 
 
-# ── NEW: build preference filters from a user profile dict ────────────────
-
-def _profile_to_filters(profile: dict | None) -> dict:
-    """
-    Convert a user profile (from get_user_profile) into a search filter dict
-    that can be merged with the session's base filters.
-
-    Only non-empty preference lists are added so we never restrict results
-    against an empty set.
-    """
-    if not profile:
-        return {}
-
-    include: Dict[str, List[str]] = {}
-
-    mapping = {
-        "favorite_colors":    "color",
-        "favorite_styles":    "style",
-        "favorite_materials": "material",
-        "preferred_seasons":  "season",
-        "preferred_occasions":"occasion",
-    }
-    for profile_key, filter_key in mapping.items():
-        values = profile.get(profile_key) or []
-        if values:
-            include[filter_key] = values
-
-    scalar_mapping = {
-        "age_group": "age_group",
-        "gender":    "gender",
-    }
-    for profile_key, filter_key in scalar_mapping.items():
-        value = (profile.get(profile_key) or "").strip()
-        if value:
-            include[filter_key] = [value]
-
-    return {"include": include} if include else {}
-
-
-# ── NEW: build a human-readable profile context string for LLM prompts ────
-
-def _profile_to_context_string(profile: dict | None) -> str:
-    """
-    Return a compact natural-language sentence describing the user's style
-    preferences, to be injected into the search query sent to the LLM /
-    vector store.
-
-    Example output:
-        "The user prefers colors Red, Blue; styles Casual, Sporty;
-         materials Cotton; seasons Summer; occasions Work.
-         They are a Male adult (25-34)."
-    """
-    if not profile:
-        return ""
-
-    parts: list[str] = []
-
-    def _fmt(label: str, values: list[str]) -> None:
-        if values:
-            parts.append(f"{label} {', '.join(values)}")
-
-    _fmt("colors", profile.get("favorite_colors") or [])
-    _fmt("styles", profile.get("favorite_styles") or [])
-    _fmt("materials", profile.get("favorite_materials") or [])
-    _fmt("seasons", profile.get("preferred_seasons") or [])
-    _fmt("occasions", profile.get("preferred_occasions") or [])
-
-    sentence = "; ".join(parts) + "." if parts else ""
-
-    age   = (profile.get("age_group") or "").strip()
-    gender = (profile.get("gender") or "").strip()
-    demo  = " ".join(filter(None, [gender, age]))
-    if demo:
-        sentence += f" The user is a {demo}."
-
-    return sentence.strip()
-
-
 # ── Unchanged helpers ──────────────────────────────────────────────────────
 
 def _build_search_cards(hits: List) -> List[dict]:
@@ -367,11 +289,9 @@ class UnifiedSearchService:
             [rec.get("category") for rec in recs if rec.get("category")]
         )
 
-        # Merge type-based filters with profile filters
+        # Base filters contain only seed types. Profile is applied once in
+        # search_detected_items() (the initial CV query) and not persisted here.
         base_filters = {"include": {"type": seed_categories}} if seed_categories else {}
-        if user_profile:
-            profile_filters = _profile_to_filters(user_profile)
-            base_filters = _merge_filters(base_filters, profile_filters)
 
         # ── DEBUG ──────────────────────────────────────────────────────────────
         print("\n" + "="*60)
